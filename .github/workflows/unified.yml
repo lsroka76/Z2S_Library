@@ -1,0 +1,178 @@
+name: Build Z2S Gateway
+on:
+  workflow_dispatch:
+    inputs:
+      build_mode:
+        description: 'Select Build Mode'
+        type: choice
+        required: true
+        default: 'full_release'
+        options:
+          - 'full_release'
+          - 'devel_logs_only'
+          - 'fast_no_logs'
+          - 'devel_s3_ncp'
+          - 'ncp_only'
+      force_prerelease:
+        description: 'Force Pre-Release (even for full_release / fast_no_logs)?'
+        type: boolean
+        required: false
+        default: false
+      test_notes:
+        description: 'Release / Test Notes (optional)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build (${{ inputs.build_mode }})
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.arduino15/packages/
+          key: ${{ runner.os }}-arduino      
+
+      - name: Setup Arduino CLI
+        uses: arduino/setup-arduino-cli@v2
+        with:
+          version: "1.5.1"
+
+      - name: Install ESP32 Core
+        run: |
+          mkdir -p ./release_bins
+          arduino-cli config init
+          arduino-cli config set board_manager.additional_urls "https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json"
+          arduino-cli config set library.enable_unsafe_install true
+          arduino-cli core update-index
+          arduino-cli core install esp32:esp32@3.3.6
+
+      - name: Install Gateway Libraries (Skipped for ncp_only!)
+        if: ${{ inputs.build_mode != 'ncp_only' }}
+        run: |
+          arduino-cli lib install --git-url https://github.com/lsroka76/supla-device.git
+          arduino-cli lib install --git-url https://github.com/LennartHennigs/ESPTelnet.git
+          arduino-cli lib install --git-url https://github.com/adafruit/Adafruit_NeoPixel.git
+          arduino-cli lib install --git-url https://github.com/dojyorin/arduino_base64.git
+          arduino-cli lib install --git-url https://github.com/lsroka76/ESPUI.git
+          arduino-cli lib install --git-url https://github.com/bblanchon/ArduinoJson.git
+          arduino-cli lib install --git-url https://github.com/lsroka76/ESPAsyncWebServer.git
+          arduino-cli lib install --git-url https://github.com/lsroka76/AsyncTCP.git
+          arduino-cli lib install --git-url https://github.com/mobizt/ESP_SSLClient.git
+          arduino-cli lib install --git-url https://github.com/milesburton/Arduino-Temperature-Control-Library.git
+          arduino-cli lib install --git-url https://github.com/PaulStoffregen/OneWire.git
+          arduino-cli lib install --git-url https://github.com/lsroka76/ClosedCube_SHT31D_Arduino.git
+          arduino-cli lib install --git-url https://github.com/claws/BH1750.git
+          arduino-cli lib install --git-url https://github.com/RobTillaart/SHT4x.git
+
+      - name: Copy boards.txt & partition schemes
+        run: | 
+          cp ./partitions/boards336.txt ~/.arduino15/packages/esp32/hardware/esp32/3.3.6/boards.txt
+          cp ./partitions/custom_zigbee_zczr.csv ~/.arduino15/packages/esp32/hardware/esp32/3.3.6/tools/partitions/custom_zigbee_zczr.csv
+          if [ -f ./partitions/ncp_zigbee_zczr.csv ]; then
+            cp ./partitions/ncp_zigbee_zczr.csv ~/.arduino15/packages/esp32/hardware/esp32/3.3.6/tools/partitions/zigbee_zczr.csv
+          fi
+          cp ./core/HTTPUpdateServer.h ~/.arduino15/packages/esp32/hardware/esp32/3.3.6/libraries/HTTPUpdateServer/src/HTTPUpdateServer.h 
+
+      # =======================================================================
+      # 1. ESP32-C6 STANDALONE 4MB (Custom Partition)
+      # =======================================================================
+      - name: Compile C6_Standalone_4MB_logs
+        if: ${{ inputs.build_mode == 'full_release' || inputs.build_mode == 'devel_logs_only' }}
+        run: |
+          arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32c6:PartitionScheme=custom,ZigbeeMode=zczr,FlashSize=4M,CDCOnBoot=cdc,DebugLevel=verbose -e --library=. --build-property compiler.cpp.extra_flags="-DESPASYNCHTTPUPDATESERVER_MODE=1"
+          mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.bin ./release_bins/Z2S_Gateway.4MB.no_OTA.logs.update_only.WARNING_NEW_SIZE.bin
+          mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.bin ./release_bins/Z2S_Gateway.4MB.no_OTA.logs.full_version.bin
+
+      - name: Compile C6_Standalone_4MB_no_logs
+        if: ${{ inputs.build_mode == 'full_release' || inputs.build_mode == 'fast_no_logs' }}
+        run: |
+          arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32c6:PartitionScheme=custom,ZigbeeMode=zczr,FlashSize=4M,CDCOnBoot=cdc -e --library=. --build-property compiler.cpp.extra_flags="-DESPASYNCHTTPUPDATESERVER_MODE=1"
+          mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.bin ./release_bins/Z2S_Gateway.4MB.no_OTA.no_logs.update_only.WARNING_NEW_SIZE.bin
+          mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.bin ./release_bins/Z2S_Gateway.4MB.no_OTA.no_logs.full_version.bin
+
+      # =======================================================================
+      # 2. ESP32-C6 STANDALONE 8MB (OTA Partition)
+      # =======================================================================
+      - name: Compile C6_Standalone_8MB_logs
+        if: ${{ inputs.build_mode == 'full_release' || inputs.build_mode == 'devel_logs_only' }}
+        run: |
+          arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32c6:PartitionScheme=zigbee_zczr_8MB,ZigbeeMode=zczr,FlashSize=8M,CDCOnBoot=cdc,DebugLevel=verbose -e --library=. --build-property compiler.cpp.extra_flags="-DESPASYNCHTTPUPDATESERVER_MODE=1"
+          mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.bin ./release_bins/Z2S_Gateway.8MB.OTA.logs.update_only.bin
+          mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.bin ./release_bins/Z2S_Gateway.8MB.OTA.logs.full_version.bin
+
+      - name: Compile C6_Standalone_8MB_no_logs
+        if: ${{ inputs.build_mode == 'full_release' || inputs.build_mode == 'fast_no_logs' }}
+        run: |
+          arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32c6:PartitionScheme=zigbee_zczr_8MB,ZigbeeMode=zczr,FlashSize=8M,CDCOnBoot=cdc -e --library=. --build-property compiler.cpp.extra_flags="-DESPASYNCHTTPUPDATESERVER_MODE=1"
+          mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.bin ./release_bins/Z2S_Gateway.8MB.OTA.no_logs.update_only.bin
+          mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32c6/Z2S_Gateway.ino.merged.bin ./release_bins/Z2S_Gateway.8MB.OTA.no_logs.full_version.bin
+
+      # =======================================================================
+      # 3. ESP32-C6 NCP CO-PROCESSOR 4MB (zigbee_zczr with zb_storage reservation)
+      # =======================================================================
+      - name: Prepare C6_NCP Sources
+        run: cp ./src/Zigbee* ./src/GeminiProtocol* ./examples/Z2S_C6_NCP/
+
+      - name: Compile C6_NCP_4MB_logs
+        if: ${{ inputs.build_mode == 'full_release' || inputs.build_mode == 'devel_logs_only' || inputs.build_mode == 'devel_s3_ncp' || inputs.build_mode == 'ncp_only' }}
+        run: |
+          arduino-cli compile ./examples/Z2S_C6_NCP -b esp32:esp32:esp32c6:PartitionScheme=zigbee_zczr,ZigbeeMode=zczr,FlashSize=4M,DebugLevel=info -e --build-property compiler.cpp.extra_flags="-DUSE_GEMINI_PROTOCOL=1 -DZ2S_C6_COPROCESSOR_FIRMWARE=1"
+          mv ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.ino.bin ./release_bins/Z2S_C6_NCP.4MB.logs.update_only.bin
+          mv ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.ino.merged.bin ./release_bins/Z2S_C6_NCP.4MB.logs.full_version.bin
+
+      - name: Compile C6_NCP_4MB_no_logs
+        if: ${{ inputs.build_mode == 'full_release' || inputs.build_mode == 'fast_no_logs' || inputs.build_mode == 'devel_s3_ncp' || inputs.build_mode == 'ncp_only' }}
+        run: |
+          arduino-cli compile ./examples/Z2S_C6_NCP -b esp32:esp32:esp32c6:PartitionScheme=zigbee_zczr,ZigbeeMode=zczr,FlashSize=4M -e --build-property compiler.cpp.extra_flags="-DUSE_GEMINI_PROTOCOL=1 -DZ2S_C6_COPROCESSOR_FIRMWARE=1"
+          mv ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.ino.bin ./release_bins/Z2S_C6_NCP.4MB.no_logs.update_only.bin
+          mv ./examples/Z2S_C6_NCP/build/esp32.esp32.esp32c6/Z2S_C6_NCP.ino.merged.bin ./release_bins/Z2S_C6_NCP.4MB.no_logs.full_version.bin
+
+      # =======================================================================
+      # 4. ESP32-S3 HOST 8MB (default_8MB + PSRAM=opi)
+      # =======================================================================
+      - name: Compile S3_Host_8MB_logs
+        if: ${{ inputs.build_mode == 'full_release' || inputs.build_mode == 'devel_logs_only' || inputs.build_mode == 'devel_s3_ncp' }}
+        run: |
+          arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32s3:PartitionScheme=default_8MB,ZigbeeMode=zczr,FlashSize=8M,PSRAM=opi,DebugLevel=verbose -e --library=. --build-property compiler.cpp.extra_flags="-DESPASYNCHTTPUPDATESERVER_MODE=1 -DUSE_GEMINI_PROTOCOL=1 -DCONFIG_ZB_ENABLED=1"
+          mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32s3/Z2S_Gateway.ino.bin ./release_bins/Z2S_Gateway.S3_Host.8MB.OTA.logs.update_only.bin
+          mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32s3/Z2S_Gateway.ino.merged.bin ./release_bins/Z2S_Gateway.S3_Host.8MB.OTA.logs.full_version.bin
+
+      - name: Compile S3_Host_8MB_no_logs
+        if: ${{ inputs.build_mode == 'full_release' || inputs.build_mode == 'fast_no_logs' || inputs.build_mode == 'devel_s3_ncp' }}
+        run: |
+          arduino-cli compile ./examples/Z2S_Gateway -b esp32:esp32:esp32s3:PartitionScheme=default_8MB,ZigbeeMode=zczr,FlashSize=8M,PSRAM=opi -e --library=. --build-property compiler.cpp.extra_flags="-DESPASYNCHTTPUPDATESERVER_MODE=1 -DUSE_GEMINI_PROTOCOL=1 -DCONFIG_ZB_ENABLED=1"
+          mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32s3/Z2S_Gateway.ino.bin ./release_bins/Z2S_Gateway.S3_Host.8MB.OTA.no_logs.update_only.bin
+          mv ./examples/Z2S_Gateway/build/esp32.esp32.esp32s3/Z2S_Gateway.ino.merged.bin ./release_bins/Z2S_Gateway.S3_Host.8MB.OTA.no_logs.full_version.bin
+
+      # =======================================================================
+      # TAG & CREATE GITHUB RELEASE
+      # =======================================================================
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          fetch_all_tags: true
+
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ steps.tag_version.outputs.new_tag }}
+          name: ${{ (inputs.build_mode == 'full_release' || inputs.build_mode == 'fast_no_logs') && !inputs.force_prerelease && format('Release {0}', steps.tag_version.outputs.new_tag) || format('🛠️ Devel {0} ({1})', steps.tag_version.outputs.new_tag, inputs.build_mode) }}
+          prerelease: ${{ inputs.force_prerelease || (inputs.build_mode != 'full_release' && inputs.build_mode != 'fast_no_logs') }}
+          body: |
+            **Build Mode:** `${{ inputs.build_mode }}`
+            ${{ inputs.test_notes != '' && format('**Notes:** {0}', inputs.test_notes) || '' }}
+            
+            ---
+            **Changelog:**
+            ${{ steps.tag_version.outputs.changelog }}
+          artifacts: "./release_bins/*.bin"

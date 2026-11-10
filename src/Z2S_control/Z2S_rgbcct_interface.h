@@ -128,10 +128,13 @@ public:
   
   virtual void ping();
   
+  
 protected:
 
   void increaseBrightness(int8_t add_to_brightness);
   void sendOnOffCmd(bool state);
+  bool sendSceneById(uint8_t scene_id);
+  bool sendMusicMode(uint8_t mode_id, uint8_t sensitivity);
 
   bool _fresh_start = true;
 

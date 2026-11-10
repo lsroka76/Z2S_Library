@@ -23,6 +23,72 @@
 
 /*****************************************************************************/
 
+static const uint8_t SCENE_ICE_LAND_BLUE[]    = {0x01, 0x15, 0x0a, 0x52, 0x52, 0xe0, 0x00, 0x00, 0x64, 0x00, 0xc1, 0x61, 0x00, 0xb4, 0x30, 0x00, 0xb5, 0x52, 0x00, 0xc4, 0x63};
+static const uint8_t SCENE_GLACIER_EXPRESS[]  = {0x01, 0x16, 0x0a, 0x64, 0x64, 0x60, 0x00, 0x00, 0x64, 0x00, 0x92, 0x5f, 0x00, 0xc6, 0x60};
+static const uint8_t SCENE_SEA_OF_CLOUDS[]    = {0x01, 0x17, 0x03, 0x5e, 0x5e, 0x60, 0x00, 0x00, 0x64, 0x00, 0x38, 0x2f, 0x00, 0x1e, 0x5c, 0x00, 0xd5, 0x45, 0x01, 0x1a, 0x64};
+static const uint8_t SCENE_FIREWORKS_AT_SEA[] = {0x01, 0x18, 0x02, 0x64, 0x64, 0xe0, 0x00, 0x00, 0x64, 0x00, 0xb2, 0x39, 0x01, 0x0a, 0x64, 0x01, 0x2d, 0x64, 0x01, 0x3f, 0x64};
+static const uint8_t SCENE_FIREFLY_NIGHT[]    = {0x01, 0x1a, 0x03, 0x4b, 0x4b, 0xe0, 0x00, 0x00, 0x64, 0x00, 0xe0, 0x39, 0x01, 0x09, 0x53};
+static const uint8_t SCENE_GRASS_LAND[]       = {0x01, 0x1c, 0x0a, 0x5a, 0x5a, 0xe0, 0x00, 0x00, 0x52, 0x00, 0x9d, 0x64, 0x00, 0x8e, 0x64};
+static const uint8_t SCENE_NORTHERN_LIGHTS[]  = {0x01, 0x1d, 0x03, 0x52, 0x52, 0xe0, 0x00, 0x00, 0x64, 0x00, 0xae, 0x64, 0x00, 0xa6, 0x64, 0x00, 0xc1, 0x64, 0x00, 0xcc, 0x64};
+static const uint8_t SCENE_LATE_AUTUMN[]      = {0x01, 0x1e, 0x0a, 0x52, 0x52, 0xe0, 0x00, 0x00, 0x64, 0x00, 0x19, 0x64, 0x00, 0x22, 0x5e, 0x00, 0x2c, 0x5b, 0x00, 0x14, 0x64, 0x00, 0x0c, 0x64};
+static const uint8_t SCENE_GAME[]             = {0x01, 0x1f, 0x02, 0x5f, 0x5f, 0x60, 0x00, 0x00, 0x64, 0x01, 0x10, 0x64, 0x00, 0xd2, 0x64, 0x00, 0xad, 0x64, 0x00, 0x8b, 0x64};
+static const uint8_t SCENE_HOLIDAY[]          = {0x01, 0x20, 0x0a, 0x55, 0x55, 0x60, 0x00, 0x00, 0x64, 0x00, 0xc2, 0x58, 0x01, 0x3e, 0x33, 0x00, 0xff, 0x46, 0x01, 0x1d, 0x64};
+static const uint8_t SCENE_PARTY[]            = {0x01, 0x22, 0x04, 0x64, 0x64, 0x60, 0x00, 0x00, 0x64, 0x00, 0xd7, 0x5c, 0x00, 0xbc, 0x53, 0x00, 0x37, 0x1e, 0x00, 0x2c, 0x3f, 0x01, 0x61, 0x3f};
+static const uint8_t SCENE_TREND[]            = {0x01, 0x23, 0x02, 0x64, 0x64, 0x60, 0x00, 0x00, 0x64, 0x01, 0x08, 0x4b, 0x00, 0xb1, 0x2f, 0x00, 0xcd, 0x57};
+static const uint8_t SCENE_MEDITATION[]       = {0x01, 0x25, 0x03, 0x43, 0x43, 0x60, 0x00, 0x00, 0x64, 0x00, 0xb7, 0x35, 0x00, 0x9b, 0x54, 0x00, 0xcd, 0x61};
+static const uint8_t SCENE_DATING[]           = {0x01, 0x26, 0x01, 0x59, 0x59, 0xe0, 0x00, 0x00, 0x64, 0x01, 0x19, 0x47, 0x01, 0x49, 0x3d, 0x00, 0xcd, 0x61, 0x00, 0x26, 0x64};
+static const uint8_t SCENE_VALENTINES_DAY[]   = {0x01, 0x2a, 0x01, 0x64, 0x64, 0x60, 0x00, 0x00, 0x64, 0x01, 0x15, 0x64, 0x01, 0x05, 0x64, 0x01, 0x45, 0x64, 0x01, 0x2f, 0x64};
+static const uint8_t SCENE_NEON_WORLD[]       = {0x01, 0x37, 0x0a, 0x5a, 0x5a, 0x60, 0x00, 0x00, 0x64, 0x00, 0x33, 0x58, 0x00, 0x18, 0x64, 0x01, 0x00, 0x45, 0x00, 0xe3, 0x5e, 0x00, 0xac, 0x30};
+
+struct GlSpiSceneEntry {
+  const uint8_t *data;
+  uint8_t len;
+};
+
+static constexpr GlSpiSceneEntry GL_SPI_SCENES[16] = {
+  {SCENE_ICE_LAND_BLUE,    sizeof(SCENE_ICE_LAND_BLUE)},    // 0  (ID: 0x15)
+  {SCENE_GLACIER_EXPRESS,  sizeof(SCENE_GLACIER_EXPRESS)},  // 1  (ID: 0x16)
+  {SCENE_SEA_OF_CLOUDS,    sizeof(SCENE_SEA_OF_CLOUDS)},    // 2  (ID: 0x17)
+  {SCENE_FIREWORKS_AT_SEA, sizeof(SCENE_FIREWORKS_AT_SEA)}, // 3  (ID: 0x18)
+  {SCENE_FIREFLY_NIGHT,    sizeof(SCENE_FIREFLY_NIGHT)},    // 4  (ID: 0x1A)
+  {SCENE_GRASS_LAND,       sizeof(SCENE_GRASS_LAND)},       // 5  (ID: 0x1C)
+  {SCENE_NORTHERN_LIGHTS,  sizeof(SCENE_NORTHERN_LIGHTS)},  // 6  (ID: 0x1D)
+  {SCENE_LATE_AUTUMN,      sizeof(SCENE_LATE_AUTUMN)},      // 7  (ID: 0x1E)
+  {SCENE_GAME,             sizeof(SCENE_GAME)},             // 8  (ID: 0x1F)
+  {SCENE_HOLIDAY,          sizeof(SCENE_HOLIDAY)},          // 9  (ID: 0x20)
+  {SCENE_PARTY,            sizeof(SCENE_PARTY)},            // 10 (ID: 0x22)
+  {SCENE_TREND,            sizeof(SCENE_TREND)},            // 11 (ID: 0x23)
+  {SCENE_MEDITATION,       sizeof(SCENE_MEDITATION)},       // 12 (ID: 0x25)
+  {SCENE_DATING,           sizeof(SCENE_DATING)},           // 13 (ID: 0x26)
+  {SCENE_VALENTINES_DAY,   sizeof(SCENE_VALENTINES_DAY)},   // 14 (ID: 0x2A)
+  {SCENE_NEON_WORLD,       sizeof(SCENE_NEON_WORLD)}        // 15 (ID: 0x37)
+};
+
+static constexpr uint8_t GL_SPI_MUSIC_BASE[31] = {
+  0x01, 0x01, 0x00, 0x03, 0x64, 0x32, 0x01, 0x00,
+  0x00, 0x64, 0x00, 0x00, 0x64, 0x00, 0x78, 0x64,
+  0x00, 0xF0, 0x64, 0x00, 0x3C, 0x64, 0x00, 0xB4,
+  0x64, 0x01, 0x2C, 0x64, 0x00, 0x00, 0x00
+};
+
+struct GlSpiMusicParams {
+  uint8_t byte2;
+  uint8_t byte3;
+  uint8_t color_val; // 0x64 (100) for most modes, 0x50 (80) for jazz
+};
+
+// Mode IDs: 0=rock, 1=jazz, 2=classic, 3=rolling, 4=energy, 5=spectrum
+static constexpr GlSpiMusicParams GL_SPI_MUSIC_MODES[6] = {
+  {0x00, 0x03, 0x64}, // 0: rock
+  {0x00, 0x02, 0x50}, // 1: jazz
+  {0x00, 0x12, 0x64}, // 2: classic
+  {0x01, 0x12, 0x64}, // 3: rolling
+  {0x02, 0x12, 0x64}, // 4: energy
+  {0x03, 0x12, 0x64}  // 5: spectrum
+};
+
+/*****************************************************************************/
+
 Supla::Control::Z2S_RGBCCTInterface::Z2S_RGBCCTInterface() 
   : Z2S_Core(this) {
 
@@ -925,6 +991,129 @@ void Supla::Control::Z2S_RGBCCTInterface::handleAction(
       
     increaseBrightness(add_to_brightness);
   }
+}
+
+/*****************************************************************************/
+
+bool void Supla::Control::Z2S_RGBCCTInterface::sendSceneById(
+  uint8_t scene_id) {
+  const uint8_t *scene_data = nullptr;
+  uint8_t scene_len = 0;
+
+  if (scene_id < 16) {
+
+    scene_data = GL_SPI_SCENES[scene_id].data;
+    scene_len  = GL_SPI_SCENES[scene_id].len;
+  } 
+  else {
+    
+    for (uint8_t i = 0; i < 16; i++) {
+      
+      if (GL_SPI_SCENES[i].data[1] == scene_id) {
+        scene_data = GL_SPI_SCENES[i].data;
+        scene_len  = GL_SPI_SCENES[i].len;
+        break;
+      }
+    }
+  }
+
+  if (!scene_data || scene_len == 0) {
+    return false; 
+  }
+
+  uint8_t test_buffer[40];
+  uint16_t seq_num = random() & 0xFFFF;
+
+  test_buffer[0] = (seq_num >> 8) & 0x00FF;
+  test_buffer[1] = seq_num & 0x00FF;
+
+
+  test_buffer[2] = 0x01;              
+  test_buffer[3] = TUYA_DP_TYPE_BOOL; 
+  test_buffer[4] = 0x00;
+  test_buffer[5] = 0x01;              
+  test_buffer[6] = 0x01;              
+
+  test_buffer[7]  = 0x02;              
+  test_buffer[8]  = TUYA_DP_TYPE_ENUM; 
+  test_buffer[9]  = 0x00;
+  test_buffer[10] = 0x01;              
+  test_buffer[11] = 0x02;              
+
+  test_buffer[12] = 51;                
+  test_buffer[13] = TUYA_DP_TYPE_RAW;  
+  test_buffer[14] = 0x00;
+  test_buffer[15] = scene_len;        
+
+  memcpy(&test_buffer[16], scene_data, scene_len);
+
+  uint16_t total_len = 16 + scene_len;
+
+  zbGateway.sendCustomClusterCmd(
+    _short_addr, _endpoint, TUYA_PRIVATE_CLUSTER_EF00, TUYA_REQUEST_CMD, 
+    ESP_ZB_ZCL_ATTR_TYPE_SET, total_len, test_buffer, false);
+
+  return true;
+}
+
+/*****************************************************************************/
+
+bool void Supla::Control::Z2S_RGBCCTInterface::sendMusicMode(
+  uint8_t mode_id, uint8_t sensitivity) {
+
+  if (mode_id >= 6) {
+    return false; 
+  }
+
+  
+  if (sensitivity < 1)   sensitivity = 1;
+  if (sensitivity > 100) sensitivity = 100;
+
+  uint8_t test_buffer[47];
+  uint16_t seq_num = random() & 0xFFFF;
+
+  test_buffer[0] = (seq_num >> 8) & 0x00FF;
+  test_buffer[1] = seq_num & 0x00FF;
+
+  test_buffer[2] = 0x01;              
+  test_buffer[3] = TUYA_DP_TYPE_BOOL; 
+  test_buffer[4] = 0x00;
+  test_buffer[5] = 0x01;             
+  test_buffer[6] = 0x01;              
+
+  test_buffer[7]  = 0x02;             
+  test_buffer[8]  = TUYA_DP_TYPE_ENUM; 
+  test_buffer[9]  = 0x00;
+  test_buffer[10] = 0x01;              
+  test_buffer[11] = 0x03;              
+
+  test_buffer[12] = 52;                
+  test_buffer[13] = TUYA_DP_TYPE_RAW; 
+  test_buffer[14] = 0x00;
+  test_buffer[15] = 31;           
+
+  uint8_t *dp52_payload = &test_buffer[16];
+  memcpy(dp52_payload, GL_SPI_MUSIC_BASE, 31);
+
+  dp52_payload[2] = GL_SPI_MUSIC_MODES[mode_id].byte2;
+  dp52_payload[3] = GL_SPI_MUSIC_MODES[mode_id].byte3;
+  dp52_payload[5] = sensitivity;
+
+  uint8_t c_val = GL_SPI_MUSIC_MODES[mode_id].color_val;
+  if (c_val != 0x64) {
+    dp52_payload[12] = c_val;
+    dp52_payload[15] = c_val;
+    dp52_payload[18] = c_val;
+    dp52_payload[21] = c_val;
+    dp52_payload[24] = c_val;
+    dp52_payload[27] = c_val;
+  }
+
+  zbGateway.sendCustomClusterCmd(
+    _short_addr, _endpoint, TUYA_PRIVATE_CLUSTER_EF00, TUYA_REQUEST_CMD, 
+    ESP_ZB_ZCL_ATTR_TYPE_SET, sizeof(test_buffer), test_buffer, false);
+
+  return true;
 }
 
 /*****************************************************************************/
