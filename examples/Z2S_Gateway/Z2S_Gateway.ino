@@ -23,7 +23,8 @@
 #include <ZigbeeGateway.h>
 
 #include <SuplaDevice.h>
-#include <supla/network/esp_wifi.h>
+//#include <supla/network/esp_wifi.h>
+#include "z2s_esp_wifi.h"
 #include <supla/device/supla_ca_cert.h>
 #include <supla/storage/eeprom.h>
 #include <supla/storage/littlefs_config.h>
@@ -106,7 +107,8 @@ static NetworkClient client2;
 char   remote_cmd_request[64];
 
 Supla::Eeprom             eeprom;
-Supla::ESPWifi            wifi;
+//Supla::ESPWifi            wifi;
+Z2S_ESPWifi                 wifi;
 Supla::LittleFsConfig     configSupla(4160);
 
 Supla::EspWebServer *suplaServer;
