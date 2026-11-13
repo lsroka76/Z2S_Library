@@ -1311,7 +1311,7 @@ uint16_t Z2S_ESPUIClass::addControl(
   uint16_t id = addControl(type, label, nullptr, color, parent, callback, user_data);
   BasicControl *c = getControl(id);
   if (c && c->id != 0xFFFF) {
-    c->int_val = value;
+    c->setIntValue(value); 
   }
   return id;
 }
