@@ -4,6 +4,47 @@
 #include <Arduino.h>
 #include <ESPAsyncWebServer.h>
 
+#if defined(CONFIG_IDF_TARGET_ESP32S3) && (defined(BOARD_HAS_PSRAM) || defined(CONFIG_SPIRAM))
+  #define Z2S_USE_PSRAM 1
+  #include "esp_heap_caps.h"
+  #include "esp_attr.h"
+#else
+  #define Z2S_USE_PSRAM 0
+#endif
+
+static inline void *z2s_gui_malloc(size_t size) {
+#if Z2S_USE_PSRAM
+  void *p = heap_caps_malloc(size, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+  if (p) return p;
+#endif
+  return malloc(size);
+}
+
+static inline void *z2s_gui_realloc(void *ptr, size_t size) {
+#if Z2S_USE_PSRAM
+  void *p = heap_caps_realloc(ptr, size, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+  if (p) return p;
+#endif
+  return realloc(ptr, size);
+}
+
+// Scoped RAII guard: routes AsyncWebServer/AsyncWebSocket allocations to PSRAM on S3, no-op on C6
+struct Z2S_PsramScope {
+#if Z2S_USE_PSRAM
+  Z2S_PsramScope()  { heap_caps_malloc_extmem_enable(0); }
+  ~Z2S_PsramScope() {
+    #ifdef CONFIG_SPIRAM_MALLOC_ALWAYSINTERNAL
+      heap_caps_malloc_extmem_enable(CONFIG_SPIRAM_MALLOC_ALWAYSINTERNAL);
+    #else
+      heap_caps_malloc_extmem_enable(4096);
+    #endif
+  }
+#else
+  Z2S_PsramScope()  {}
+  ~Z2S_PsramScope() {}
+#endif
+};
+
 // Maximum number of UI controls + static options across all tabs
 #ifndef Z2S_MAX_CONTROLS
 #define Z2S_MAX_CONTROLS 420
@@ -95,11 +136,11 @@ public:
   void setUserData(void *data) { user_data = data; }
   void *getUserData() const { return user_data; }
 
-  void reserve(uint16_t cap) {
+   void reserve(uint16_t cap) {
     if (cap == 0) return;
     if (cap <= str_cap && str_buf != nullptr) return;
 
-    char *new_buf = static_cast<char *>(realloc(str_buf, cap + 1));
+    char *new_buf = static_cast<char *>(z2s_gui_realloc(str_buf, cap + 1));
     if (new_buf) {
       if (str_buf == nullptr) {
         if (static_str_val) {
@@ -118,8 +159,14 @@ public:
     if (!val) val = "";
     size_t len = strlen(val);
 
+    if (len == 0 && str_buf == nullptr) {
+      static_str_val = "";
+      int_val = 0;
+      return;
+    }
+
     if (str_buf == nullptr || len > str_cap) {
-      // Quantize capacity to 32B or multiples of 64B to prevent heap fragmentation
+      
       uint16_t new_cap = (len < 32) ? 32 : static_cast<uint16_t>((len + 63) & ~static_cast<size_t>(63));
       reserve(new_cap);
     }
@@ -132,6 +179,7 @@ public:
     int_val = strtol(val, nullptr, 10);
   }
 
+
   void setIntValue(int32_t val) {
     int_val = val;
     if (str_buf && str_cap > 0) {
@@ -141,11 +189,11 @@ public:
     }
   }
 
-  void setLabel(const char *new_label, bool copy_to_heap = false) {
+   void setLabel(const char *new_label, bool copy_to_heap = false) {
     if (!new_label) new_label = "";
     if (copy_to_heap) {
       size_t len = strlen(new_label);
-      char *copy = static_cast<char *>(malloc(len + 1));
+      char *copy = static_cast<char *>(z2s_gui_malloc(len + 1));
       if (copy) {
         memcpy(copy, new_label, len + 1);
         if (label_is_heap && label) free(const_cast<char *>(label));
@@ -158,6 +206,7 @@ public:
       label_is_heap = false;
     }
   }
+
 
   int32_t getValueInt() const {
     if (type == Control::Type::Number || type == Control::Type::Switcher ||
@@ -263,8 +312,14 @@ private:
   AsyncWebServer *_server = nullptr;
   AsyncWebSocket *_ws = nullptr;
 
+#if Z2S_USE_PSRAM
+  BasicControl *_controls = nullptr;
+  bool _ensureControlsAllocated();
+#else
   BasicControl _controls[Z2S_MAX_CONTROLS];
+#endif
   BasicControl _dummy_ctrl;
+
   uint16_t _control_count = 0;
   volatile bool _has_dirty_controls = false;
   volatile bool _in_ws_event = false;
