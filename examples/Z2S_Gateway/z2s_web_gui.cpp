@@ -324,6 +324,22 @@ volatile bool _github_ota_enabled = false;
 //static constexpr size_t SHARED_JSON_BUFFER_SIZE = 2048;
 //static char shared_json_buffer[SHARED_JSON_BUFFER_SIZE];
 
+#if Z2S_USE_PSRAM
+  #define Z2S_LOCAL_BUF(type, name, s3_size, c6_size) \
+    EXT_RAM_BSS_ATTR static type name[s3_size]; \
+    memset(name, 0, sizeof(name))
+
+  #define Z2S_LOCAL_STRUCT(type, name) \
+    EXT_RAM_BSS_ATTR static type name; \
+    memset(&name, 0, sizeof(name))
+#else
+  #define Z2S_LOCAL_BUF(type, name, s3_size, c6_size) \
+    type name[c6_size] = {}
+
+  #define Z2S_LOCAL_STRUCT(type, name) \
+    type name = {}
+#endif
+
 /*****************************************************************************/
 
 static inline bool isWsClientConnected() {
