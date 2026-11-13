@@ -18,7 +18,12 @@ static volatile uint8_t s_ev_head = 0;
 static volatile uint8_t s_ev_tail = 0;
 static portMUX_TYPE s_ev_mux = portMUX_INITIALIZER_UNLOCKED;
 
+#if Z2S_USE_PSRAM
+EXT_RAM_BSS_ATTR static char s_batch_buf[4096];
+#else
 static char s_batch_buf[1360];
+#endif
+
 static size_t s_ui_stage_len = 0;
 static size_t s_ui_stage_off = 0;
 static size_t s_ui_ctrl_idx = 0;
