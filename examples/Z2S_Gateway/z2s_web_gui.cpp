@@ -12455,8 +12455,9 @@ void buildPushoverMessagesTableJsonPayload(
 
   if (ui_label_id == 0xFFFF) return;
 
-  const size_t MAX_JSON_SIZE = 1024;
-  char json_payload[MAX_JSON_SIZE] = {};
+  Z2S_LOCAL_BUF(char, json_payload, 4096, 1024);
+  const size_t MAX_JSON_SIZE = sizeof(json_payload);
+
   size_t offset = 0;
 
   int total_messages = Z2S_getPushoverMessagesNumber();
