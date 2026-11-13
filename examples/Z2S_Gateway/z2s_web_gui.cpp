@@ -12477,7 +12477,7 @@ void buildPushoverMessagesTableJsonPayload(
   }
 
   int16_t next_slot = Z2S_findNextPushoverMessagePosition(0);
-  z2s_pushover_message_t message = {};
+  Z2S_LOCAL_STRUCT(z2s_pushover_message_t, message);
   bool is_first_in_batch = true;
 
   for (int i = 0; i < total_messages; i++) {
