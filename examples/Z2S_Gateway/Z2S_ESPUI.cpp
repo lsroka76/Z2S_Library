@@ -1142,6 +1142,24 @@ void Z2S_ESPUIClass::begin(
 
 /*****************************************************************************/
 
+#if Z2S_USE_PSRAM
+bool Z2S_ESPUIClass::_ensureControlsAllocated() {
+  if (_controls) return true;
+  void *raw = z2s_gui_malloc(sizeof(BasicControl) * Z2S_MAX_CONTROLS);
+  if (!raw) {
+    log_e("Failed to allocate _controls pool!");
+    return false;
+  }
+  _controls = static_cast<BasicControl *>(raw);
+  for (uint16_t i = 0; i < Z2S_MAX_CONTROLS; i++) {
+    new (&_controls[i]) BasicControl();
+  }
+  return true;
+}
+#endif
+
+/*****************************************************************************/
+
 size_t Z2S_ESPUIClass::_fillUiLayoutChunk(
   uint8_t *buffer, size_t maxLen, size_t &ctrl_idx) {
 
