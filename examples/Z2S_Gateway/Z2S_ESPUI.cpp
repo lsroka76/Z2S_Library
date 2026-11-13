@@ -1078,8 +1078,33 @@ window.addEventListener("DOMContentLoaded",loadUiLayout);
 
 /*****************************************************************************/
 
+#if Z2S_USE_PSRAM
+bool Z2S_ESPUIClass::_ensureControlsAllocated() {
+  if (_controls) return true;
+  void *raw = z2s_gui_malloc(sizeof(BasicControl) * Z2S_MAX_CONTROLS);
+  if (!raw) {
+    log_e("Failed to allocate _controls pool!");
+    return false;
+  }
+  _controls = static_cast<BasicControl *>(raw);
+  for (uint16_t i = 0; i < Z2S_MAX_CONTROLS; i++) {
+    new (&_controls[i]) BasicControl();
+  }
+  return true;
+}
+#endif
+
+/*****************************************************************************/
+
 void Z2S_ESPUIClass::begin(
   const char *title, const char *username, const char *password, uint16_t port) {
+
+  Z2S_PsramScope psram_scope;
+#if Z2S_USE_PSRAM
+  _ensureControlsAllocated();
+#endif
+  // ... existing begin() code ...
+
 
   if (title) _ui_title = title;
 
@@ -1139,24 +1164,6 @@ void Z2S_ESPUIClass::begin(
   log_i("Z2S_ESPUI started with %u controls (sizeof(_controls) = %u B)",
         _control_count, (unsigned)sizeof(_controls));
 }
-
-/*****************************************************************************/
-
-#if Z2S_USE_PSRAM
-bool Z2S_ESPUIClass::_ensureControlsAllocated() {
-  if (_controls) return true;
-  void *raw = z2s_gui_malloc(sizeof(BasicControl) * Z2S_MAX_CONTROLS);
-  if (!raw) {
-    log_e("Failed to allocate _controls pool!");
-    return false;
-  }
-  _controls = static_cast<BasicControl *>(raw);
-  for (uint16_t i = 0; i < Z2S_MAX_CONTROLS; i++) {
-    new (&_controls[i]) BasicControl();
-  }
-  return true;
-}
-#endif
 
 /*****************************************************************************/
 
@@ -1249,6 +1256,9 @@ uint16_t Z2S_ESPUIClass::addControl(
   Control::Color color, uint16_t parent, BasicControl::Callback_t callback,
   void *user_data) {
 
+#if Z2S_USE_PSRAM
+  if (!_ensureControlsAllocated()) return 0xFFFF;
+#endif
   if (_control_count >= Z2S_MAX_CONTROLS) {
     log_e("Z2S_MAX_CONTROLS (%u) exceeded!", Z2S_MAX_CONTROLS);
     return 0xFFFF;
@@ -1309,9 +1319,13 @@ uint16_t Z2S_ESPUIClass::addControl(
 /*****************************************************************************/
 
 BasicControl *Z2S_ESPUIClass::getControl(uint16_t id) {
+#if Z2S_USE_PSRAM
+  if (!_controls) return &_dummy_ctrl;
+#endif
   if (id == 0 || id > _control_count) return &_dummy_ctrl;
   return &_controls[id - 1];
 }
+
 
 /*****************************************************************************/
 
@@ -1332,12 +1346,14 @@ bool Z2S_ESPUIClass::wsTextAll(const char *payload, size_t len, bool allow_wait)
     }
   }
 
-  if (!_ws->availableForWriteAll()) {
+    if (!_ws->availableForWriteAll()) {
     return false;
   }
 
+  Z2S_PsramScope psram_scope;
   _ws->textAll(payload, len);
   return true;
+
 }
 
 void Z2S_ESPUIClass::flush(bool allow_wait) {
