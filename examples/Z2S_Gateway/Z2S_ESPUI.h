@@ -180,14 +180,18 @@ public:
   }
 
 
-  void setIntValue(int32_t val) {
+    void setIntValue(int32_t val) {
     int_val = val;
+    if (type == Control::Type::Text && str_buf == nullptr) {
+      reserve(32);
+    }
     if (str_buf && str_cap > 0) {
       snprintf(str_buf, str_cap + 1, "%ld", (long)val);
     } else {
       static_str_val = nullptr;
     }
   }
+
 
    void setLabel(const char *new_label, bool copy_to_heap = false) {
     if (!new_label) new_label = "";
