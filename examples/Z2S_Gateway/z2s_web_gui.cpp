@@ -7153,8 +7153,7 @@ void updateResendTemperatureControls(Z2S_Core *z2s_core, bool source_channel) {
 void updateChannelInfoLabel(
 	int16_t channel_slot, bool sort_local_function_selector) {
 
-	char general_purpose_gui_buffer[896] = {};
-
+	Z2S_LOCAL_BUF(char, general_purpose_gui_buffer, 1024, 896);
 	char ieee_addr_str[24] = {};
 
 	if (channel_slot == -2)
