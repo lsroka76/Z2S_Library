@@ -7583,7 +7583,7 @@ void updateChannelInfoLabel(
 						bytesToHex(
 						  z2s_core->getLocalDS18B20Address(), ds_address_str,
 						  sizeof(ds_address_str));
-						working_str = ds_address_str;
+						ESPUI.updateText(param_1_text, ds_address_str);
 					} else
 						ESPUI.updateText(param_1_text, empty_str);
 
