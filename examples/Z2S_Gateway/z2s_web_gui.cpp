@@ -4068,8 +4068,8 @@ bool buildSelectJsonPayloadGeneric(
   const uint16_t *selector_ids, const char *default_prompt,
   YieldFunc yield_options) {
 
-	char json_payload[1024];
-	const size_t json_payload_size = sizeof(json_payload);
+  Z2S_LOCAL_BUF(char, json_payload, 4096, 1024);
+  const size_t json_payload_size = sizeof(json_payload);
 	size_t offset = 0;
 
 
