@@ -3779,7 +3779,7 @@ void buildActionsTableJsonPayload(
   }
 
   int16_t next_action = Z2S_findNextActionPosition(0);
-  z2s_channel_action_t new_action = {};
+  Z2S_LOCAL_STRUCT(z2s_channel_action_t, new_action);
   bool is_first_in_batch = true;
 
   for (int i = 0; i < total_actions; i++) {
@@ -3924,7 +3924,7 @@ void buildIrCodesTableJsonPayload(
   }
 
   int16_t next_slot = irCodesStorage.findNext(0);
-  z2s_ir_code_t ir_code = {};
+  Z2S_LOCAL_STRUCT(z2s_ir_code_t, ir_code);
   bool is_first_in_batch = true;
 
   for (int i = 0; i < total_codes; i++) {
