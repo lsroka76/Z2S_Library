@@ -5261,6 +5261,8 @@ uint16_t Z2S_getGUIBuildControlFlags(gui_modes_t mode) {
 
 void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 
+    Z2S_PsramScope psram_scope;
+
 	if (GUIbuilt) {
 
 		log_i(" GUI already built...");
@@ -5368,6 +5370,8 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 
 void Z2S_startWebGUI() {
 
+	Z2S_PsramScope psram_scope;
+	
 	log_i("STARTING WEB GUI");
 
 	esp_log_level_set("async_ws", ESP_LOG_ERROR);
