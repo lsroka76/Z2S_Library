@@ -1328,7 +1328,7 @@ void updateLabel_C(Control::ControlId_t id, const char *value) {
 
 void buildGatewayTabGUI() {
 
-	char general_purpose_gui_buffer[768] = {};
+	Z2S_LOCAL_BUF(char, general_purpose_gui_buffer, 1024, 768);
 
 	auto gatewaytab = ESPUI.addControl(
 	  Control::Type::Tab, empty_str, "Gateway", Control::Color::Dark,
@@ -5540,7 +5540,7 @@ void Z2S_startUpdateServer() {
 
 void Z2S_updateWebGUI() {
 
-	char memory_info_gui_buffer[768] = {};
+	Z2S_LOCAL_BUF(char, memory_info_gui_buffer, 1024, 768);
 
 	/*if (ESPUI.WebSocket()) {
 	
@@ -6687,7 +6687,7 @@ void updateDeviceInfoLabel(uint8_t device_index) {
 
   enableDeviceControls(true);
 
-  char general_purpose_gui_buffer[768] = {};
+  Z2S_LOCAL_BUF(char, general_purpose_gui_buffer, 1024,768);
   char ieee_addr_str[24] = {};
   uint8_t *ieee_addr = device->getDeviceIeeeAddress();
 
