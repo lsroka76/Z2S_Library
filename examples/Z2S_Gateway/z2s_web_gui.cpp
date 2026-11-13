@@ -3760,8 +3760,9 @@ void buildActionsTableJsonFooter(
 void buildActionsTableJsonPayload(
 	uint16_t ui_label_id, int target_action_index) {
 		
-  const size_t MAX_JSON_SIZE = 1024; 
-  char json_payload[MAX_JSON_SIZE] = {};
+  Z2S_LOCAL_BUF(char, json_payload, 4096, 1024);
+  const size_t MAX_JSON_SIZE = sizeof(json_payload);
+
 
   size_t offset = 0;
 
@@ -3900,8 +3901,8 @@ void addIrCodesTableJsonRow(
 void buildIrCodesTableJsonPayload(
   uint16_t ui_label_id, int target_ir_code_index) {
 
-  const size_t MAX_JSON_SIZE = 1024;
-  char json_payload[MAX_JSON_SIZE] = {};
+  Z2S_LOCAL_BUF(char, json_payload, 4096, 1024);
+  const size_t MAX_JSON_SIZE = sizeof(json_payload);
   
   size_t offset = 0;
 
