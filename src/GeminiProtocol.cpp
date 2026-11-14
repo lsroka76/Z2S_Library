@@ -294,6 +294,45 @@ extern "C" bool z2s_zb_storage_write(const uint8_t *data, size_t len) { return G
 extern "C" bool z2s_zb_storage_end() { return GeminiBridge::hostZbStorageEnd(); }
 #endif
 
+uint32_t GeminiBridge::hostZbStorageSize() {
+  uint32_t part_size = 0;
+  if (!sendCommandWaitReply(
+        G_CMD_ZB_STORAGE_INFO, nullptr, 0, G_RSP_ZB_STORAGE_INFO, &part_size, sizeof(part_size), 2000)) {
+    return 0;
+  }
+  return part_size;
+}
+
+bool GeminiBridge::hostZbStorageRead(uint32_t offset, uint8_t *dst, size_t len) {
+  if (!dst) return false;
+  size_t copied = 0;
+  while (copied < len) {
+    uint16_t chunk = ((len - copied) > 256) ? 256 : (uint16_t)(len - copied);
+    G_PktZbStorageReadReq req = {
+      .offset = offset + (uint32_t)copied,
+      .len    = chunk
+    };
+    G_PktZbStorageReadRsp rsp = {};
+
+    if (!sendCommandWaitReply(
+          G_CMD_ZB_STORAGE_READ, &req, sizeof(req),
+          G_RSP_ZB_STORAGE_READ, &rsp, sizeof(rsp), 2000) ||
+        !rsp.success || rsp.len != chunk) {
+      return false;
+    }
+    memcpy(dst + copied, rsp.data, chunk);
+    copied += chunk;
+  }
+  return true;
+}
+
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+extern "C" uint32_t z2s_zb_storage_size() { return GeminiBridge::hostZbStorageSize(); }
+extern "C" bool z2s_zb_storage_read(uint32_t offset, uint8_t *dst, size_t len) {
+  return GeminiBridge::hostZbStorageRead(offset, dst, len);
+}
+#endif
+
 
 void GeminiBridge::getCoordinatorIeee(uint8_t *ieee) {
   if (ieee) memcpy(ieee, s_coord_ieee, 8);
