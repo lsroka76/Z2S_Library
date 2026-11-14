@@ -100,6 +100,8 @@ enum GeminiMsgType : uint8_t {
   G_CMD_ZB_STORAGE_BEGIN     = 0x53,
   G_CMD_ZB_STORAGE_WRITE     = 0x54,
   G_CMD_ZB_STORAGE_END       = 0x55,
+  G_CMD_ZB_STORAGE_INFO      = 0x56,
+  G_CMD_ZB_STORAGE_READ      = 0x57,
 
   // --- Synchronous Replies (0x80..0x9F) ---
   G_RSP_STATUS               = 0x80,
@@ -111,6 +113,8 @@ enum GeminiMsgType : uint8_t {
   G_RSP_SIMPLE_DESC          = 0x86,
   G_RSP_OTA_CHUNK            = 0x87,
   G_RSP_TX_POWER             = 0x88,
+  G_RSP_ZB_STORAGE_INFO      = 0x89,
+  G_RSP_ZB_STORAGE_READ      = 0x8A,
 
   // --- C6 NCP -> S3 Host Asynchronous Events ---
   G_EVT_STACK_STARTED        = 0xA0,
@@ -392,6 +396,18 @@ struct __attribute__((packed)) G_PktEvtCustomClusterCmd {
   uint8_t  payload[];
 };
 
+struct __attribute__((packed)) G_PktZbStorageReadReq {
+  uint32_t offset;
+  uint16_t len;
+};
+
+struct __attribute__((packed)) G_PktZbStorageReadRsp {
+  uint8_t  success;
+  uint16_t len;
+  uint8_t  data[256];
+};
+
+
 static inline uint16_t geminiCrc16(const uint8_t *data, size_t len, uint16_t crc = 0xFFFF) {
   while (len--) {
     crc ^= (uint16_t)(*data++) << 8;
@@ -440,6 +456,9 @@ public:
   static bool hostZbStorageBegin();
   static bool hostZbStorageWrite(const uint8_t *data, size_t len);
   static bool hostZbStorageEnd();
+
+  static uint32_t hostZbStorageSize();
+  static bool hostZbStorageRead(uint32_t offset, uint8_t *dst, size_t len);
 
 private:
   static void rxTask(void *arg);
