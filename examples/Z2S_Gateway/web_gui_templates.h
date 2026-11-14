@@ -1715,6 +1715,16 @@ inline constexpr zigbee_attribute_t zigbee_attributes[] PROGMEM = {
 		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
 		.zigbee_attribute_name = "POWER ON BEHAVIOR" },
 
+    { .zigbee_attribute_id  = LUMI_CUSTOM_MINIMAL_DIMMING_RANGE_ID, 
+		.zigbee_attribute_cluster_id = LUMI_CUSTOM_CLUSTER, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
+		.zigbee_attribute_name = "MINIMAL DIMMING RANGE (1% - 99%)" },
+
+    { .zigbee_attribute_id  = LUMI_CUSTOM_MAXIMAL_DIMMING_RANGE_ID, 
+		.zigbee_attribute_cluster_id = LUMI_CUSTOM_CLUSTER, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
+		.zigbee_attribute_name = "MAXIMAL DIMMING RANGE (2% - 100%)" },
+
 	{ .zigbee_attribute_id  = LUMI_CUSTOM_OVERLOAD_PROTECTION_ID, 
 		.zigbee_attribute_cluster_id = LUMI_CUSTOM_CLUSTER, 
 		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_SINGLE,
