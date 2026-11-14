@@ -22,6 +22,20 @@ extern "C" __attribute__((weak)) bool z2s_zb_storage_begin() { return false; }
 extern "C" __attribute__((weak)) bool z2s_zb_storage_write(const uint8_t *data, size_t len) { return false; }
 extern "C" __attribute__((weak)) bool z2s_zb_storage_end() { return false; }
 
+extern "C" __attribute__((weak)) uint32_t z2s_zb_storage_size() {
+    const esp_partition_t *part = esp_partition_find_first(
+        ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "zb_storage");
+    return part ? (uint32_t)part->size : 0;
+}
+
+extern "C" __attribute__((weak)) bool z2s_zb_storage_read(uint32_t offset, uint8_t *dst, size_t len) {
+    const esp_partition_t *part = esp_partition_find_first(
+        ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "zb_storage");
+    if (!part || (offset + len > part->size)) return false;
+    return (esp_partition_read(part, offset, dst, len) == ESP_OK);
+}
+
+
 #ifndef ESPASYNCHTTPUPDATESERVER_SerialOutput
     #define ESPASYNCHTTPUPDATESERVER_SerialOutput Serial
 #endif
