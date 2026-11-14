@@ -18,6 +18,10 @@ extern "C" __attribute__((weak)) bool z2s_ncp_ota_begin() { return false; }
 extern "C" __attribute__((weak)) bool z2s_ncp_ota_write(const uint8_t *data, size_t len) { return false; }
 extern "C" __attribute__((weak)) bool z2s_ncp_ota_end() { return false; }
 
+extern "C" __attribute__((weak)) bool z2s_zb_storage_begin() { return false; }
+extern "C" __attribute__((weak)) bool z2s_zb_storage_write(const uint8_t *data, size_t len) { return false; }
+extern "C" __attribute__((weak)) bool z2s_zb_storage_end() { return false; }
+
 #ifndef ESPASYNCHTTPUPDATESERVER_SerialOutput
     #define ESPASYNCHTTPUPDATESERVER_SerialOutput Serial
 #endif
