@@ -604,16 +604,13 @@ Supla::Control::HvacBaseEE *Z2S_Core::getHvacPtr() {
 
 bool Z2S_Core::setMDNSName(const char *mDNS_name) {
   
-  if (mDNS_name) {
-
-    // cut "mdns://"
-    memcpy(_z2s_channel.remote_channel_data.mDNS_name, mDNS_name + 7, 11);
-      _z2s_channel.remote_channel_data.mDNS_name[11] = '\0';
-      
+  if (mDNS_name && strncmp(mDNS_name, "mdns://", 7) == 0) {
+    strncpy(_z2s_channel.remote_channel_data.mDNS_name, mDNS_name + 7, 11);
+    _z2s_channel.remote_channel_data.mDNS_name[11] = '\0';
+    _z2s_channel.remote_channel_data.remote_ip_address = 0;
     return saveChannelData();
   }
-  else
-    return false;
+  return false;
 }
 
 /*****************************************************************************/
