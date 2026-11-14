@@ -5219,6 +5219,13 @@ inline constexpr z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_endpoints_count = 4,
     .z2s_device_endpoints = {{ 1, 0, 0, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 }}},
 
+  {	.manufacturer_name = "_TZ3000_g9g2xnch", .model_name = "TS004F",
+    .z2s_device_uid = 13450,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SWITCH_4X3,
+    .z2s_device_flags = Z2S_DEVICE_CONFIG_FLAG_MIRROR_ALL_ENDPOINTS,
+	  .z2s_device_endpoints_count = 4,
+    .z2s_device_endpoints = {{ 1, 0, 0, Z2S_DEVICE_DESC_TUYA_SWITCH_4X3 }}},
+
   {	.manufacturer_name = "_TZ3000_mh9px7cq", .model_name = "TS0044",
     .z2s_device_uid = 13500,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SWITCH_4X3,
