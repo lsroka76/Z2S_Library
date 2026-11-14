@@ -227,6 +227,38 @@ void ESPAsyncHTTPUpdateServer::setup(AsyncWebServer *server, const String &path,
         request->send_P(200, "text/html", UPDATE_CENTER_HTML);
     });
 
+    _server->on("/zb_storage.bin", HTTP_GET, [&](AsyncWebServerRequest *request) {
+        if (_username.length() > 0 && _password.length() > 0) {
+            if (!request->authenticate(_username.c_str(), _password.c_str())) {
+                return request->requestAuthentication();
+            }
+        }
+
+        uint32_t partSize = z2s_zb_storage_size();
+        if (partSize == 0) {
+            request->send(500, "text/plain", "Error: zb_storage partition not found or C6 NCP offline.");
+            return;
+        }
+
+        AsyncWebServerResponse *response = request->beginResponse(
+            "application/octet-stream", partSize,
+            [partSize](uint8_t *buffer, size_t maxLen, size_t index) -> size_t {
+                if (index >= partSize) return 0;
+                size_t toRead = partSize - index;
+                if (toRead > maxLen) toRead = maxLen;
+                if (toRead > 256) toRead = 256; // Fetch one 256-byte Gemini frame per callback (~1.5 ms)
+
+                if (!z2s_zb_storage_read((uint32_t)index, buffer, toRead)) {
+                    return 0;
+                }
+                return toRead;
+            });
+
+        response->addHeader("Content-Disposition", "attachment; filename=\"zb_storage.bin\"");
+        response->addHeader("Cache-Control", "no-store");
+        request->send(response);
+    });
+
     _server->on(path.c_str(), HTTP_OPTIONS, [&](AsyncWebServerRequest *request) {
         AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "y");
         response->addHeader("Access-Control-Allow-Headers", "*");
