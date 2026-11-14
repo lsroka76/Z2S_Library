@@ -253,6 +253,48 @@ extern "C" bool z2s_ncp_ota_write(const uint8_t *data, size_t len) { return Gemi
 extern "C" bool z2s_ncp_ota_end() { return GeminiBridge::hostNcpOtaEnd(); }
 #endif
 
+bool GeminiBridge::hostZbStorageBegin() {
+  uint8_t rsp[2] = {};
+  if (!sendCommandWaitReply(G_CMD_ZB_STORAGE_BEGIN, nullptr, 0, G_RSP_STATUS, rsp, sizeof(rsp), 5000)) {
+    return false;
+  }
+  return (rsp[0] != 0);
+}
+
+bool GeminiBridge::hostZbStorageWrite(const uint8_t *data, size_t len) {
+  size_t offset = 0;
+  while (offset < len) {
+    uint16_t chunk = ((len - offset) > 256) ? 256 : (uint16_t)(len - offset);
+    G_PktNcpOtaWrite pkt = {};
+    pkt.len = chunk;
+    memcpy(pkt.data, data + offset, chunk);
+
+    uint8_t rsp[2] = {};
+    if (!sendCommandWaitReply(
+          G_CMD_ZB_STORAGE_WRITE, &pkt, sizeof(uint16_t) + chunk, G_RSP_STATUS, rsp, sizeof(rsp), 3000) ||
+        rsp[0] == 0) {
+      return false;
+    }
+    offset += chunk;
+  }
+  return true;
+}
+
+bool GeminiBridge::hostZbStorageEnd() {
+  uint8_t rsp[2] = {};
+  if (!sendCommandWaitReply(G_CMD_ZB_STORAGE_END, nullptr, 0, G_RSP_STATUS, rsp, sizeof(rsp), 10000)) {
+    return false;
+  }
+  return (rsp[0] != 0);
+}
+
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+extern "C" bool z2s_zb_storage_begin() { return GeminiBridge::hostZbStorageBegin(); }
+extern "C" bool z2s_zb_storage_write(const uint8_t *data, size_t len) { return GeminiBridge::hostZbStorageWrite(data, len); }
+extern "C" bool z2s_zb_storage_end() { return GeminiBridge::hostZbStorageEnd(); }
+#endif
+
+
 void GeminiBridge::getCoordinatorIeee(uint8_t *ieee) {
   if (ieee) memcpy(ieee, s_coord_ieee, 8);
 }
