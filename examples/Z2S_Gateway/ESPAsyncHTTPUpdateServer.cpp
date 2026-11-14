@@ -312,6 +312,87 @@ void ESPAsyncHTTPUpdateServer::setup(AsyncWebServer *server, const String &path,
             }
 
             if (_authenticated && final && _updateResult == UpdateResult::UPDATE_OK) {
+        [&](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
+            if (!index) {
+                const AsyncWebParameter *pName = request->getParam("name");
+                if (pName && strcmp(pName->value().c_str(), "filesystem") == 0) {
+                    _updateType = UpdateType::FILE_SYSTEM;
+                } else if ((pName && strcmp(pName->value().c_str(), "ncp_firmware") == 0) ||
+                           filename.startsWith("Z2S_C6_NCP")) {
+                    _updateType = UpdateType::NCP_FIRMWARE;
+                } else if ((pName && strcmp(pName->value().c_str(), "zb_storage") == 0) ||
+                           filename.startsWith("zb_storage")) {
+                    _updateType = UpdateType::ZB_STORAGE;
+                } else {
+                    _updateType = UpdateType::FIRMWARE;
+                }
+
+                _updaterError.clear();
+
+                _authenticated = (_username.length() == 0 || _password.length() == 0 ||
+                                  request->authenticate(_username.c_str(), _password.c_str()));
+                if (!_authenticated) {
+                    Log("Unauthenticated Update\n");
+                    return;
+                }
+
+                _updateResult = UpdateResult::UPDATE_OK;
+                if (onUpdateBegin) {
+                    onUpdateBegin(_updateType, _updateResult);
+                    if (_updateResult != UpdateResult::UPDATE_OK) {
+                        Log("Update aborted by server: %d\n", _updateResult);
+                        if (onUpdateEnd) onUpdateEnd(_updateType, _updateResult);
+                        return;
+                    }
+                }
+
+                Log("Update: %s (type=%d)\n", filename.c_str(), (int)_updateType);
+
+                if (_updateType == UpdateType::NCP_FIRMWARE) {
+                    if (!z2s_ncp_ota_begin()) {
+                        _updaterError = "C6 NCP OTA begin failed";
+                        _updateResult = UpdateResult::UPDATE_ERROR;
+                    }
+                } else if (_updateType == UpdateType::ZB_STORAGE) {
+                    if (!z2s_zb_storage_begin()) {
+                        _updaterError = "C6 zb_storage staging begin failed";
+                        _updateResult = UpdateResult::UPDATE_ERROR;
+                    }
+                } else if (_updateType == UpdateType::FILE_SYSTEM) {
+                    size_t fsSize = UPDATE_SIZE_UNKNOWN;
+                    const esp_partition_t *part = esp_partition_find_first(
+                        ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_SPIFFS, nullptr);
+                    if (part) fsSize = part->size;
+                    if (!Update.begin(fsSize, U_SPIFFS)) {
+                        _setUpdaterError();
+                    }
+                } else {
+                    uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
+                    if (!Update.begin(maxSketchSpace, U_FLASH)) {
+                        _setUpdaterError();
+                    }
+                }
+            }
+
+            if (_authenticated && len && _updateResult == UpdateResult::UPDATE_OK) {
+                if (_updateType == UpdateType::NCP_FIRMWARE) {
+                    if (!z2s_ncp_ota_write(data, len)) {
+                        _updaterError = "C6 NCP OTA write failed";
+                        _updateResult = UpdateResult::UPDATE_ERROR;
+                    }
+                } else if (_updateType == UpdateType::ZB_STORAGE) {
+                    if (!z2s_zb_storage_write(data, len)) {
+                        _updaterError = "C6 zb_storage write failed (max 64KB)";
+                        _updateResult = UpdateResult::UPDATE_ERROR;
+                    }
+                } else {
+                    if (Update.write(data, len) != len) {
+                        _setUpdaterError();
+                    }
+                }
+            }
+
+            if (_authenticated && final && _updateResult == UpdateResult::UPDATE_OK) {
                 if (_updateType == UpdateType::NCP_FIRMWARE) {
                     if (z2s_ncp_ota_end()) {
                         Log("C6 NCP Update Success.\n");
@@ -319,6 +400,15 @@ void ESPAsyncHTTPUpdateServer::setup(AsyncWebServer *server, const String &path,
                         if (onUpdateEnd) onUpdateEnd(_updateType, _updateResult);
                     } else {
                         _updaterError = "C6 NCP OTA end failed";
+                        _updateResult = UpdateResult::UPDATE_ERROR;
+                    }
+                } else if (_updateType == UpdateType::ZB_STORAGE) {
+                    if (z2s_zb_storage_end()) {
+                        Log("C6 zb_storage Update Success.\n");
+                        _updateResult = UpdateResult::UPDATE_OK;
+                        if (onUpdateEnd) onUpdateEnd(_updateType, _updateResult);
+                    } else {
+                        _updaterError = "C6 zb_storage end failed (file must be 16KB or 64KB)";
                         _updateResult = UpdateResult::UPDATE_ERROR;
                     }
                 } else {
