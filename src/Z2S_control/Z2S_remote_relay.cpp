@@ -37,33 +37,42 @@ void Supla::Control::Z2S_RemoteRelay::onInit() {
 
 bool Supla::Control::Z2S_RemoteRelay::connectRemoteGateway() {
 
-  log_i("getMDNSName() = %s", getMDNSName());
-  
-  if (getSuplaRemoteChannel() < 0xFF) {
-
-    if(getRemoteIPAddress() == 0) {
-
-      if (getMDNSName())
-        setRemoteIPAddress(MDNS.queryHost(getMDNSName(), 500));
-      else
-        return false;
-
-      if(getRemoteIPAddress() == 0)
-        return false;
-    }
-
-    if (!Z2S_NetworkClient.connect(getRemoteIPAddress(), REMOTE_RELAY_PORT, 500)) {
-
-      if (getMDNSName())
-        setRemoteIPAddress(MDNS.queryHost(getMDNSName(), 500));
-      else
-        return false;
-
-      if (!Z2S_NetworkClient.connect(getRemoteIPAddress(), REMOTE_RELAY_PORT, 500))
-      return false;
-    } else   
-      return true;
+  if (getSuplaRemoteChannel() >= 0xFF) {
+    return false;
   }
+
+  bool use_mdns = checkChannelUserDataFlags(
+    USER_DATA_FLAG_REMOTE_ADDRESS_TYPE_MDNS);
+  const char *mdns_name = getMDNSName();
+  bool has_valid_mdns = use_mdns && mdns_name && (mdns_name[0] != '\0');
+
+  if (getRemoteIPAddress() == 0) {
+    if (has_valid_mdns) {
+      IPAddress resolved_ip = MDNS.queryHost(mdns_name, 500);
+      if (resolved_ip != INADDR_NONE && (uint32_t)resolved_ip != 0) {
+        setRemoteIPAddress(resolved_ip, false);
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  }
+
+  if (Z2S_NetworkClient.connect(getRemoteIPAddress(), REMOTE_RELAY_PORT, 500)) {
+    return true;
+  }
+
+  if (has_valid_mdns) {
+    IPAddress resolved_ip = MDNS.queryHost(mdns_name, 500);
+    if (resolved_ip != INADDR_NONE && (uint32_t)resolved_ip != 0) {
+      setRemoteIPAddress(resolved_ip, false);
+      if (Z2S_NetworkClient.connect(getRemoteIPAddress(), REMOTE_RELAY_PORT, 500)) {
+        return true;
+      }
+    }
+  }
+
   return false;
 }
 
