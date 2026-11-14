@@ -6,6 +6,9 @@
 #ifdef ESP32
     #include <Update.h>
     #include <esp_partition.h>
+    #if CONFIG_ZB_ENABLED
+        #include "esp_zigbee_core.h"
+    #endif
 #elif defined(ESP8266)
     #include <flash_hal.h>
     #include <FS.h>
@@ -13,14 +16,93 @@
     #error "This library only supports boards with an ESP8266 or ESP32 processor."
 #endif
 
+#define Z2S_ZB_STORAGE_SIZE_16K  0x4000UL  // 16,384 bytes
+#define Z2S_ZB_STORAGE_SIZE_64K  0x10000UL // 65,536 bytes
+#define Z2S_ZB_PAGE_OFFSET_16K   0x2000UL  // 8 KB
+#define Z2S_ZB_PAGE_OFFSET_64K   0x8000UL  // 32 KB
+
+static const esp_partition_t *s_local_zb_stage_part   = nullptr;
+static uint32_t               s_local_zb_stage_offset = 0;
+static bool                   s_local_zb_stage_error  = false;
+
+static bool z2s_copy_local_stage_to_zb(
+    const esp_partition_t *stage_part, const esp_partition_t *zb_part,
+    uint32_t src_off, uint32_t dst_off, uint32_t len)
+{
+    uint8_t buf[256];
+    for (uint32_t off = 0; off < len; off += sizeof(buf)) {
+        if (esp_partition_read(stage_part, src_off + off, buf, sizeof(buf)) != ESP_OK ||
+            esp_partition_write(zb_part, dst_off + off, buf, sizeof(buf)) != ESP_OK) {
+            return false;
+        }
+    }
+    return true;
+}
+
 // Weak hooks overridden by GeminiProtocol.cpp when compiled for ESP32-S3 Host
 extern "C" __attribute__((weak)) bool z2s_ncp_ota_begin() { return false; }
 extern "C" __attribute__((weak)) bool z2s_ncp_ota_write(const uint8_t *data, size_t len) { return false; }
 extern "C" __attribute__((weak)) bool z2s_ncp_ota_end() { return false; }
 
-extern "C" __attribute__((weak)) bool z2s_zb_storage_begin() { return false; }
-extern "C" __attribute__((weak)) bool z2s_zb_storage_write(const uint8_t *data, size_t len) { return false; }
-extern "C" __attribute__((weak)) bool z2s_zb_storage_end() { return false; }
+extern "C" __attribute__((weak)) bool z2s_zb_storage_begin() {
+    s_local_zb_stage_offset = 0;
+    s_local_zb_stage_error  = true;
+    s_local_zb_stage_part   = esp_partition_find_first(
+        ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "reserved");
+
+    if (!s_local_zb_stage_part || s_local_zb_stage_part->size < Z2S_ZB_STORAGE_SIZE_64K) {
+        return false;
+    }
+    if (esp_partition_erase_range(s_local_zb_stage_part, 0, Z2S_ZB_STORAGE_SIZE_64K) != ESP_OK) {
+        return false;
+    }
+    s_local_zb_stage_error = false;
+    return true;
+}
+
+extern "C" __attribute__((weak)) bool z2s_zb_storage_write(const uint8_t *data, size_t len) {
+    if (s_local_zb_stage_error || !s_local_zb_stage_part) return false;
+    if (s_local_zb_stage_offset + len > Z2S_ZB_STORAGE_SIZE_64K) {
+        s_local_zb_stage_error = true;
+        return false;
+    }
+    if (esp_partition_write(s_local_zb_stage_part, s_local_zb_stage_offset, data, len) != ESP_OK) {
+        s_local_zb_stage_error = true;
+        return false;
+    }
+    s_local_zb_stage_offset += len;
+    return true;
+}
+
+extern "C" __attribute__((weak)) bool z2s_zb_storage_end() {
+    if (s_local_zb_stage_error || !s_local_zb_stage_part) return false;
+    if (s_local_zb_stage_offset != Z2S_ZB_STORAGE_SIZE_16K &&
+        s_local_zb_stage_offset != Z2S_ZB_STORAGE_SIZE_64K) {
+        return false;
+    }
+
+    const esp_partition_t *zb_part = esp_partition_find_first(
+        ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "zb_storage");
+    if (!zb_part || s_local_zb_stage_offset > zb_part->size) {
+        return false;
+    }
+
+#if CONFIG_ZB_ENABLED
+    esp_zb_lock_acquire(portMAX_DELAY);
+#endif
+
+    bool ok = false;
+    if (esp_partition_erase_range(zb_part, 0, zb_part->size) == ESP_OK) {
+        if (s_local_zb_stage_offset == Z2S_ZB_STORAGE_SIZE_16K &&
+            zb_part->size == Z2S_ZB_STORAGE_SIZE_64K) {
+            ok = z2s_copy_local_stage_to_zb(s_local_zb_stage_part, zb_part, 0x0000, 0x0000, Z2S_ZB_PAGE_OFFSET_16K) &&
+                 z2s_copy_local_stage_to_zb(s_local_zb_stage_part, zb_part, Z2S_ZB_PAGE_OFFSET_16K, Z2S_ZB_PAGE_OFFSET_64K, Z2S_ZB_PAGE_OFFSET_16K);
+        } else {
+            ok = z2s_copy_local_stage_to_zb(s_local_zb_stage_part, zb_part, 0x0000, 0x0000, s_local_zb_stage_offset);
+        }
+    }
+    return ok;
+}
 
 extern "C" __attribute__((weak)) uint32_t z2s_zb_storage_size() {
     const esp_partition_t *part = esp_partition_find_first(
@@ -34,7 +116,6 @@ extern "C" __attribute__((weak)) bool z2s_zb_storage_read(uint32_t offset, uint8
     if (!part || (offset + len > part->size)) return false;
     return (esp_partition_read(part, offset, dst, len) == ESP_OK);
 }
-
 
 #ifndef ESPASYNCHTTPUPDATESERVER_SerialOutput
     #define ESPASYNCHTTPUPDATESERVER_SerialOutput Serial
@@ -97,7 +178,7 @@ select{background:#14171c;color:#fff;border:1px solid #4b5563;border-radius:4px;
     </div>
     <p class="desc">Select a compiled gateway firmware image (<b>.bin</b>), C6 NCP co-processor image (<b>Z2S_C6_NCP*.bin</b>), or filesystem image and click <b>Start Gateway Update</b>. The gateway will reboot automatically after the update.</p>
     <div class="row">
-            <select id="fw-type">
+      <select id="fw-type">
         <option value="firmware">Gateway Firmware (.bin)</option>
         <option value="ncp_firmware">ZigBee C6 Co-Processor NCP (.bin)</option>
         <option value="zb_storage">ZigBee Storage Partition (zb_storage .bin 16KB/64KB)</option>
@@ -246,7 +327,7 @@ void ESPAsyncHTTPUpdateServer::setup(AsyncWebServer *server, const String &path,
                 if (index >= partSize) return 0;
                 size_t toRead = partSize - index;
                 if (toRead > maxLen) toRead = maxLen;
-                if (toRead > 256) toRead = 256; // Fetch one 256-byte Gemini frame per callback (~1.5 ms)
+                if (toRead > 256) toRead = 256;
 
                 if (!z2s_zb_storage_read((uint32_t)index, buffer, toRead)) {
                     return 0;
@@ -291,74 +372,6 @@ void ESPAsyncHTTPUpdateServer::setup(AsyncWebServer *server, const String &path,
                 restartTimer.once_ms(1000, []() { ESP.restart(); });
             }
         },
-        [&](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
-            if (!index) {
-                const AsyncWebParameter *pName = request->getParam("name");
-                if (pName && strcmp(pName->value().c_str(), "filesystem") == 0) {
-                    _updateType = UpdateType::FILE_SYSTEM;
-                } else if ((pName && strcmp(pName->value().c_str(), "ncp_firmware") == 0) ||
-                           filename.startsWith("Z2S_C6_NCP")) {
-                    _updateType = UpdateType::NCP_FIRMWARE;
-                } else {
-                    _updateType = UpdateType::FIRMWARE;
-                }
-
-                _updaterError.clear();
-
-                _authenticated = (_username.length() == 0 || _password.length() == 0 ||
-                                  request->authenticate(_username.c_str(), _password.c_str()));
-                if (!_authenticated) {
-                    Log("Unauthenticated Update\n");
-                    return;
-                }
-
-                _updateResult = UpdateResult::UPDATE_OK;
-                if (onUpdateBegin) {
-                    onUpdateBegin(_updateType, _updateResult);
-                    if (_updateResult != UpdateResult::UPDATE_OK) {
-                        Log("Update aborted by server: %d\n", _updateResult);
-                        if (onUpdateEnd) onUpdateEnd(_updateType, _updateResult);
-                        return;
-                    }
-                }
-
-                Log("Update: %s (type=%d)\n", filename.c_str(), (int)_updateType);
-
-                if (_updateType == UpdateType::NCP_FIRMWARE) {
-                    if (!z2s_ncp_ota_begin()) {
-                        _updaterError = "C6 NCP OTA begin failed";
-                        _updateResult = UpdateResult::UPDATE_ERROR;
-                    }
-                } else if (_updateType == UpdateType::FILE_SYSTEM) {
-                    size_t fsSize = UPDATE_SIZE_UNKNOWN;
-                    const esp_partition_t *part = esp_partition_find_first(
-                        ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_SPIFFS, nullptr);
-                    if (part) fsSize = part->size;
-                    if (!Update.begin(fsSize, U_SPIFFS)) {
-                        _setUpdaterError();
-                    }
-                } else {
-                    uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
-                    if (!Update.begin(maxSketchSpace, U_FLASH)) {
-                        _setUpdaterError();
-                    }
-                }
-            }
-
-            if (_authenticated && len && _updateResult == UpdateResult::UPDATE_OK) {
-                if (_updateType == UpdateType::NCP_FIRMWARE) {
-                    if (!z2s_ncp_ota_write(data, len)) {
-                        _updaterError = "C6 NCP OTA write failed";
-                        _updateResult = UpdateResult::UPDATE_ERROR;
-                    }
-                } else {
-                    if (Update.write(data, len) != len) {
-                        _setUpdaterError();
-                    }
-                }
-            }
-
-            if (_authenticated && final && _updateResult == UpdateResult::UPDATE_OK) {
         [&](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
             if (!index) {
                 const AsyncWebParameter *pName = request->getParam("name");
