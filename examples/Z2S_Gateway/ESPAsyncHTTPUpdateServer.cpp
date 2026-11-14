@@ -105,6 +105,7 @@ select{background:#14171c;color:#fff;border:1px solid #4b5563;border-radius:4px;
       </select>
       <input type="file" id="fw-file" accept=".bin,.bin.gz">
       <button class="btn primary" id="fw-btn" onclick="uploadGateway()">Start Gateway Update</button>
+      <a class="btn" href="/zb_storage.bin" download="zb_storage.bin" title="Download C6 zb_storage partition backup">Download zb_storage.bin</a>
     </div>
     <div class="prog-wrap" id="fw-prog-wrap"><div class="prog-bar" id="fw-prog-bar">0%</div></div>
     <div class="status" id="fw-status"></div>
