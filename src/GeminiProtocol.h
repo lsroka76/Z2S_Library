@@ -97,6 +97,9 @@ enum GeminiMsgType : uint8_t {
   G_CMD_NCP_OTA_BEGIN        = 0x50,
   G_CMD_NCP_OTA_WRITE        = 0x51,
   G_CMD_NCP_OTA_END          = 0x52,
+  G_CMD_ZB_STORAGE_BEGIN     = 0x53,
+  G_CMD_ZB_STORAGE_WRITE     = 0x54,
+  G_CMD_ZB_STORAGE_END       = 0x55,
 
   // --- Synchronous Replies (0x80..0x9F) ---
   G_RSP_STATUS               = 0x80,
@@ -433,6 +436,10 @@ public:
   static bool hostNcpOtaBegin();
   static bool hostNcpOtaWrite(const uint8_t *data, size_t len);
   static bool hostNcpOtaEnd();
+
+  static bool hostZbStorageBegin();
+  static bool hostZbStorageWrite(const uint8_t *data, size_t len);
+  static bool hostZbStorageEnd();
 
 private:
   static void rxTask(void *arg);
