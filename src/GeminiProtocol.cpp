@@ -1127,7 +1127,7 @@ void GeminiBridge::cmdWorkerTask(void *arg) {
         }
       } break;
 
-            case G_CMD_ZB_STORAGE_BEGIN: {
+      case G_CMD_ZB_STORAGE_BEGIN: {
         s_zb_stage_offset = 0;
         s_zb_stage_error  = true;
         s_zb_stage_part   = esp_partition_find_first(
@@ -1210,6 +1210,35 @@ void GeminiBridge::cmdWorkerTask(void *arg) {
           vTaskDelay(pdMS_TO_TICKS(250));
           esp_restart();
         }
+      } break;
+
+      case G_CMD_ZB_STORAGE_INFO: {
+        const esp_partition_t *zb_part = esp_partition_find_first(
+          ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "zb_storage");
+        uint32_t part_size = zb_part ? (uint32_t)zb_part->size : 0;
+        sendFrame(G_RSP_ZB_STORAGE_INFO, &part_size, sizeof(part_size), item.hdr.seq_num);
+      } break;
+
+      case G_CMD_ZB_STORAGE_READ: {
+        const auto *req = reinterpret_cast<const G_PktZbStorageReadReq *>(p);
+        G_PktZbStorageReadRsp rsp = {};
+        uint16_t rlen = (req->len <= 256) ? req->len : 256;
+
+        const esp_partition_t *zb_part = esp_partition_find_first(
+          ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "zb_storage");
+
+        if (zb_part && (req->offset + rlen <= zb_part->size)) {
+          if (Zigbee.started()) esp_zb_lock_acquire(portMAX_DELAY);
+          esp_err_t err = esp_partition_read(zb_part, req->offset, rsp.data, rlen);
+          if (Zigbee.started()) esp_zb_lock_release();
+
+          if (err == ESP_OK) {
+            rsp.success = 1;
+            rsp.len     = rlen;
+          }
+        }
+        // Only send the active header + requested bytes (3 + rlen) to minimize UART airtime
+        sendFrame(G_RSP_ZB_STORAGE_READ, &rsp, 3 + rsp.len, item.hdr.seq_num);
       } break;
     }
     #endif
