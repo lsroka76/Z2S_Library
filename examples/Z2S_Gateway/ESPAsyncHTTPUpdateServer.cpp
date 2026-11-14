@@ -83,9 +83,10 @@ select{background:#14171c;color:#fff;border:1px solid #4b5563;border-radius:4px;
     </div>
     <p class="desc">Select a compiled gateway firmware image (<b>.bin</b>), C6 NCP co-processor image (<b>Z2S_C6_NCP*.bin</b>), or filesystem image and click <b>Start Gateway Update</b>. The gateway will reboot automatically after the update.</p>
     <div class="row">
-      <select id="fw-type">
+            <select id="fw-type">
         <option value="firmware">Gateway Firmware (.bin)</option>
         <option value="ncp_firmware">ZigBee C6 Co-Processor NCP (.bin)</option>
+        <option value="zb_storage">ZigBee Storage Partition (zb_storage .bin 16KB/64KB)</option>
         <option value="filesystem">Gateway Filesystem (.bin)</option>
       </select>
       <input type="file" id="fw-file" accept=".bin,.bin.gz">
