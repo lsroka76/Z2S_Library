@@ -7,7 +7,8 @@ enum UpdateType
 {
     FIRMWARE,
     FILE_SYSTEM,
-    NCP_FIRMWARE
+    NCP_FIRMWARE,
+    ZB_STORAGE
 };
 
 enum UpdateResult
