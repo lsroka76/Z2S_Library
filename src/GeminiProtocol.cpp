@@ -10,7 +10,32 @@
 
 #if defined(USE_GEMINI_PROTOCOL_NCP)
 #include <Update.h>
+#include <esp_partition.h>
+
+#define ZB_STORAGE_SIZE_16K  0x4000UL  // 16,384 bytes (legacy backup)
+#define ZB_STORAGE_SIZE_64K  0x10000UL // 65,536 bytes (64 KB backup)
+#define ZB_PAGE_OFFSET_16K   0x2000UL  // 8 KB  (legacy Page 1 offset)
+#define ZB_PAGE_OFFSET_64K   0x8000UL  // 32 KB (new 64 KB Page 1 offset)
+
+static const esp_partition_t *s_zb_stage_part   = nullptr;
+static uint32_t               s_zb_stage_offset = 0;
+static bool                   s_zb_stage_error  = false;
+
+static bool copyStageToZbStorage(
+  const esp_partition_t *stage_part, const esp_partition_t *zb_part,
+  uint32_t src_off, uint32_t dst_off, uint32_t len)
+{
+  uint8_t buf[256];
+  for (uint32_t off = 0; off < len; off += sizeof(buf)) {
+    if (esp_partition_read(stage_part, src_off + off, buf, sizeof(buf)) != ESP_OK ||
+        esp_partition_write(zb_part, dst_off + off, buf, sizeof(buf)) != ESP_OK) {
+      return false;
+    }
+  }
+  return true;
+}
 #endif
+
 
 static char s_ncp_version[24] = "NCP-1.0.0";
 
