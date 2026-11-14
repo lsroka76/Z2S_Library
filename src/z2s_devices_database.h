@@ -7965,7 +7965,12 @@ inline constexpr z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_endpoints = { 
       0x01, Z2S_REPORTING_SET_FLAG_STANDARD, 
       Z2S_REPORTING_SET_DESC_BATTERY_PERCENTAGE_REPORTING_STANDARD, 
-      Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_HS1SAEPLUS}}, 
+      Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR_HS1SAEPLUS}},
+
+  { .manufacturer_name = "Aqara", .model_name = "lumi.light.agl004",
+    .z2s_device_uid = 38600,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_DIMMER_CT_LIGHT_SOURCE,
+    .z2s_device_endpoints_count = 1},
 //DEVICES_END
 };
 
