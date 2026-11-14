@@ -197,6 +197,8 @@ typedef struct esp_zb_ota_image_header_s {
 #define LUMI_CUSTOM_CURTAIN_CALIBRATION_CMD_ID                0x0407 //U8
 #define LUMI_CUSTOM_CURTAIN_POSITION_ID                       0x041F //U8
 #define LUMI_CUSTOM_CURTAIN_CURRENT_STATUS_ID                 0x0421 //U8
+#define LUMI_CUSTOM_MINIMAL_DIMMING_RANGE_ID                  0x0515 //U8
+#define LUMI_CUSTOM_MAXIMAL_DIMMING_RANGE_ID                  0x0516 //U8           
 #define LUMI_CUSTOM_POWER_ON_BEHAVIOR_ID                      0x0517 //U8
 
 #define LUMI_ATTRIBUTE_BATTERY_ID                             0x01 //ESP_ZB_ZCL_ATTR_TYPE_U16
