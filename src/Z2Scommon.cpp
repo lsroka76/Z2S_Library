@@ -1020,7 +1020,6 @@ void Z2S_Core::updateRemoteThermometer(
 void Z2S_Core::resendTemperatureHumidityValue(
   uint8_t value_type, int32_t value) {
 
-
   if (!Supla::Network::IsReady())
     return;
   
@@ -1035,39 +1034,38 @@ void Z2S_Core::resendTemperatureHumidityValue(
     "value = %i", value_type, (remote_address_type == 
     REMOTE_ADDRESS_TYPE_MDNS) ? "MDNS" : "IP4", remote_Supla_channel, value);    
   
-  switch(remote_address_type) {
-
-
-    case REMOTE_ADDRESS_TYPE_IP4: {
-
-      ip_address = getRemoteIPAddress();
-      
-      if (ip_address == IPAddress(0, 0, 0, 0)) {
-
-        uint8_t Supla_channel = getZ2SChannelNumber();
-
-        log_i(
-          "remote_Supla_channel %u, ip_address %u, Supla_channel %u, "
-          "value_type %u, value %u", remote_Supla_channel, ip_address, 
-          Supla_channel, value_type, value);
-
-        updateRemoteThermometer(
-          remote_Supla_channel, ip_address, Supla_channel, value_type, value);
+  if (remote_address_type == REMOTE_ADDRESS_TYPE_IP4) {
+    ip_address = getRemoteIPAddress();
+    if (ip_address == IPAddress(0, 0, 0, 0)) {
+      uint8_t Supla_channel = getZ2SChannelNumber();
+      updateRemoteThermometer(
+        remote_Supla_channel, ip_address, Supla_channel, value_type, value);
+      return;
+    }
+  } else {
+    // REMOTE_ADDRESS_TYPE_MDNS: use cached IP if available, otherwise resolve
+    ip_address = getRemoteIPAddress();
+    if (ip_address == IPAddress(0, 0, 0, 0)) {
+      ip_address = MDNS.queryHost(getMDNSName(), 500);
+      if (ip_address == INADDR_NONE || ip_address == IPAddress(0, 0, 0, 0)) {
+        log_e("T/H value forwarding FAILED - mDNS lookup failed");
         return;
       }
-    } break;
-
-
-    case REMOTE_ADDRESS_TYPE_MDNS: {
-
-      ip_address = MDNS.queryHost(getMDNSName());
-
       setRemoteIPAddress(ip_address, false);
-    } break;
+    }
   }
 
-  if (RemoteThermometer.connect(ip_address, 1234, 500)) {
+  bool connected = RemoteThermometer.connect(ip_address, 1234, 500);
+  if (!connected && remote_address_type == REMOTE_ADDRESS_TYPE_MDNS) {
+    // Re-resolve mDNS in case the remote gateway's IP changed
+    ip_address = MDNS.queryHost(getMDNSName(), 500);
+    if (ip_address != INADDR_NONE && ip_address != IPAddress(0, 0, 0, 0)) {
+      setRemoteIPAddress(ip_address, false);
+      connected = RemoteThermometer.connect(ip_address, 1234, 500);
+    }
+  }
 
+  if (connected) {
     uint8_t cmd_id = (value_type == RTH_VALUE_TYPE_TEMPERATURE) ? 0x10 : 0x11;
 
     RemoteThermometer.printf(
@@ -1075,21 +1073,17 @@ void Z2S_Core::resendTemperatureHumidityValue(
       getZ2SChannelNumber(), value);
     
     char response[8];
-
     size_t len = RemoteThermometer.readBytesUntil(
       '\n', response, sizeof(response) - 1);
     response[len] = '\0';
 
     if (strcmp(response, "OK") == 0) {
-    
       log_i("T/H value forwarded");
     }      
-  
     RemoteThermometer.stop();
-  } 
-  else
-    log_e(
-      "T/H value forwarding FAILED - no connection to remote thremometer"); 
+  } else {
+    log_e("T/H value forwarding FAILED - no connection to remote thermometer");
+  }
 }
 
 /*****************************************************************************/
