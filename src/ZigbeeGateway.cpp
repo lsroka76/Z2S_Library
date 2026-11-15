@@ -2674,7 +2674,7 @@ bool ZigbeeGateway::sendAPSDEDataRequestCmd(
   aps_req.use_alias           = false;
   aps_req.radius              = 30;
 
-  eesp_zb_lock_acquire(portMAX_DELAY);
+  esp_zb_lock_acquire(portMAX_DELAY);
   esp_err_t err = esp_zb_aps_data_request(&aps_req);
   esp_zb_lock_release();
   
