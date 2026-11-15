@@ -699,7 +699,7 @@ void Supla::Control::Z2S_VirtualRelay::iterateAlways() {
 
   if (_action >= 0) {
     
-    handleAction(0, _action);
+    runAction(0, _action);
     _action = -1;
   }
 }

@@ -6606,8 +6606,7 @@ bool Z2S_onCustomCmdReceive(
           no_channel_found_error_func(short_addr);
         else 
           msgZ2SDeviceVirtualRelayValue(
-            z2s_core->getZ2SElementPtr(), VRV_ACTION_ID, 
-            Supla::SEND_AT_SHORT_PRESS_x1);
+            z2s_core->getZ2SElementPtr(), VRV_ACTION_ID, Supla::ON_CLICK_1);
 
       return true;
     } 
