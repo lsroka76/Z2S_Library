@@ -571,10 +571,14 @@ void addZ2SDeviceVirtualRelay(
 
 void msgZ2SDeviceVirtualRelay(Supla::Element* element, bool state) {
     
+  if (element->getChannel()->isRollerShutterRelayType())
+    return;
+  
   auto Supla_Z2S_VirtualRelay = static_cast<
     Supla::Control::Z2S_VirtualRelay *>(element);
 
   Supla_Z2S_VirtualRelay->setZbDeviceLastSeenMs(millis());
+
     
   Supla_Z2S_VirtualRelay->Z2S_setOnOff(state);          
 }
