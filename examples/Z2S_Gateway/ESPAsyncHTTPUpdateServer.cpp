@@ -325,13 +325,19 @@ void ESPAsyncHTTPUpdateServer::setup(AsyncWebServer *server, const String &path,
             "application/octet-stream", partSize,
             [partSize](uint8_t *buffer, size_t maxLen, size_t index) -> size_t {
                 if (index >= partSize) return 0;
+
                 size_t toRead = partSize - index;
                 if (toRead > maxLen) toRead = maxLen;
-                if (toRead > 256) toRead = 256;
+                if (toRead > 512) toRead = 512; // Read up to two 256-byte frames per callback
 
                 if (!z2s_zb_storage_read((uint32_t)index, buffer, toRead)) {
-                    return 0;
+                    // Never return 0 when index < partSize, or ESPAsyncWebServer's
+                    // while(space > headLen) loop in _ack() will spin forever on CPU 1!
+                    memset(buffer, 0xFF, toRead);
                 }
+
+                // Yield 1 tick so IDLE1 on CPU 1 feeds the Task Watchdog during large bursts
+                vTaskDelay(1);
                 return toRead;
             });
 
@@ -339,7 +345,7 @@ void ESPAsyncHTTPUpdateServer::setup(AsyncWebServer *server, const String &path,
         response->addHeader("Cache-Control", "no-store");
         request->send(response);
     });
-
+    
     _server->on(path.c_str(), HTTP_OPTIONS, [&](AsyncWebServerRequest *request) {
         AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "y");
         response->addHeader("Access-Control-Allow-Headers", "*");

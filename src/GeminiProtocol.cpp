@@ -314,12 +314,22 @@ bool GeminiBridge::hostZbStorageRead(uint32_t offset, uint8_t *dst, size_t len) 
     };
     G_PktZbStorageReadRsp rsp = {};
 
-    if (!sendCommandWaitReply(
-          G_CMD_ZB_STORAGE_READ, &req, sizeof(req),
-          G_RSP_ZB_STORAGE_READ, &rsp, sizeof(rsp), 2000) ||
-        !rsp.success || rsp.len != chunk) {
+    bool chunk_ok = false;
+    for (uint8_t attempt = 0; attempt < 3; attempt++) {
+      if (sendCommandWaitReply(
+            G_CMD_ZB_STORAGE_READ, &req, sizeof(req),
+            G_RSP_ZB_STORAGE_READ, &rsp, sizeof(rsp), 1000) &&
+          rsp.success && rsp.len == chunk) {
+        chunk_ok = true;
+        break;
+      }
+      vTaskDelay(pdMS_TO_TICKS(2));
+    }
+
+    if (!chunk_ok) {
       return false;
     }
+
     memcpy(dst + copied, rsp.data, chunk);
     copied += chunk;
   }
@@ -427,7 +437,13 @@ void GeminiBridge::rxTask(void *arg) {
   uint8_t  rx_chunk[64];
 
   for (;;) {
-    int read_len = uart_read_bytes(GEMINI_UART_NUM, rx_chunk, sizeof(rx_chunk), pdMS_TO_TICKS(20));
+    int read_len = uart_read_bytes(GEMINI_UART_NUM, rx_chunk, 1, pdMS_TO_TICKS(20));
+    if (read_len > 0) {
+      int more = uart_read_bytes(GEMINI_UART_NUM, rx_chunk + 1, sizeof(rx_chunk) - 1, 0);
+      if (more > 0) {
+        read_len += more;
+      }
+    }
     for (int i = 0; i < read_len; i++) {
       uint8_t b = rx_chunk[i];
       switch (state) {
@@ -1235,7 +1251,7 @@ void GeminiBridge::cmdWorkerTask(void *arg) {
           if (err == ESP_OK) {
             rsp.success = 1;
             rsp.len     = rlen;
-          }
+          } 
         }
         // Only send the active header + requested bytes (3 + rlen) to minimize UART airtime
         sendFrame(G_RSP_ZB_STORAGE_READ, &rsp, 3 + rsp.len, item.hdr.seq_num);
