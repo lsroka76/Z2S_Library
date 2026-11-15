@@ -19,7 +19,7 @@ static volatile uint8_t s_ev_tail = 0;
 static portMUX_TYPE s_ev_mux = portMUX_INITIALIZER_UNLOCKED;
 
 #if Z2S_USE_PSRAM
-EXT_RAM_BSS_ATTR static char s_batch_buf[4096];
+EXT_RAM_BSS_ATTR static char s_batch_buf[1360];
 #else
 static char s_batch_buf[1360];
 #endif
@@ -1099,7 +1099,7 @@ bool Z2S_ESPUIClass::_ensureControlsAllocated() {
 void Z2S_ESPUIClass::begin(
   const char *title, const char *username, const char *password, uint16_t port) {
 
-  Z2S_PsramScope psram_scope;
+  //Z2S_PsramScope psram_scope;
 #if Z2S_USE_PSRAM
   _ensureControlsAllocated();
 #endif
@@ -1346,14 +1346,13 @@ bool Z2S_ESPUIClass::wsTextAll(const char *payload, size_t len, bool allow_wait)
     }
   }
 
-    if (!_ws->availableForWriteAll()) {
+  if (!_ws->availableForWriteAll()) {
     return false;
   }
 
-  Z2S_PsramScope psram_scope;
+  //Z2S_PsramScope psram_scope;
   _ws->textAll(payload, len);
   return true;
-
 }
 
 void Z2S_ESPUIClass::flush(bool allow_wait) {

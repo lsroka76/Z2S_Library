@@ -326,7 +326,7 @@ volatile bool _github_ota_enabled = false;
 
 #if Z2S_USE_PSRAM
   #define Z2S_LOCAL_BUF(type, name, s3_size, c6_size) \
-    EXT_RAM_BSS_ATTR static type name[s3_size]; \
+    EXT_RAM_BSS_ATTR static type name[c6_size]; \
     memset(name, 0, sizeof(name))
 
   #define Z2S_LOCAL_STRUCT(type, name) \
@@ -5261,7 +5261,7 @@ uint16_t Z2S_getGUIBuildControlFlags(gui_modes_t mode) {
 
 void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 
-    Z2S_PsramScope psram_scope;
+    //Z2S_PsramScope psram_scope;
 
 	if (GUIbuilt) {
 
@@ -5370,7 +5370,7 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 
 void Z2S_startWebGUI() {
 
-	Z2S_PsramScope psram_scope;
+	//Z2S_PsramScope psram_scope;
 	
 	log_i("STARTING WEB GUI");
 
