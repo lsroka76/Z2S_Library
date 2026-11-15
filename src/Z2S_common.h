@@ -5,6 +5,34 @@
 
 /*****************************************************************************/
 
+#if defined(CONFIG_IDF_TARGET_ESP32S3) && (defined(BOARD_HAS_PSRAM) || defined(CONFIG_SPIRAM))
+  #include "esp_heap_caps.h"
+  #define Z2S_CLASS_PSRAM_NEW_DELETE()                                        \
+    static void *operator new(size_t size) {                                  \
+      void *p = heap_caps_malloc(size, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);  \
+      return p ? p : malloc(size);                                            \
+    }                                                                         \
+    static void *operator new[](size_t size) {                                \
+      return operator new(size);                                              \
+    }                                                                         \
+    static void operator delete(void *p) noexcept {                           \
+      free(p);                                                                \
+    }                                                                         \
+    static void operator delete[](void *p) noexcept {                         \
+      free(p);                                                                \
+    }                                                                         \
+    static void operator delete(void *p, size_t) noexcept {                   \
+      free(p);                                                                \
+    }                                                                         \
+    static void operator delete[](void *p, size_t) noexcept {                 \
+      free(p);                                                                \
+    }
+#else
+  #define Z2S_CLASS_PSRAM_NEW_DELETE()
+#endif
+
+/*****************************************************************************/
+
 #define SUPLA_CHANNELTYPE_LOCALCHANNEL                          0x0000
 
 /*****************************************************************************/
@@ -138,6 +166,8 @@ inline std::vector<Z2S_Device *> Z2S_Devices;
 class Z2S_Device {
 
   public:
+
+    Z2S_CLASS_PSRAM_NEW_DELETE()
 
     Z2S_Device() {
 
@@ -773,6 +803,8 @@ inline std::vector<Z2S_Core*> Z2S_Cores;
 class Z2S_Core {
 
 public:
+
+  Z2S_CLASS_PSRAM_NEW_DELETE()
 
   Z2S_Core(Supla::Element* z2s_element) {
 
