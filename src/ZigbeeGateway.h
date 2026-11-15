@@ -352,12 +352,12 @@ public:
   ZigbeeGateway(uint8_t endpoint);
   ~ZigbeeGateway() {};
 
-  std::list<zbg_device_params_t *> getGatewayDevices() const {
+  /*std::list<zbg_device_params_t *> getGatewayDevices() const {
     return _gateway_devices;
   }
   void addGatewayDevice(zbg_device_params_t * device){ 
     if (device) _gateway_devices.push_back(device);
-  }
+  }*/
   std::list<zbg_device_params_t *> getJoinedDevices() const {
     return _joined_devices;
   }
@@ -1119,7 +1119,7 @@ protected:
   static SemaphoreHandle_t gt_lock;
 
   std::list<zbg_device_params_t *> _joined_devices;
-  std::list<zbg_device_params_t *> _gateway_devices;
+  //std::list<zbg_device_params_t *> _gateway_devices;
 };
 
 extern ZigbeeGateway zbGateway;

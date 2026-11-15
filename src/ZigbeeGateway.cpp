@@ -60,7 +60,7 @@ ZigbeeGateway::ZigbeeGateway(uint8_t endpoint) : ZigbeeEP(endpoint) {
   memset(&_last_device_query, 0, sizeof(query_basic_cluster_data_t));
   
   _joined_devices.clear();
-  _gateway_devices.clear();
+  //_gateway_devices.clear();
 
   #if !CONFIG_DISABLE_HAL_LOCKS
   gt_lock = xSemaphoreCreateBinary();
@@ -652,9 +652,9 @@ void ZigbeeGateway::findEndpoint(esp_zb_zdo_match_desc_req_param_t *param) {
 }
 
 void ZigbeeGateway::printGatewayDevices() {
-  log_i("gateway devices:");
+  /*log_i("gateway devices:");
   for (const auto &device : _gateway_devices) {
-    log_i("Device on endpoint %d, short address: 0x%x", device->endpoint, device->short_addr);
+    log_i("Device on endpoint %d, short address: 0x%x", device->endpoint, device->short_addr);*/
   }
 }
 
@@ -948,17 +948,17 @@ void ZigbeeGateway::addBoundDevice(
     zbg_device->short_addr = esp_zb_address_short_by_ieee(zbg_device->ieee_addr);
 #endif
   zbg_device->model_id = 0x0000;
-  _gateway_devices.push_back(zbg_device);
+  //_gateway_devices.push_back(zbg_device);
 }
 
 void ZigbeeGateway::clearLocalBindings() {
-#if defined(USE_GEMINI_PROTOCOL_HOST)
+/*#if defined(USE_GEMINI_PROTOCOL_HOST)
   GeminiBridge::sendFrame(G_CMD_CLEAR_LOCAL_BINDINGS, nullptr, 0);
 #else
   for (auto *bound_device : _gateway_devices) {
     unbindLocalDeviceCluster(bound_device, bound_device->cluster_id);
   }
-#endif
+#endif*/
 }
 
 bool ZigbeeGateway::isDeviceBound(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {

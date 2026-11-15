@@ -95,6 +95,7 @@ bool GeminiBridge::initUart() {
   #elif defined(USE_GEMINI_PROTOCOL_NCP)
   // If using C6 Native USB port pins (GPIO12 D- / GPIO13 D+), disconnect internal USB PHY & pull-up
   if (GEMINI_PIN_TX == 12 || GEMINI_PIN_RX == 13 || GEMINI_PIN_TX == 13 || GEMINI_PIN_RX == 12) {
+    USB_SERIAL_JTAG.chip_rst.usb_uart_chip_rst_dis = 1; // Disable hardware USB reset detector
     USB_SERIAL_JTAG.conf0.usb_pad_enable = 0;
     USB_SERIAL_JTAG.conf0.dp_pullup      = 0;
     gpio_reset_pin((gpio_num_t)GEMINI_PIN_TX);
@@ -120,6 +121,8 @@ bool GeminiBridge::initUart() {
   ESP_ERROR_CHECK(uart_driver_install(GEMINI_UART_NUM, 4096, 4096, 0, NULL, 0));
   ESP_ERROR_CHECK(uart_param_config(GEMINI_UART_NUM, &uart_cfg));
   ESP_ERROR_CHECK(uart_set_pin(GEMINI_UART_NUM, GEMINI_PIN_TX, GEMINI_PIN_RX, rts_pin, cts_pin));
+  vTaskDelay(pdMS_TO_TICKS(20)); // Let TX idle HIGH so peer UART exits BREAK state after reboot
+  uart_flush_input(GEMINI_UART_NUM);
 
   // Low-latency FIFO tuning: trigger interrupt after 32 bytes or 2 idle byte-times (~10 us)
   uart_set_rx_full_threshold(GEMINI_UART_NUM, 32);

@@ -225,12 +225,15 @@ void ZigbeeCore::factoryReset() {
 }
 
 void ZigbeeCore::setNVRAMChannelMask(uint32_t mask) {
+
   _primary_channel_mask = mask;
 #if defined(USE_GEMINI_PROTOCOL_HOST)
   GeminiBridge::sendFrame(G_CMD_SET_CHANNEL_MASK, &mask, sizeof(uint32_t));
 #else
+  if (started()) esp_zb_lock_acquire(portMAX_DELAY);
   esp_zb_set_channel_mask(_primary_channel_mask);
   zb_nvram_write_dataset(ZB_NVRAM_COMMON_DATA);
+  if (started()) esp_zb_lock_release();
 #endif
 }
 
