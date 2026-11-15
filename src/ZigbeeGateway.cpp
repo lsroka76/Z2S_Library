@@ -450,11 +450,18 @@ void ZigbeeGateway::bindDeviceCluster(
   
   if (groupcast_flag & 1) {
     bind_req.dst_addr_mode = ESP_ZB_ZDO_BIND_DST_ADDR_MODE_16_BIT_GROUP;
+    
+    esp_zb_lock_acquire(portMAX_DELAY);
     bind_req.dst_address_u.addr_short = esp_zb_get_short_address();
+    esp_zb_lock_release();
+
     bind_req.dst_endp = 1;
   } else {
     bind_req.dst_addr_mode = ESP_ZB_ZDO_BIND_DST_ADDR_MODE_64_BIT_EXTENDED;
+    esp_zb_lock_acquire(portMAX_DELAY);
     esp_zb_get_long_address(bind_req.dst_address_u.addr_long);
+    esp_zb_lock_release();
+
     bind_req.dst_endp = _instance->getEndpoint(); 
   }
     
@@ -529,7 +536,9 @@ void ZigbeeGateway::bindDeviceCluster2(
   bind_req.dst_endp      = device->endpoint;
   bind_req.cluster_id    = cluster_id; 
   bind_req.dst_addr_mode = ESP_ZB_ZDO_BIND_DST_ADDR_MODE_64_BIT_EXTENDED;
+  esp_zb_lock_acquire(portMAX_DELAY);
   esp_zb_get_long_address(bind_req.src_address);
+  esp_zb_lock_release();
   bind_req.src_endp      = _instance->getEndpoint(); 
     
   device->cluster_id = cluster_id;
@@ -563,8 +572,12 @@ void ZigbeeGateway::unbindLocalDeviceCluster(
     G_CMD_BIND_CLUSTER, &req, sizeof(req), G_RSP_STATUS, rsp, sizeof(rsp), 15000);
 #else
   esp_zb_zdo_bind_req_param_t bind_req = {};
+
+  esp_zb_lock_acquire(portMAX_DELAY);
   bind_req.req_dst_addr = esp_zb_get_short_address();
   esp_zb_get_long_address(bind_req.src_address);
+  esp_zb_lock_release();
+
   bind_req.src_endp      = _instance->getEndpoint();
   bind_req.cluster_id    = cluster_id;
   bind_req.dst_addr_mode = ESP_ZB_ZDO_BIND_DST_ADDR_MODE_64_BIT_EXTENDED;
@@ -647,7 +660,9 @@ void ZigbeeGateway::findEndpoint(esp_zb_zdo_match_desc_req_param_t *param) {
   findcb_userdata._cluster_id     = ESP_ZB_ZCL_CLUSTER_ID_BASIC;
   findcb_userdata._device_address = param->addr_of_interest;
   
+  esp_zb_lock_acquire(portMAX_DELAY);
   esp_zb_zdo_match_cluster(param, find_Cb, &findcb_userdata);
+  esp_zb_lock_release();
 #endif
 }
 
@@ -2117,7 +2132,10 @@ esp_err_t ZigbeeGateway::sendOTAUpgradeServerNotifyRequest(
   req.next_data_cb     = zb_ota_next_data_handler;
   memcpy(&req.ota_file_header, &ota_file_header, sizeof(esp_zb_ota_file_header_t));
 
-  return esp_zb_ota_upgrade_server_notify_req(&req);
+  esp_zb_lock_acquire(portMAX_DELAY);
+  esp_err_t err = esp_zb_ota_upgrade_server_notify_req(&req);
+  esp_zb_lock_release();
+  return err;
 #endif
 }
 
@@ -2466,7 +2484,10 @@ bool ZigbeeGateway::zbRawCmdHandler(
     aps_req.use_alias           = false;
     aps_req.radius              = 30;
 
-    esp_zb_aps_data_request(&aps_req);
+    esp_zb_lock_acquire(portMAX_DELAY);
+    esp_err_t err = esp_zb_aps_data_request(&aps_req);
+    esp_zb_lock_release();
+    
     return true;
   }
 
@@ -2507,7 +2528,10 @@ bool ZigbeeGateway::zbRawCmdHandler(
     aps_req.use_alias           = false;
     aps_req.radius              = 30;
 
-    esp_zb_aps_data_request(&aps_req);
+    esp_zb_lock_acquire(portMAX_DELAY);
+    esp_err_t err = esp_zb_aps_data_request(&aps_req);
+    esp_zb_lock_release();
+
     return true; 
   }
 
@@ -2650,7 +2674,10 @@ bool ZigbeeGateway::sendAPSDEDataRequestCmd(
   aps_req.use_alias           = false;
   aps_req.radius              = 30;
 
+  eesp_zb_lock_acquire(portMAX_DELAY);
   esp_err_t err = esp_zb_aps_data_request(&aps_req);
+  esp_zb_lock_release();
+  
   if (err != ESP_OK) {
     log_e("Failed to send APSDE data req: %d", err);
     return false;
