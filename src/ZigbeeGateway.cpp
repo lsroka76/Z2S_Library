@@ -654,8 +654,8 @@ void ZigbeeGateway::findEndpoint(esp_zb_zdo_match_desc_req_param_t *param) {
 void ZigbeeGateway::printGatewayDevices() {
   /*log_i("gateway devices:");
   for (const auto &device : _gateway_devices) {
-    log_i("Device on endpoint %d, short address: 0x%x", device->endpoint, device->short_addr);*/
-  }
+    log_i("Device on endpoint %d, short address: 0x%x", device->endpoint, device->short_addr);
+  }*/
 }
 
 void ZigbeeGateway::printJoinedDevices() {
