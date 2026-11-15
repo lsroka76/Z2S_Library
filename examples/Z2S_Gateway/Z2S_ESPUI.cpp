@@ -223,7 +223,13 @@ async function backupAndRedirectToOTA(buttonId){
   try{
     await downloadPartition("nvs",btn);
     await downloadPartition("spiffs",btn);
-    await downloadPartition("zb_storage",btn);
+)rawliteral"
+#if !CONFIG_IDF_TARGET_ESP32S3
+R"rawliteral(
+await downloadPartition("zb_storage",btn);
+)rawliteral"
+#endif
+R"rawliteral(
     if(btn)btn.innerText="Redirecting to OTA...";
     setTimeout(()=>window.location.assign("/update"),500);
   }catch(e){
