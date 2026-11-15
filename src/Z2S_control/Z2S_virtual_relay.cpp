@@ -696,6 +696,12 @@ void Supla::Control::Z2S_VirtualRelay::iterateAlways() {
     if ((millis() - _last_seen_ms) > getTimeoutMs())
       channel.setStateOffline();
   }
+
+  if (_action >= 0) {
+    
+    handleAction(0, _action);
+    _action = -1;
+  }
 }
 
 /*****************************************************************************/

@@ -6590,6 +6590,32 @@ bool Z2S_onCustomCmdReceive(
       return true;
     } 
   } break;
+
+
+  case Z2S_DEVICE_DESC_RELAY_1: {
+    
+    if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) && 
+        (command_id == ESP_ZB_ZCL_CMD_ON_OFF_TOGGLE_ID)) {
+
+        
+        z2s_core = Z2S_findZ2SCore(
+          short_addr, endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+          SUPLA_CHANNELTYPE_RELAY, NO_CUSTOM_CMD_SID);
+
+        if (!z2s_core)
+          no_channel_found_error_func(short_addr);
+        else 
+          msgZ2SDeviceVirtualRelayValue(
+            z2s_core->getZ2SElementPtr(), VRV_ACTION_ID, 
+            Supla::SEND_AT_SHORT_PRESS_x1);
+
+      return true;
+    } 
+  } break;
+
+
+  default:
+
       return false; 
   }
   return false;

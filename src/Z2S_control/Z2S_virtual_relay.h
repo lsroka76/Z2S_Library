@@ -130,6 +130,11 @@ public:
   void Z2S_setFunctionValueS32(int32_t z2s_function_value_S32);
   void Z2S_setFunctionValueU32(int32_t z2s_function_value_U32);
 
+  void setAction(int32_t action) {
+      
+    _action = action; 
+  }
+
   bool isOn() override;
 
   void ping();
@@ -155,6 +160,7 @@ public:
   bool _fresh_start = true;
 
   uint32_t _timer_ms = 0;
+  int32_t _action = -1;
 
   uint32_t _last_ping_ms  = 0;
   uint32_t _last_seen_ms  = 0;

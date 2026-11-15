@@ -620,6 +620,11 @@ void msgZ2SDeviceVirtualRelayValue(
     break;
 
 
+    case VRV_ACTION_ID:
+
+      Supla_Z2S_VirtualRelay->setAction(value);
+    break;
+
     default:
       
       log_e("error: invalid VRV_ID"); 
