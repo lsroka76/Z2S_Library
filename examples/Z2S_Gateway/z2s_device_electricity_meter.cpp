@@ -67,7 +67,8 @@ void initZ2SDeviceElectricityMeter(
       _isTuya = true; 
       _active_query = false; //true;
 
-      if (device->hasManufacturerName("_TZ3210_rwmitwj4")) {
+      if (device->hasManufacturerName("_TZ3210_rwmitwj4") ||
+          device->hasManufacturerName("_TZ3210_w0qqde0g")) {
 
         energy_multiplier = 1;
         energy_divisor  = 100;
