@@ -210,7 +210,7 @@ void GeminiBridge::sendStackStartedEvt() {
   esp_zb_get_tx_power(&evt.tx_power);
   esp_zb_lock_release();
   evt.is_factory_new = Zigbee.isFactoryStack() ? 1 : 0;
-  snprintf(evt.ncp_version, sizeof(evt.ncp_version), "%s R:%d U:%lus",
+  snprintf(evt.ncp_version, sizeof(evt.ncp_version), "%.12s R%d U%lu",
            s_ncp_version, (int)esp_reset_reason(), (unsigned long)(millis() / 1000));
   sendFrame(G_EVT_STACK_STARTED, &evt, sizeof(evt));
 #endif
