@@ -2507,17 +2507,17 @@ public:
 protected:
 
   Z2S_Device *_z2s_device = nullptr;
-  z2s_device_params_t _z2s_channel {};
+  Supla::Element *_z2s_element = nullptr;
   union {
     struct {
       uint16_t _short_addr;
       uint8_t  _endpoint;
-      int8_t  _sub_id;
+      int8_t   _sub_id;
     };
     uint32_t _z2s_channel_uid;
   };
-  Supla::Element* _z2s_element = nullptr;
   int16_t _channel_index = -1;
+  z2s_device_params_t _z2s_channel {};
 };
 
 #endif //SRC_Z2S_COMMON_H_
