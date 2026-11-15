@@ -1186,7 +1186,8 @@ void GeminiBridge::cmdWorkerTask(void *arg) {
       } break;
 
       case G_CMD_ZB_STORAGE_END: {
-        bool ok = false;
+        bool ok        = false;
+        bool zb_locked = false;
         uint8_t err_code = 0xFF;
 
         const esp_partition_t *zb_part = esp_partition_find_first(
@@ -1200,13 +1201,12 @@ void GeminiBridge::cmdWorkerTask(void *arg) {
           // Freeze ZBOSS task so it cannot write to zb_storage during flash update
           if (Zigbee.started()) {
             esp_zb_lock_acquire(portMAX_DELAY);
+            zb_locked = true;
           }
 
           if (esp_partition_erase_range(zb_part, 0, zb_part->size) == ESP_OK) {
             if (s_zb_stage_offset == ZB_STORAGE_SIZE_16K && zb_part->size == ZB_STORAGE_SIZE_64K) {
               log_i("C6 zb_storage: Auto-upgrading 16KB image to 64KB layout...");
-              // Page 0: 0x0000..0x1FFF -> 0x0000..0x1FFF (0x2000..0x7FFF stays 0xFF)
-              // Page 1: 0x2000..0x3FFF -> 0x8000..0x9FFF (0xA000..0xFFFF stays 0xFF)
               ok = copyStageToZbStorage(s_zb_stage_part, zb_part, 0x0000, 0x0000, ZB_PAGE_OFFSET_16K) &&
                    copyStageToZbStorage(s_zb_stage_part, zb_part, ZB_PAGE_OFFSET_16K, ZB_PAGE_OFFSET_64K, ZB_PAGE_OFFSET_16K);
             } else {
@@ -1223,8 +1223,7 @@ void GeminiBridge::cmdWorkerTask(void *arg) {
         uint8_t rsp[2] = { (uint8_t)(ok ? 1 : 0), err_code };
         sendFrame(G_RSP_STATUS, rsp, sizeof(rsp), item.hdr.seq_num);
 
-        if (ok || Zigbee.started()) {
-          // If ZBOSS was locked (or update succeeded), flush UART and reboot C6
+        if (ok || zb_locked) {
           uart_wait_tx_done(GEMINI_UART_NUM, pdMS_TO_TICKS(100));
           vTaskDelay(pdMS_TO_TICKS(250));
           esp_restart();
