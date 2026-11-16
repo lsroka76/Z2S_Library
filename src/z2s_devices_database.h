@@ -4806,6 +4806,11 @@ inline constexpr z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "TZ3218_n0jsuogs", .model_name = "TS000F",
+    .z2s_device_uid = 10340,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "_TZ3000_q6a3tepg", .model_name = "TS0001",
     .z2s_device_uid = 10400,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY,
