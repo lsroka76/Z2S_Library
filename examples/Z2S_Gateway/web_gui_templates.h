@@ -1285,16 +1285,22 @@ inline constexpr zigbee_attribute_t zigbee_attributes[] PROGMEM = {
 		.zigbee_attribute_name = "SENSOR TYPE BITMAP"
 	},
 	{
+		.zigbee_attribute_id  = 0x0010, 
+	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_OCCUPANCY_SENSING, 
+		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16,
+		.zigbee_attribute_name = "SNZB-06P24 OCCUPANCY TIMEOUT (15-65535 [s])"
+	},
+	{
 		.zigbee_attribute_id  = 0x0020, 
 	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_OCCUPANCY_SENSING, 
 		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U16,
-		.zigbee_attribute_name = "SNZB-03P/06P MOTION TIMEOUT [5-60s]"
+		.zigbee_attribute_name = "SNZB-03P/06P MOTION TIMEOUT (5-60 [s])"
 	},
 	{
 		.zigbee_attribute_id  = 0x0022, 
 	  .zigbee_attribute_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_OCCUPANCY_SENSING, 
 		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U8,
-		.zigbee_attribute_name = "SNZB-06P OCCUPANCY SENSITIVITY [1(L)-3(H)]"
+		.zigbee_attribute_name = "SNZB-06P OCCUPANCY SENSITIVITY (1[L]-3[H])"
 	},
   //IAS ZONE
   {
@@ -1684,6 +1690,31 @@ inline constexpr zigbee_attribute_t zigbee_attributes[] PROGMEM = {
 		.zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
 		.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_U32,
 		.zigbee_attribute_name = "SWV REAL TIME VOLUME" },
+
+	{
+	.zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_ENABLE_OCCUPANCY_ZONES_ID, 
+	.zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
+	.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_16BITMAP,
+	.zigbee_attribute_name = "ENABLE OCCUPANCY ZONES"
+	},
+	{
+	.zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_ILLUMINANCE_CALIBRATION_ID, 
+	.zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
+	.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_S16,
+	.zigbee_attribute_name = "ILLUMINANCE CALIBRATION (-1000 - 1000 [lx])"
+	},
+	{
+	.zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_RADAR_SENSITIVITY_ID, 
+	.zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
+	.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_S8,
+	.zigbee_attribute_name = "RADAR SENSITIVITY (-6 - 6)"
+	},
+	{
+	.zigbee_attribute_id  = SONOFF_CUSTOM_CLUSTER_SPACIAL_LEARNING_CMD, 
+	.zigbee_attribute_cluster_id = SONOFF_CUSTOM_CLUSTER, 
+	.zigbee_attribute_datatype_id = ESP_ZB_ZCL_ATTR_TYPE_SET,
+	.zigbee_attribute_name = "SPACIAL LEARNING (CMD) - 8 BYTES PAYLOAD"
+	},
 
 	{ .zigbee_attribute_id  = HEIMAN_CUSTOM_CLUSTER_SMOKE_CONCENTRATION_LEVEL_ID, 
 		.zigbee_attribute_cluster_id = HEIMAN_CUSTOM_CLUSTER, 
@@ -2100,6 +2131,133 @@ inline constexpr zigbee_attribute_value_t zigbee_attribute_values [] PROGMEM = {
 		//.zigbee_attribute_value = 0x03010103;
 		.zigbee_attribute_value_str = "03010103"
 	},
+	// A. Max Distance Limiters (0.0 m -> X m)
+  {
+    .zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_ENABLE_OCCUPANCY_ZONES_ID,
+    .zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+    .zigbee_attribute_value_name = "0.0 - 4.0 m (ALL ZONES ENABLED)",
+    .zigbee_attribute_value = 0xFF
+  },
+  {
+    .zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_ENABLE_OCCUPANCY_ZONES_ID,
+    .zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+    .zigbee_attribute_value_name = "0.0 - 3.5 m",
+    .zigbee_attribute_value = 0x7F
+  },
+  {
+    .zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_ENABLE_OCCUPANCY_ZONES_ID,
+    .zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+    .zigbee_attribute_value_name = "0.0 - 3.0 m",
+    .zigbee_attribute_value = 0x3F
+  },
+  {
+    .zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_ENABLE_OCCUPANCY_ZONES_ID,
+    .zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+    .zigbee_attribute_value_name = "0.0 - 2.5 m",
+    .zigbee_attribute_value = 0x1F
+  },
+  {
+    .zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_ENABLE_OCCUPANCY_ZONES_ID,
+    .zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+    .zigbee_attribute_value_name = "0.0 - 2.0 m",
+    .zigbee_attribute_value = 0x0F
+  },
+  {
+    .zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_ENABLE_OCCUPANCY_ZONES_ID,
+    .zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+    .zigbee_attribute_value_name = "0.0 - 1.5 m",
+    .zigbee_attribute_value = 0x07
+  },
+  {
+    .zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_ENABLE_OCCUPANCY_ZONES_ID,
+    .zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+    .zigbee_attribute_value_name = "0.0 - 1.0 m (NEAR ONLY)",
+    .zigbee_attribute_value = 0x03
+  },
+
+  // B. Near-Field Blanking (X m -> 4.0 m)
+  {
+    .zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_ENABLE_OCCUPANCY_ZONES_ID,
+    .zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+    .zigbee_attribute_value_name = "1.0 - 4.0 m (SKIP 0-1.0 m)",
+    .zigbee_attribute_value = 0xFC
+  },
+  {
+    .zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_ENABLE_OCCUPANCY_ZONES_ID,
+    .zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+    .zigbee_attribute_value_name = "1.5 - 4.0 m (SKIP 0-1.5 m)",
+    .zigbee_attribute_value = 0xF8
+  },
+  {
+    .zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_ENABLE_OCCUPANCY_ZONES_ID,
+    .zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+    .zigbee_attribute_value_name = "2.0 - 4.0 m (SKIP 0-2.0 m)",
+    .zigbee_attribute_value = 0xF0
+  },
+  {
+    .zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_ENABLE_OCCUPANCY_ZONES_ID,
+    .zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+    .zigbee_attribute_value_name = "2.5 - 4.0 m (SKIP 0-2.5 m)",
+    .zigbee_attribute_value = 0xE0
+  },
+  {
+    .zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_ENABLE_OCCUPANCY_ZONES_ID,
+    .zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+    .zigbee_attribute_value_name = "3.0 - 4.0 m (FAR ONLY)",
+    .zigbee_attribute_value = 0xC0
+  },
+
+  // C. Mid-Room Windows (Start m -> End m)
+  {
+    .zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_ENABLE_OCCUPANCY_ZONES_ID,
+    .zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+    .zigbee_attribute_value_name = "1.0 - 3.5 m",
+    .zigbee_attribute_value = 0x7C
+  },
+  {
+    .zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_ENABLE_OCCUPANCY_ZONES_ID,
+    .zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+    .zigbee_attribute_value_name = "1.0 - 3.0 m",
+    .zigbee_attribute_value = 0x3C
+  },
+  {
+    .zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_ENABLE_OCCUPANCY_ZONES_ID,
+    .zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+    .zigbee_attribute_value_name = "1.0 - 2.5 m",
+    .zigbee_attribute_value = 0x1C
+  },
+  {
+    .zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_ENABLE_OCCUPANCY_ZONES_ID,
+    .zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+    .zigbee_attribute_value_name = "1.0 - 2.0 m",
+    .zigbee_attribute_value = 0x0C
+  },
+  {
+    .zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_ENABLE_OCCUPANCY_ZONES_ID,
+    .zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+    .zigbee_attribute_value_name = "1.5 - 3.0 m",
+    .zigbee_attribute_value = 0x38
+  },
+  {
+    .zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_ENABLE_OCCUPANCY_ZONES_ID,
+    .zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+    .zigbee_attribute_value_name = "2.0 - 3.0 m",
+    .zigbee_attribute_value = 0x30
+  },
+
+  // D. Obstacle Notch & Mute
+  {
+    .zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_ENABLE_OCCUPANCY_ZONES_ID,
+    .zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+    .zigbee_attribute_value_name = "0-1.5 m & 2.5-4.0 m (SKIP 1.5-2.5 m)",
+    .zigbee_attribute_value = 0xE7
+  },
+  {
+    .zigbee_attribute_id = SONOFF_CUSTOM_CLUSTER_ENABLE_OCCUPANCY_ZONES_ID,
+    .zigbee_cluster_id = SONOFF_CUSTOM_CLUSTER,
+    .zigbee_attribute_value_name = "ALL ZONES DISABLED",
+    .zigbee_attribute_value = 0x00
+  },
 	{
 		.zigbee_attribute_id = LUMI_CUSTOM_SWITCH_OPERATION_MODE_ID,
 		.zigbee_cluster_id = LUMI_CUSTOM_CLUSTER,

@@ -155,6 +155,39 @@ class HvacBaseEE;
 
 
 /*****************************************************************************/
+
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+  #include "GeminiProtocol.h"
+#endif
+
+static inline uint32_t z2s_millis() {
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+  return GeminiBridge::getC6Millis();
+#else
+  return millis();
+#endif
+}
+
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+struct __attribute__((packed)) Z2S_RtcDeviceState {
+  uint32_t c6_last_seen_ms;    // 0 = unseen since C6 boot
+  uint16_t short_addr;         
+  int8_t   rssi;
+  uint8_t  battery_percentage; // 0xFF = unknown
+};
+
+struct Z2S_RtcDeviceTable {
+  uint32_t           magic;
+  uint32_t           c6_boot_id;
+  Z2S_RtcDeviceState slots[Z2S_DEVICES_MAX_NUMBER];
+};
+
+extern Z2S_RtcDeviceTable z2s_rtc_dev_table;
+#endif
+
+bool Z2S_syncRtcDeviceTable(uint32_t c6_boot_id);
+void Z2S_clearRtcDeviceSlot(int16_t device_index);
+
 /*****************************************************************************/
 
 class Z2S_Device;
@@ -197,7 +230,26 @@ class Z2S_Device {
 
       _device_index = device_index;
       memcpy(&_z2s_device, z2s_device, sizeof(z2s_zb_device_params_t));
-  }
+
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+      if (_device_index >= 0 && _device_index < Z2S_DEVICES_MAX_NUMBER &&
+          z2s_rtc_dev_table.magic == 0x5A325352UL &&
+          z2s_rtc_dev_table.c6_boot_id != 0) {
+
+        const auto &slot = z2s_rtc_dev_table.slots[_device_index];
+        if (slot.short_addr == _z2s_device.short_addr && slot.c6_last_seen_ms > 0) {
+          
+          _z2s_device.last_seen_ms       = slot.c6_last_seen_ms;
+          _z2s_device.rssi               = slot.rssi;
+          _z2s_device.battery_percentage = slot.battery_percentage;
+          return;
+        }
+      }
+#endif
+      _z2s_device.last_seen_ms       = 0;
+      _z2s_device.rssi               = 0;
+      _z2s_device.battery_percentage = 0xFF;
+    }
 
     bool saveDeviceData() {
 
@@ -365,7 +417,15 @@ class Z2S_Device {
 
     bool setDeviceShortAddress(uint16_t short_addr, bool save = true) {
 
-      _z2s_device.short_addr = short_addr;
+      if (_z2s_device.short_addr != short_addr) {
+        
+        _z2s_device.short_addr = short_addr;
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+        if (_device_index >= 0 && _device_index < Z2S_DEVICES_MAX_NUMBER) {
+          z2s_rtc_dev_table.slots[_device_index].short_addr = short_addr;
+        }
+#endif
+      }
 
       if (save)
         return saveDeviceData();
@@ -412,6 +472,15 @@ class Z2S_Device {
 
       _z2s_device.rssi = rssi;
 
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+      if (_device_index >= 0 && _device_index < Z2S_DEVICES_MAX_NUMBER) {
+        
+        auto &slot      = z2s_rtc_dev_table.slots[_device_index];
+        slot.rssi       = rssi;
+        slot.short_addr = _z2s_device.short_addr;
+      }
+#endif
+
       if (save)
         return saveDeviceData();
       else
@@ -426,6 +495,14 @@ class Z2S_Device {
     bool setBatteryPercentage(uint8_t percentage, bool save = true) {
 
       _z2s_device.battery_percentage = percentage;
+
+    #if defined(USE_GEMINI_PROTOCOL_HOST)
+      if (_device_index >= 0 && _device_index < Z2S_DEVICES_MAX_NUMBER) {
+        auto &slot              = z2s_rtc_dev_table.slots[_device_index];
+        slot.battery_percentage = percentage;
+        slot.short_addr         = _z2s_device.short_addr;
+      }
+    #endif
 
       if (save)
         return saveDeviceData();
@@ -471,6 +548,14 @@ class Z2S_Device {
     bool setLastSeenMs(uint32_t ms, bool save = true) {
 
       _z2s_device.last_seen_ms = ms;
+
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+      if (_device_index >= 0 && _device_index < Z2S_DEVICES_MAX_NUMBER) {
+        auto &slot           = z2s_rtc_dev_table.slots[_device_index];
+        slot.c6_last_seen_ms = ms;
+        slot.short_addr      = _z2s_device.short_addr;
+      }
+#endif
 
       if (save)
         return saveDeviceData();
@@ -2238,17 +2323,32 @@ public:
 
   uint32_t getZbDeviceLastSeenMs() {
 
-    if (_z2s_device)
-      return _z2s_device->getLastSeenMs();
-    else
-      return 0;
+    if (_z2s_device) {
+
+      uint32_t c6_seen_ms = _z2s_device->getLastSeenMs();
+
+      if (c6_seen_ms == 0)
+        return 0;
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+      // Translate C6 timestamp into S3 millis() timeline so existing
+      // (millis() - getZbDeviceLastSeenMs()) checks in all channel classes
+      // yield the exact elapsed milliseconds since C6 heard the device:
+      uint32_t elapsed_ms = z2s_millis() - c6_seen_ms;
+      return millis() - elapsed_ms;
+#else
+      return c6_seen_ms;
+#endif
+    }
+    return 0;
   }
 
   void setZbDeviceLastSeenMs(uint32_t last_seen_ms) {
 
     if (_z2s_device)
-      _z2s_device->setLastSeenMs(last_seen_ms, false);
+      _z2s_device->setLastSeenMs(
+        (last_seen_ms == 0) ? 0 : z2s_millis(), false);
   }
+
 
   int8_t getZbDeviceLastRSSI() {
 

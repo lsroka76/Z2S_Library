@@ -48,9 +48,7 @@ void setup() {
   if (!Zigbee.started()) {
     log_i("Starting C6 Coordinator from NVRAM (S3 will sync when it boots)...");
     if (Zigbee.begin(ZIGBEE_COORDINATOR, false)) {
-      G_PktEvtStackStarted evt = {};
-      esp_zb_get_long_address(evt.coordinator_ieee);
-      GeminiBridge::sendFrame(G_EVT_STACK_STARTED, &evt, sizeof(evt));
+      GeminiBridge::sendStackStartedEvt();
       log_i("C6 Zigbee Coordinator started!");
     } else {
       log_e("C6 Zigbee Coordinator failed to start! Rebooting...");

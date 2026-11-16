@@ -1269,32 +1269,47 @@ void fillMemoryUptimeInformation(char *buf, uint16_t buf_max_len) {
 		uint32_t Supla_uptime_m = (Supla_uptime_s % 3600) / 60;
 		uint32_t Supla_uptime_ss = Supla_uptime_s % 60;
 
+		#if defined(USE_GEMINI_PROTOCOL_HOST)
+    uint32_t c6_uptime_s  = GeminiBridge::getC6Millis() / 1000;
+    uint32_t c6_uptime_d  = c6_uptime_s / 86400;
+    uint32_t c6_uptime_h  = (c6_uptime_s % 86400) / 3600;
+    uint32_t c6_uptime_m  = (c6_uptime_s % 3600) / 60;
+    uint32_t c6_uptime_ss = c6_uptime_s % 60;
+#endif
+
 		log_i("\n\rcurrent time %s\n\r", current_time_buffer);
 
-		multi_heap_info_t multi_heap_info;
-    multi_heap_get_info(_z2s_custom_heap, &multi_heap_info);
+		//multi_heap_info_t multi_heap_info;
+    //multi_heap_get_info(_z2s_custom_heap, &multi_heap_info);
 
 		uint16_t meminfbuf_size = snprintf_P(
 		  buf, buf_max_len, "<b><i>FreeHeap:</b></i> %u B <b>| <i>MinimalFreeHeap"
 		  ":</b></i> %u B <b>| <i>MaxAllocHeap:</b></i> %u B<b>| <i>CPU usage:"
 	   	"</b></i> %04.1f %%<br><br>"
-			"<b><i>Custom FreeHeap:</b></i> %u B <b>| <i>Custom MinimalFreeHeap"
-		  ":</b></i> %u B <b>| <i>CustomMaxAllocHeap:</b></i> %u B<br><br>"
+			//"<b><i>Custom FreeHeap:</b></i> %u B <b>| <i>Custom MinimalFreeHeap"
+		  //":</b></i> %u B <b>| <i>CustomMaxAllocHeap:</b></i> %u B<br><br>"
 		  //"<b><i>uxTaskGetStackHighWaterMark (main):</b></i> %u B <b>| <i>"
 		  //"uxTaskGetStackHighWaterMark (ZigBee):</b></i> %u B <br><br>"
 		  "<b><i>Total PSRAM:</b></i> %u B <b>| <i>Free PSRAM:</b></i> %u B<br>"
 		  "<b><i>Local time:</i></b> %s<b><i>Supla uptime:</i></b> "
-		  "%lu dni %02lu:%02lu:%02lu (%lu seconds)",
-		  ESP.getFreeHeap(), ESP.getMinFreeHeap(),
+		  "%lu dni %02lu:%02lu:%02lu (%lu seconds)"
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+      "<br><b><i>C6 NCP uptime:</i></b> %lu dni %02lu:%02lu:%02lu (%lu seconds)"
+#endif
+		  ,ESP.getFreeHeap(), ESP.getMinFreeHeap(),
 		  ESP.getMaxAllocHeap(), GatewayTaskInfo.getCpuUsage(),
-			multi_heap_info.total_free_bytes, multi_heap_info.minimum_free_bytes, 
-			multi_heap_info.largest_free_block,
+			//multi_heap_info.total_free_bytes, multi_heap_info.minimum_free_bytes, 
+			//multi_heap_info.largest_free_block,
 		  //uxTaskGetStackHighWaterMark(NULL),
 		  //uxTaskGetStackHighWaterMark(Zigbee.getZigbeeTaskHandle()),
 		  ESP.getPsramSize(), ESP.getFreePsram(),
 		  current_time_buffer,
 		  Supla_uptime_d, Supla_uptime_h, Supla_uptime_m, Supla_uptime_ss,
-		  Supla_uptime_s);
+		  Supla_uptime_s
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+			,c6_uptime_d, c6_uptime_h, c6_uptime_m, c6_uptime_ss, c6_uptime_s
+#endif
+		);
 	}
 }
 

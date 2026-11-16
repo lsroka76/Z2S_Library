@@ -39,6 +39,16 @@ static bool copyStageToZbStorage(
 
 static char s_ncp_version[24] = "NCP-1.0.0";
 
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+#include "Z2S_common.h"
+static volatile int32_t  s_c6_time_offset     = 0;
+static volatile uint32_t s_c6_boot_id         = 0;
+static volatile bool     s_ncp_reset_detected = true;
+#elif defined(USE_GEMINI_PROTOCOL_NCP)
+#include <esp_random.h>
+static uint32_t s_c6_boot_id = 0;
+#endif
+
 SemaphoreHandle_t GeminiBridge::_tx_mutex          = nullptr;
 SemaphoreHandle_t GeminiBridge::_sync_cmd_mutex    = nullptr;
 SemaphoreHandle_t GeminiBridge::_sync_rsp_sem      = nullptr;
@@ -202,6 +212,10 @@ const char *GeminiBridge::getNcpVersion() {
 
 void GeminiBridge::sendStackStartedEvt() {
 #if defined(USE_GEMINI_PROTOCOL_NCP)
+  if (s_c6_boot_id == 0) {
+    s_c6_boot_id = esp_random();
+    if (s_c6_boot_id == 0) s_c6_boot_id = 1;
+  }
   G_PktEvtStackStarted evt = {};
   esp_zb_lock_acquire(portMAX_DELAY);
   esp_zb_get_long_address(evt.coordinator_ieee);
@@ -212,7 +226,29 @@ void GeminiBridge::sendStackStartedEvt() {
   evt.is_factory_new = Zigbee.isFactoryStack() ? 1 : 0;
   snprintf(evt.ncp_version, sizeof(evt.ncp_version), "%.12s R%d U%lu",
            s_ncp_version, (int)esp_reset_reason(), (unsigned long)(millis() / 1000));
+  evt.c6_boot_id   = s_c6_boot_id;
+  evt.c6_uptime_ms = millis();
   sendFrame(G_EVT_STACK_STARTED, &evt, sizeof(evt));
+#endif
+}
+
+uint32_t GeminiBridge::getC6Millis() {
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+  return (uint32_t)((int32_t)millis() + s_c6_time_offset);
+#else
+  return millis();
+#endif
+}
+
+uint32_t GeminiBridge::getC6BootId() {
+  return s_c6_boot_id;
+}
+
+bool GeminiBridge::didNcpResetSinceLastHostBoot() {
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+  return s_ncp_reset_detected;
+#else
+  return true;
 #endif
 }
 
@@ -564,6 +600,7 @@ void GeminiBridge::cmdWorkerTask(void *arg) {
     switch (item.hdr.msg_type) {
       
       case G_EVT_STACK_STARTED: {
+        
         if (item.hdr.payload_len >= 18) {
           const auto *evt = reinterpret_cast<const G_PktEvtStackStarted *>(p);
           memcpy(s_coord_ieee, evt->coordinator_ieee, 8);
@@ -573,9 +610,16 @@ void GeminiBridge::cmdWorkerTask(void *arg) {
           if (item.hdr.payload_len >= 19) {
             Zigbee._is_factory_new = (evt->is_factory_new != 0);
           }
-          if (item.hdr.payload_len >= sizeof(G_PktEvtStackStarted) && evt->ncp_version[0] != '\0') {
+          if (item.hdr.payload_len >= 43 && evt->ncp_version[0] != '\0') {
             strncpy(s_ncp_version, evt->ncp_version, sizeof(s_ncp_version) - 1);
             s_ncp_version[sizeof(s_ncp_version) - 1] = '\0';
+          }
+          if (item.hdr.payload_len >= sizeof(G_PktEvtStackStarted)) {
+            s_c6_time_offset     = (int32_t)evt->c6_uptime_ms - (int32_t)millis();
+            s_c6_boot_id         = evt->c6_boot_id;
+            s_ncp_reset_detected = Z2S_syncRtcDeviceTable(evt->c6_boot_id);
+          } else {
+            s_ncp_reset_detected = Z2S_syncRtcDeviceTable(0);
           }
         }
         Zigbee._started   = true;

@@ -31,6 +31,80 @@ IPAddress ip_address;
 
 /*****************************************************************************/
 
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+RTC_NOINIT_ATTR Z2S_RtcDeviceTable z2s_rtc_dev_table;
+#endif
+
+void Z2S_clearRtcDeviceSlot(int16_t device_index) {
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+  if (device_index >= 0 && device_index < Z2S_DEVICES_MAX_NUMBER) {
+    memset(&z2s_rtc_dev_table.slots[device_index], 0, sizeof(Z2S_RtcDeviceState));
+    z2s_rtc_dev_table.slots[device_index].battery_percentage = 0xFF;
+  }
+#else
+  (void)device_index;
+#endif
+}
+
+bool Z2S_syncRtcDeviceTable(uint32_t c6_boot_id) {
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+  constexpr uint32_t RTC_MAGIC = 0x5A325352UL; // "Z2SR"
+
+  if (z2s_rtc_dev_table.magic == RTC_MAGIC &&
+      c6_boot_id != 0 &&
+      z2s_rtc_dev_table.c6_boot_id == c6_boot_id) {
+    // C6 did NOT reset across S3 reboot -> restore cached state into loaded Z2S_Devices
+    log_i("C6 boot_id (0x%08lX) unchanged -> restoring device last_seen_ms & RSSI from RTC RAM",
+          (unsigned long)c6_boot_id);
+
+    for (Z2S_Device *device : Z2S_Devices) {
+      int16_t idx = device ? device->getDeviceIndex() : -1;
+      if (idx >= 0 && idx < Z2S_DEVICES_MAX_NUMBER) {
+        const auto &slot = z2s_rtc_dev_table.slots[idx];
+        if (slot.short_addr == device->getDeviceShortAddress() && slot.c6_last_seen_ms > 0) {
+          device->setLastSeenMs(slot.c6_last_seen_ms, false);
+          device->setRssi(slot.rssi, false);
+          device->setBatteryPercentage(slot.battery_percentage, false);
+        }
+      }
+    }
+    return false; // NCP did not reset
+  }
+
+  // C6 reset (or cold boot) -> clear RTC table and zero out all Z2S_Devices
+  log_i("C6 reset or cold boot detected (new boot_id=0x%08lX) -> resetting last_seen_ms to 0",
+        (unsigned long)c6_boot_id);
+
+  memset(&z2s_rtc_dev_table, 0, sizeof(z2s_rtc_dev_table));
+  for (uint16_t i = 0; i < Z2S_DEVICES_MAX_NUMBER; i++) {
+    z2s_rtc_dev_table.slots[i].battery_percentage = 0xFF;
+  }
+  z2s_rtc_dev_table.magic      = RTC_MAGIC;
+  z2s_rtc_dev_table.c6_boot_id = c6_boot_id;
+
+  for (Z2S_Device *device : Z2S_Devices) {
+    if (device) {
+      device->setLastSeenMs(0, false);
+      device->setRssi(0, false);
+      device->setBatteryPercentage(0xFF, false);
+    }
+  }
+  return true; // NCP reset
+#else
+  (void)c6_boot_id;
+  for (Z2S_Device *device : Z2S_Devices) {
+    if (device) {
+      device->setLastSeenMs(0, false);
+      device->setRssi(0, false);
+      device->setBatteryPercentage(0xFF, false);
+    }
+  }
+  return true;
+#endif
+}
+
+/*****************************************************************************/
+
 size_t mbstrnlen(const char *mb_str, size_t max_bytes) {
 
 	if (mb_str == nullptr)
@@ -383,6 +457,7 @@ uint8_t Z2S_Core::updateZ2SChannelsByZbDeviceId(
   uint8_t Zb_device_id, uint8_t rssi_percentage, uint8_t battery_level) {
 
   uint8_t channels_number = 0;
+  uint32_t now_c6_ms = z2s_millis();
 
   auto core_it = Z2S_Cores.begin();
     
@@ -395,19 +470,23 @@ uint8_t Z2S_Core::updateZ2SChannelsByZbDeviceId(
       Supla::Channel *channel = z2s_core->_z2s_element->getChannel();
 
       if (channel) {
+        uint32_t timeout_ms = z2s_core->getTimeoutMs();
+        uint32_t seen_ms    = z2s_core->_z2s_device
+                              ? z2s_core->_z2s_device->getLastSeenMs() : 0;
 
-        channel->setStateOnline();
+        // Only mark online if within channel timeout (or if no timeout is set)
+        if (seen_ms != 0 &&
+            (timeout_ms == 0 || (uint32_t)(now_c6_ms - seen_ms) < timeout_ms)) {
+          channel->setStateOnline();
+        }
+
         channel->setBridgeSignalStrength(rssi_percentage);
         if ((battery_level < 0xFF) &&
-          ((z2s_core->_z2s_channel.user_data_flags &
-            USER_DATA_FLAG_IGNORE_CHANNEL_BATTERY_LEVEL) == 0)) 
-
+            ((z2s_core->_z2s_channel.user_data_flags &
+              USER_DATA_FLAG_IGNORE_CHANNEL_BATTERY_LEVEL) == 0)) {
           channel->setBatteryLevel(battery_level);
-      }
-      else
-        {
-
         }
+      }
       channels_number++;
     }
     core_it++;

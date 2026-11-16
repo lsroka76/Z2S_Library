@@ -1085,7 +1085,7 @@ void loop() {
   
   vTaskDelay(pdMS_TO_TICKS(10));
 
-  if (millis() - _z2s_iterate_ms > 5000)
+  if (Zigbee.started() && (z2s_millis() - _z2s_iterate_ms > 5000))
     _z2s_iterate_ms = Z2S_iterateSuplaChannels(_z2s_iterate_ms);
 
 #ifdef USE_TELNET_CONSOLE

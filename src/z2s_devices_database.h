@@ -168,6 +168,8 @@
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_WZM100         0x2345
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_SZLR08T        0x2350
 
+#define Z2S_DEVICE_DESC_SONOFF_PRESENCE_SENSOR              0x2400
+
 #define Z2S_DEVICE_DESC_ADEO_SMART_PIRTH_SENSOR             0x2500
 #define Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR       0x2501
 
@@ -840,6 +842,10 @@
 
 #define SONOFF_PIR_SENSOR_OCCUPANCY_SID                     0x00
 #define SONOFF_PIR_SENSOR_ILLUMINANCE_SID                   0x01
+
+#define SONOFF_PRESENCE_SENSOR_OCCUPANCY_SID                0x00
+#define SONOFF_PRESENCE_SENSOR_ILLUMINANCE_SID              0x01
+
 
 #define DIMMER_FUNC_BRIGHTNESS_SID                          0x00
 #define DIMMER_FUNC_COLOR_TEMPERATURE_SID                   0x01
@@ -1831,6 +1837,12 @@ inline constexpr z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] =
     .z2s_device_config_flags = 0x0,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              ESP_ZB_ZCL_CLUSTER_ID_OCCUPANCY_SENSING }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_PRESENCE_SENSOR,
+    .z2s_device_clusters_count = 2,
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_OCCUPANCY_SENSING,
+                             ESP_ZB_ZCL_CLUSTER_ID_ILLUMINANCE_MEASUREMENT }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_OCCUPANCY_SENSOR,
     .z2s_device_clusters_count = 1,
@@ -7981,6 +7993,11 @@ inline constexpr z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_uid = 38600,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_DIMMER_CT_LIGHT_SOURCE,
     .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "eWeLink", .model_name = "SNZB-06P24",
+    .z2s_device_uid = 38700,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_PRESENCE_SENSOR,
+	  .z2s_device_endpoints_count = 1}
 //DEVICES_END
 };
 

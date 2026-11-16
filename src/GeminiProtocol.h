@@ -163,6 +163,8 @@ struct __attribute__((packed)) G_PktEvtStackStarted {
   int8_t   tx_power;
   uint8_t  is_factory_new;
   char     ncp_version[24];
+  uint32_t c6_boot_id;
+  uint32_t c6_uptime_ms;
 };
 
 struct __attribute__((packed)) G_PktNcpOtaWrite {
@@ -459,6 +461,10 @@ public:
 
   static uint32_t hostZbStorageSize();
   static bool hostZbStorageRead(uint32_t offset, uint8_t *dst, size_t len);
+
+  static uint32_t getC6Millis();
+  static uint32_t getC6BootId();
+  static bool     didNcpResetSinceLastHostBoot();
 
 private:
   static void rxTask(void *arg);

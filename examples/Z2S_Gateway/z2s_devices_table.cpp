@@ -793,6 +793,7 @@ bool Z2S_removeZbDevice(uint8_t device_index) {
     }
     
     devicesStorage.remove(device_index);
+    Z2S_clearRtcDeviceSlot(device_index);
 
     delete device;
 
@@ -916,9 +917,9 @@ void Z2S_initZbDevices(uint32_t init_ms) {
           continue;
         }
 
-      z2s_device->setLastSeenMs(0, false); 
-      z2s_device->setRssi(0, false);
-      z2s_device->setBatteryPercentage(0xFF, false);
+      //z2s_device->setLastSeenMs(0, false); 
+      //z2s_device->setRssi(0, false);
+      //z2s_device->setBatteryPercentage(0xFF, false);
     }   
   }
 
@@ -1402,19 +1403,21 @@ void Z2S_initSuplaChannels() {
 
 uint32_t Z2S_iterateSuplaChannels(uint32_t last_iterate_ms) {
 
-  uint32_t millis_ms = millis();
+  uint32_t millis_ms = z2s_millis();
   
   for (Z2S_Device *device : Z2S_Devices) {
     
-    if ((device->getRecordId() > 0) &&
-        (device->getLastSeenMs() > last_iterate_ms)) {
+    int32_t seen_ms = device->getLastSeenMs();
+    if ((device->getRecordId() > 0) && (seen_ms != 0) &&
+        ((last_iterate_ms == 0) ||
+         ((uint32_t)(millis_ms - seen_ms) <= 
+          (uint32_t)(millis_ms - last_iterate_ms)))) {
       
       uint8_t rssi_percentage = map(
             device->getRssi(), -100, -30, 0, 100);
             
       uint8_t battery_level = device->getBatteryPercentage();
 
-  
       Z2S_Core::updateZ2SChannelsByZbDeviceId(
         device->getDeviceIndex(), rssi_percentage, battery_level);
     }
@@ -2293,6 +2296,12 @@ void Z2S_onIlluminanceReceive(
   switch (z2s_core->getChannelModelId()) {
 
 
+    case Z2S_DEVICE_DESC_SONOFF_PRESENCE_SENSOR:
+
+      sub_id = SONOFF_PRESENCE_SENSOR_ILLUMINANCE_SID;
+    break;
+
+
     case Z2S_DEVICE_DESC_SHELLY_WS90_WEATHER_STATION:
 
       sub_id = SHELLY_WS90_WEATHER_STATION_ILLUMINANCE_SID;
@@ -2413,6 +2422,12 @@ void Z2S_onOccupancyReceive(
     case Z2S_DEVICE_DESC_SONOFF_PIR_SENSOR:
 
       sub_id = SONOFF_PIR_SENSOR_OCCUPANCY_SID;
+    break;
+
+
+    case Z2S_DEVICE_DESC_SONOFF_PRESENCE_SENSOR:
+
+      sub_id = SONOFF_PRESENCE_SENSOR_OCCUPANCY_SID;
     break;
   }
 
@@ -6734,7 +6749,8 @@ void Z2S_onUpdateDeviceLastRssi(uint16_t short_addr, int8_t rssi) {
 
   if (z2s_device != nullptr)  {
 
-    uint32_t millis_ms = millis();
+    uint32_t millis_ms = z2s_millis();
+    if (millis_ms == 0) millis_ms = 1;
 
     if (rssi < 0) {
       z2s_device->setRssi(rssi, false); 
@@ -8578,6 +8594,27 @@ case Z2S_DEVICE_DESC_LUMI_W500: {
         addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); 
       
     } break;
+
+/******************************************************************************/     
+
+      case Z2S_DEVICE_DESC_SONOFF_PRESENCE_SENSOR: {
+
+        switch (sub_id) {
+
+
+          case SONOFF_PRESENCE_SENSOR_OCCUPANCY_SID:
+
+            addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func);
+          break;
+
+
+          case SONOFF_PRESENCE_SENSOR_ILLUMINANCE_SID:
+
+            addZ2SDeviceGeneralPurposeMeasurement(
+              device, first_free_slot, sub_id, name, func, unit);
+          break;
+        }
+      } break;
 
 /******************************************************************************/
 
@@ -11195,6 +11232,19 @@ void Z2S_buildSuplaChannels(
       Z2S_addZ2SDevice(
         joined_device, SONOFF_PIR_SENSOR_ILLUMINANCE_SID, "ILLUMINANCE", 
         SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+    } break;
+
+/*****************************************************************************/
+
+    case Z2S_DEVICE_DESC_SONOFF_PRESENCE_SENSOR: {
+      
+      Z2S_addZ2SDevice(
+        joined_device, SONOFF_PRESENCE_SENSOR_OCCUPANCY_SID, "OCCUPANCY", 
+        SUPLA_CHANNELFNC_ALARMARMAMENTSENSOR);
+
+      Z2S_addZ2SDevice(
+        joined_device, SONOFF_PRESENCE_SENSOR_ILLUMINANCE_SID, "ILLUMINANCE", 
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "lx");
     } break;
 
 /*****************************************************************************/
