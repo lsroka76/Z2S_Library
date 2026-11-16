@@ -40,7 +40,7 @@ static bool copyStageToZbStorage(
 static char s_ncp_version[24] = "NCP-1.0.0";
 
 #if defined(USE_GEMINI_PROTOCOL_HOST)
-#include "Z2S_common.h"
+extern bool Z2S_syncRtcDeviceTable(uint32_t c6_boot_id);
 static volatile int32_t  s_c6_time_offset     = 0;
 static volatile uint32_t s_c6_boot_id         = 0;
 static volatile bool     s_ncp_reset_detected = true;
