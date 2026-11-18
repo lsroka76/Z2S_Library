@@ -1,6 +1,8 @@
 #ifndef Z2S_DEVICES_DATABASE_H_
 #define Z2S_DEVICES_DATABASE_H_
 
+#include <array>
+
 // Z2S_DEVICE_DESC_ID - used for selection of clusters to bind and matching Supla channels#define
 
 #define Z2S_DEVICE_CONFIG_FLAG_MIRROR_ALL_ENDPOINTS         (1 << 0)
@@ -32,11 +34,16 @@
 #define Z2S_DEVICE_DESC_CONFIG_FLAG_LUMI_INIT               (1 << 15)
 
 
-#define Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_ENROLL_1       (1 << 16)
-#define Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_ENROLL_2       (1 << 17)
+#define Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_ENROLL         (1 << 16)
+#define Z2S_DEVICE_DESC_CONFIG_FLAG_RESERVED_17             (1 << 17)
 
 #define Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_REJOIN_QUERY   (1 << 20)
 #define Z2S_DEVICE_DESC_CONFIG_FLAG_ON_OFF_REJOIN_QUERY     (1 << 21)
+#define Z2S_DEVICE_DESC_CONFIG_FLAG_REBIND_AFTER_REJOIN     (1 << 22)
+#define Z2S_DEVICE_DESC_CONFIG_FLAG_CONFIGURE_AFTER_REJOIN  (1 << 23)
+#define Z2S_DEVICE_DESC_CONFIG_FLAG_REBIND_AND_CONFIGURE_AFTER_REJOIN \
+  (Z2S_DEVICE_DESC_CONFIG_FLAG_REBIND_AFTER_REJOIN |                  \
+   Z2S_DEVICE_DESC_CONFIG_FLAG_CONFIGURE_AFTER_REJOIN)
 
 #define Z2S_DEVICE_DESC_NULL                                0x0000
 #define Z2S_DEVICE_DESC_TUYA_QUERY                          0x0080
@@ -241,7 +248,7 @@
 
 #define Z2S_DEVICE_DESC_LUMI_SWITCH                         0x4010
 #define Z2S_DEVICE_DESC_LUMI_DOUBLE_SWITCH                  0x4011
-#define Z2S_DEVICE_DESC_LUMI_DOUBLE_RELAY                   0x4011
+#define Z2S_DEVICE_DESC_LUMI_DOUBLE_RELAY                   0x4012
 
 #define Z2S_DEVICE_DESC_TUYA_RELAY                          0x4020
 #define Z2S_DEVICE_DESC_TUYA_DP_RELAY                       0x4025
@@ -1080,6 +1087,8 @@ inline constexpr const char *PHILIPS_HUE_DIMMER_SWITCH_BUTTONS[] PROGMEM = {
 typedef struct z2s_device_desc_s {
   uint32_t z2s_device_desc_id;
   uint8_t  z2s_device_clusters_count;
+  uint8_t  reporting_flags;
+  uint16_t z2s_reporting_set_id;
   uint32_t z2s_device_config_flags;
   uint16_t z2s_device_clusters[MAX_BOUND_CLUSTERS];
 } z2s_device_desc_t;
@@ -1138,7 +1147,8 @@ constexpr uint32_t hash_32_fnv1a_const2(const char* str_1, const char* str_2, ui
 }
 */
 
-#define Z2S_REPORTING_SET_FLAG_STANDARD                                 0x10
+#define Z2S_REPORTING_SET_FLAG_STANDARD                                 0x0010
+#define Z2S_REPORTING_SET_FLAG_SYNC                                     0x0020
 
 #define Z2S_REPORTING_SET_DESC_TEMPERATURE_HUMIDITY_BASIC               0x0100
 
@@ -1150,11 +1160,17 @@ constexpr uint32_t hash_32_fnv1a_const2(const char* str_1, const char* str_2, ui
 #define Z2S_REPORTING_SET_DESC_BATTERY_REPORTING_SONOFF                 0x0220
 
 #define Z2S_REPORTING_SET_DESC_SONOFF_ONOFF_1                           0x0300
+#define Z2S_REPORTING_SET_DESC_ONOFF_300                                0x0301
 
 #define Z2S_REPORTING_SET_DESC_ELECTRICAL_MEASUREMENT_1                 0x0400
 #define Z2S_REPORTING_SET_DESC_SHELLY_POWER_STRIP_EM                    0x0410
+#define Z2S_REPORTING_SET_DESC_DEVELCO_RELAY_EM                         0x0420
 
 #define Z2S_REPORTING_SET_DESC_DANFOSS_TRV                              0x0500
+#define Z2S_REPORTING_SET_DESC_SONOFF_TRVZB                             0x0510
+#define Z2S_REPORTING_SET_DESC_BOSCH_BTHRA                              0x0520
+#define Z2S_REPORTING_SET_DESC_EUROTRONIC_TRV                           0x0530
+#define Z2S_REPORTING_SET_DESC_LUMI_TRV                                 0x0540
 
 #define Z2S_REPORTING_SET_DESC_SHELLY_WS90                              0x0600
 #define Z2S_REPORTING_SET_DESC_SONOFF_SWV                               0x0610
@@ -1606,6 +1622,213 @@ inline constexpr z2s_reporting_set_desc_t Z2S_REPORTING_SETS_DESC[] PROGMEM [[ma
     .z2s_delta_value_8 = 0,
     .z2s_manufacturer_code = 0},
 
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_ONOFF_300,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_BOOL,
+    .z2s_min_interval_value = 0,
+    .z2s_max_interval_value = 300,
+    .z2s_delta_value_8 = 1,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_DEVELCO_RELAY_EM,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_BOOL,
+    .z2s_min_interval_value = 0,
+    .z2s_max_interval_value = 300,
+    .z2s_delta_value_8 = 1,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_DEVELCO_RELAY_EM,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_AC_FREQUENCY_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_U16,
+    .z2s_min_interval_value = 0,
+    .z2s_max_interval_value = 0,
+    .z2s_delta_value = 232,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_DEVELCO_RELAY_EM,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSVOLTAGE_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_U16,
+    .z2s_min_interval_value = 0,
+    .z2s_max_interval_value = 0,
+    .z2s_delta_value = 50,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_DEVELCO_RELAY_EM,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_RMSCURRENT_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_U16,
+    .z2s_min_interval_value = 0,
+    .z2s_max_interval_value = 0,
+    .z2s_delta_value = 10,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_DEVELCO_RELAY_EM,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_ACTIVE_POWER_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_S16,
+    .z2s_min_interval_value = 0,
+    .z2s_max_interval_value = 0,
+    .z2s_delta_value = 1,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_DEVELCO_RELAY_EM,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_METERING,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_METERING_CURRENT_SUMMATION_DELIVERED_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_U48,
+    .z2s_min_interval_value = 0,
+    .z2s_max_interval_value = 0,
+    .z2s_delta_value_64 = 1,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_SONOFF_TRVZB,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_S16,
+    .z2s_min_interval_value = 0,
+    .z2s_max_interval_value = 1200,
+    .z2s_delta_value = 10,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_BOSCH_BTHRA,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_S16,
+    .z2s_min_interval_value = 30,
+    .z2s_max_interval_value = 900,
+    .z2s_delta_value = 20,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_BOSCH_BTHRA,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_THERMOSTAT_OCCUPIED_HEATING_SETPOINT_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_S16,
+    .z2s_min_interval_value = 0,
+    .z2s_max_interval_value = 65000,
+    .z2s_delta_value = 1,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_BOSCH_BTHRA,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT_UI_CONFIG,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_THERMOSTAT_UI_CONFIG_KEYPAD_LOCKOUT_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM,
+    .z2s_min_interval_value = 0,
+    .z2s_max_interval_value = 65000,
+    .z2s_delta_value_8 = 0,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_BOSCH_BTHRA,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT,
+    .z2s_attribute_id = BOSCH_HEATING_DEMAND_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM,
+    .z2s_min_interval_value = 0,
+    .z2s_max_interval_value = 65000,
+    .z2s_delta_value_8 = 0,
+    .z2s_manufacturer_code = BOSCH_MANUFACTURER_CODE},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_BOSCH_BTHRA,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT,
+    .z2s_attribute_id = BOSCH_TRV_OPERATING_MODE_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM,
+    .z2s_min_interval_value = 0,
+    .z2s_max_interval_value = 65000,
+    .z2s_delta_value_8 = 0,
+    .z2s_manufacturer_code = BOSCH_MANUFACTURER_CODE},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_EUROTRONIC_TRV,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_S16,
+    .z2s_min_interval_value = 0,
+    .z2s_max_interval_value = 3600,
+    .z2s_delta_value = 10,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_EUROTRONIC_TRV,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_THERMOSTAT_OCCUPIED_HEATING_SETPOINT_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_S16,
+    .z2s_min_interval_value = 0,
+    .z2s_max_interval_value = 3600,
+    .z2s_delta_value = 10,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_EUROTRONIC_TRV,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_THERMOSTAT_PI_HEATING_DEMAND_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM,
+    .z2s_min_interval_value = 0,
+    .z2s_max_interval_value = 3600,
+    .z2s_delta_value_8 = 10,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_EUROTRONIC_TRV,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT,
+    .z2s_attribute_id = EUROTRONIC_HOST_FLAGS_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_U24,
+    .z2s_min_interval_value = 0,
+    .z2s_max_interval_value = 3600,
+    .z2s_delta_value_32 = 1,
+    .z2s_manufacturer_code = EUROTRONIC_MANUFACTURER_CODE},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_EUROTRONIC_TRV,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT,
+    .z2s_attribute_id = EUROTRONIC_CURRENT_HEATING_SETPOINT_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_S16,
+    .z2s_min_interval_value = 0,
+    .z2s_max_interval_value = 3600,
+    .z2s_delta_value = 25,
+    .z2s_manufacturer_code = EUROTRONIC_MANUFACTURER_CODE},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_LUMI_TRV,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_THERMOSTAT_LOCAL_TEMPERATURE_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_S16,
+    .z2s_min_interval_value = 0,
+    .z2s_max_interval_value = 3600,
+    .z2s_delta_value = 10,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_LUMI_TRV,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_THERMOSTAT_OCCUPIED_HEATING_SETPOINT_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_S16,
+    .z2s_min_interval_value = 0,
+    .z2s_max_interval_value = 3600,
+    .z2s_delta_value = 10,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_LUMI_TRV,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_THERMOSTAT_SYSTEM_MODE_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM,
+    .z2s_min_interval_value = 10,
+    .z2s_max_interval_value = 3600,
+    .z2s_delta_value_8 = 0,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_LUMI_TRV,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_THERMOSTAT_THERMOSTAT_RUNNING_STATE_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_16BITMAP,
+    .z2s_min_interval_value = 0,
+    .z2s_max_interval_value = 3600,
+    .z2s_delta_value = 0,
+    .z2s_manufacturer_code = 0},
+
+  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_LUMI_TRV,
+    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT,
+    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_THERMOSTAT_PI_HEATING_DEMAND_ID,
+    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_U8,
+    .z2s_min_interval_value = 10,
+    .z2s_max_interval_value = 3600,
+    .z2s_delta_value_8 = 10,
+    .z2s_manufacturer_code = 0},
+
 };//Z2S_REPORTING_SETS_DESC
 
 inline constexpr z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
@@ -1717,7 +1940,8 @@ inline constexpr z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] =
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_ILLUZONE_SENSOR,
     .z2s_device_clusters_count = 3,
-    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT |
+      Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_ENROLL,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              ESP_ZB_ZCL_CLUSTER_ID_ILLUMINANCE_MEASUREMENT,
                              ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
@@ -1730,7 +1954,8 @@ inline constexpr z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] =
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_PIR_ILLUMINANCE_SENSOR,
     .z2s_device_clusters_count = 2,
-    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT |
+      Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_ENROLL,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              TUYA_PRIVATE_CLUSTER_EF00 }},
 
@@ -1749,7 +1974,7 @@ inline constexpr z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] =
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_ADEO_SMART_PIRTH_SENSOR,
     .z2s_device_clusters_count = 5,
-    .z2s_device_config_flags = 0x0,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_ENROLL,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              ESP_ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT,
                              ESP_ZB_ZCL_CLUSTER_ID_REL_HUMIDITY_MEASUREMENT,
@@ -1758,52 +1983,59 @@ inline constexpr z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] =
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR,
     .z2s_device_clusters_count = 2,
-    .z2s_device_config_flags = 0x0,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_ENROLL,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
 
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR,
     .z2s_device_clusters_count = 2,
-    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_REJOIN_QUERY,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_REJOIN_QUERY |
+      Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_ENROLL,
     .z2s_device_clusters =  { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                               ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
 
     {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_SENSOR,
     .z2s_device_clusters_count = 2,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT |
-      Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_REJOIN_QUERY,
+      Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_REJOIN_QUERY |
+      Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_ENROLL,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
     
     {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_IAS_ZONE_1_B_SENSOR,
     .z2s_device_clusters_count = 2,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT |
-      Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_REJOIN_QUERY,
+      Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_REJOIN_QUERY |
+      Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_ENROLL,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_2_T,
     .z2s_device_clusters_count = 2,
-    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_REJOIN_QUERY,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_REJOIN_QUERY |
+      Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_ENROLL,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B,
     .z2s_device_clusters_count = 2,
-    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_REJOIN_QUERY,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_REJOIN_QUERY |
+      Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_ENROLL,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_B,
     .z2s_device_clusters_count = 2,
-    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_REJOIN_QUERY,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_REJOIN_QUERY |
+      Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_ENROLL,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_SONOFF_T_B,
     .z2s_device_clusters_count = 2,
-    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_REJOIN_QUERY,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_REJOIN_QUERY |
+      Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_ENROLL,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
 
@@ -1816,7 +2048,8 @@ inline constexpr z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] =
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_IAS_ZONE_SENSOR_2,
     .z2s_device_clusters_count = 1,
-    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_REJOIN_QUERY,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_REJOIN_QUERY |
+      Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_ENROLL,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_VALLHORN_1,
@@ -1888,7 +2121,8 @@ inline constexpr z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] =
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_MAGNET_SENSOR,
     .z2s_device_clusters_count = 3,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_LUMI_INIT | 
-                               Z2S_DEVICE_DESC_CONFIG_FLAG_ON_OFF_REJOIN_QUERY,
+      Z2S_DEVICE_DESC_CONFIG_FLAG_ON_OFF_REJOIN_QUERY |
+      Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_ENROLL,                         
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE,
                              ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
                              ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG }},
@@ -1921,6 +2155,8 @@ inline constexpr z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] =
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1,
     .z2s_device_clusters_count = 1,
+    .reporting_flags = Z2S_REPORTING_SET_FLAG_STANDARD, 
+    .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_ONOFF_300,
     .z2s_device_config_flags = 0x0,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
 
@@ -1931,6 +2167,8 @@ inline constexpr z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] =
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY,
     .z2s_device_clusters_count = 1,
+    .reporting_flags = Z2S_REPORTING_SET_FLAG_STANDARD, 
+    .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_ONOFF_300,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
 
@@ -2028,8 +2266,10 @@ inline constexpr z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] =
       ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
       LUMI_CUSTOM_CLUSTER }},
 
-   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_DEVELCO_RELAY_ELECTRICITY_METER,
+  {  .z2s_device_desc_id = Z2S_DEVICE_DESC_DEVELCO_RELAY_ELECTRICITY_METER,
      .z2s_device_clusters_count = 3,
+     .reporting_flags = Z2S_REPORTING_SET_FLAG_STANDARD | Z2S_REPORTING_SET_FLAG_SYNC, 
+     .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_DEVELCO_RELAY_EM,
      .z2s_device_config_flags = 0x0,
      .z2s_device_clusters = { 
       ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
@@ -2077,7 +2317,7 @@ inline constexpr z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] =
 
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP,
-    .z2s_device_clusters_count = 3,
+    .z2s_device_clusters_count = 4,
     .z2s_device_config_flags = 
       Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT |
       Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_SETUP,
@@ -2257,6 +2497,8 @@ inline constexpr z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] =
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_TRVZB,
     .z2s_device_clusters_count = 4,
+    .reporting_flags = Z2S_REPORTING_SET_FLAG_STANDARD, 
+    .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_SONOFF_TRVZB,
     .z2s_device_config_flags = 0x0,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              ESP_ZB_ZCL_CLUSTER_ID_POLL_CONTROL,
@@ -2265,18 +2507,24 @@ inline constexpr z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] =
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_BOSCH_BTHRA,
     .z2s_device_clusters_count = 2,
+    .reporting_flags = Z2S_REPORTING_SET_FLAG_STANDARD, 
+    .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_BOSCH_BTHRA,
     .z2s_device_config_flags = 0x0,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_EUROTRONIC_SPZB0001,
     .z2s_device_clusters_count = 2,
+    .reporting_flags = Z2S_REPORTING_SET_FLAG_STANDARD, 
+    .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_EUROTRONIC_TRV,
     .z2s_device_config_flags = 0x0,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
                              ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_TRV,
     .z2s_device_clusters_count = 3,
+    .reporting_flags = Z2S_REPORTING_SET_FLAG_STANDARD, 
+    .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_LUMI_TRV,
     .z2s_device_config_flags = 0x0,
     .z2s_device_clusters = { 
       ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT,
@@ -2285,6 +2533,8 @@ inline constexpr z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] =
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_DANFOSS_ETRV0103,
     .z2s_device_clusters_count = 2,
+    .reporting_flags = Z2S_REPORTING_SET_FLAG_STANDARD, 
+    .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_DANFOSS_TRV,
     .z2s_device_config_flags = 0x0,
     .z2s_device_clusters = { 
       ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
@@ -2316,7 +2566,8 @@ inline constexpr z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] =
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SIREN_ALARM,
     .z2s_device_clusters_count = 2,
-    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT |
+      Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_ENROLL,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE,
                              ESP_ZB_ZCL_CLUSTER_ID_IAS_WD }},
 
@@ -2543,6 +2794,8 @@ inline constexpr z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] =
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_RGBW_BULB_XY,
     .z2s_device_clusters_count = 3,
+    .reporting_flags = Z2S_REPORTING_SET_FLAG_STANDARD, 
+    .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_ONOFF_300,
     .z2s_device_config_flags = 0x0,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
                              ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
@@ -2550,6 +2803,8 @@ inline constexpr z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] =
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_DIMMER_BULB,
     .z2s_device_clusters_count = 2, 
+    .reporting_flags = Z2S_REPORTING_SET_FLAG_STANDARD, 
+    .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_ONOFF_300,
     .z2s_device_config_flags = 0x0,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
                              ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL }},
@@ -2561,7 +2816,9 @@ inline constexpr z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] =
                              ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIMMER_CT_BULB,
-    .z2s_device_clusters_count = 3, 
+    .z2s_device_clusters_count = 3,
+    .reporting_flags = Z2S_REPORTING_SET_FLAG_STANDARD, 
+    .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_ONOFF_300, 
     .z2s_device_config_flags = 0x0,
     .z2s_device_clusters = { 
       ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
@@ -2607,6 +2864,8 @@ inline constexpr z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] =
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A,
     .z2s_device_clusters_count = 3,
+    .reporting_flags = Z2S_REPORTING_SET_FLAG_STANDARD, 
+    .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_ONOFF_300,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
                              ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
@@ -2614,6 +2873,8 @@ inline constexpr z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] =
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B,
     .z2s_device_clusters_count = 3,
+    .reporting_flags = Z2S_REPORTING_SET_FLAG_STANDARD, 
+    .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_ONOFF_300,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
                              ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
@@ -2633,6 +2894,8 @@ inline constexpr z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] =
                              
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_RGBW_BULB,
     .z2s_device_clusters_count = 3,
+    .reporting_flags = Z2S_REPORTING_SET_FLAG_STANDARD, 
+    .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_ONOFF_300,
     .z2s_device_config_flags = 0x0,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
                              ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
@@ -2654,6 +2917,8 @@ inline constexpr z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] =
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_PHILIPS_RGBW_BULB,
     .z2s_device_clusters_count = 3,
+    .reporting_flags = Z2S_REPORTING_SET_FLAG_STANDARD, 
+    .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_ONOFF_300,
     .z2s_device_config_flags = 0x0,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
                              ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL,
@@ -2685,6 +2950,8 @@ inline constexpr z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] =
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_WW_BULB,
     .z2s_device_clusters_count = 2,
+    .reporting_flags = Z2S_REPORTING_SET_FLAG_STANDARD, 
+    .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_ONOFF_300,
     .z2s_device_config_flags = 0x0,
     .z2s_device_clusters = { 
       ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
@@ -2693,12 +2960,16 @@ inline constexpr z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] =
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_IKEA_WS_BULB,
     .z2s_device_clusters_count = 2,
+    .reporting_flags = Z2S_REPORTING_SET_FLAG_STANDARD, 
+    .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_ONOFF_300,
     .z2s_device_config_flags = 0x0,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
                              ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_PHILIPS_WW_BULB,
     .z2s_device_clusters_count = 2,
+    .reporting_flags = Z2S_REPORTING_SET_FLAG_STANDARD, 
+    .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_ONOFF_300,
     .z2s_device_config_flags = 0x0,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
                              ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL }},
@@ -2711,6 +2982,8 @@ inline constexpr z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] =
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RGB_LED_CONTROLLER_XY,
     .z2s_device_clusters_count = 4,
+    .reporting_flags = Z2S_REPORTING_SET_FLAG_STANDARD, 
+    .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_ONOFF_300,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_SCENES,
                              ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
@@ -2719,6 +2992,8 @@ inline constexpr z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] =
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_LED_DIMMER_F0_E0,
     .z2s_device_clusters_count = 2,
+    .reporting_flags = Z2S_REPORTING_SET_FLAG_STANDARD, 
+    .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_ONOFF_300,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
                              ESP_ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL }},
@@ -2841,6 +3116,8 @@ inline constexpr z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] =
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1,
     .z2s_device_clusters_count = 1,
+    .reporting_flags = Z2S_REPORTING_SET_FLAG_STANDARD, 
+    .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_ONOFF_300,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
 
@@ -2870,10 +3147,11 @@ inline constexpr z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] =
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_WINDOW_COVERING }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER_1,
-    .z2s_device_clusters_count = 2,
+    .z2s_device_clusters_count = 3,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_LUMI_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_WINDOW_COVERING,
-                             ESP_ZB_ZCL_CLUSTER_ID_MULTI_INPUT }},
+                             ESP_ZB_ZCL_CLUSTER_ID_MULTI_OUTPUT,
+                             ESP_ZB_ZCL_CLUSTER_ID_ANALOG_OUTPUT }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SMOKE_DETECTOR,
     .z2s_device_clusters_count = 2,
@@ -3356,18 +3634,6 @@ inline constexpr z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_NULL,
     .z2s_device_flags = 0,
 	  .z2s_device_endpoints_count = 0 },
-
-    {	.manufacturer_name = "VAJERA", .model_name = "MY_TEST",
-    .z2s_device_uid = 5,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_2,
-    .z2s_device_flags = Z2S_DEVICE_CONFIG_FLAG_MIRROR_2_ENDPOINTS,
-    .z2s_device_endpoints_count = 10,
-    .z2s_device_endpoints_count_m1 = 4,
-    .z2s_device_endpoints_ext = test_ep }, 
-    /*.z2s_device_endpoints = {
-      { 10, 0, 0, Z2S_DEVICE_DESC_IAS_ZONE_SENSOR },
-      { 25, 0, 0, Z2S_DEVICE_DESC_RELAY_1 }
-    }},*/
 
   {	.manufacturer_name = "ZIBI", .model_name = "ESP32C6_THP_Sensor",
     .z2s_device_uid = 10,
@@ -4631,7 +4897,7 @@ inline constexpr z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_endpoints = { 
       1, Z2S_REPORTING_SET_FLAG_STANDARD, 
       Z2S_REPORTING_SET_DESC_BATTERY_REPORTING_SONOFF, 
-      Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_T_B}},
+      Z2S_DEVICE_DESC_IAS_ZONE_SENSOR_1_SONOFF_T_B}},
 
   {	.manufacturer_name = "HOBEIAN", .model_name = "ZG-204Z",
     .z2s_device_uid = 9700,
@@ -6873,6 +7139,11 @@ inline constexpr z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_1PHASE_ELECTRICITY_METER,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "ADEO", .model_name = "LDSENK08",
+    .z2s_device_uid = 24700,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "SONOFF", .model_name = "SWV",
     .z2s_device_uid = 24800,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_SMART_VALVE,
@@ -6896,8 +7167,33 @@ inline constexpr z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_IR_REMOTE_CONTROL,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "_TZ3290_785fbxik", .model_name = "TS1201",
+    .z2s_device_uid = 25020,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_IR_REMOTE_CONTROL,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "_TZ3290_yyax9ajf", .model_name = "TS1201",
     .z2s_device_uid = 25025,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_IR_REMOTE_CONTROL,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3290_ot6ewjvmejq5ekhl", .model_name = "TS1201",
+    .z2s_device_uid = 25030,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_IR_REMOTE_CONTROL,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3290_j37rooaxrcdcqo5n", .model_name = "TS1201",
+    .z2s_device_uid = 25035,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_IR_REMOTE_CONTROL,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3290_xjpbcxn92aaxvmlz", .model_name = "TS1201",
+    .z2s_device_uid = 25040,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_IR_REMOTE_CONTROL,
+	  .z2s_device_endpoints_count = 1},
+
+  {	.manufacturer_name = "_TZ3290_nkpxapoz", .model_name = "TS1201",
+    .z2s_device_uid = 25045,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_MOES_IR_REMOTE_CONTROL,
 	  .z2s_device_endpoints_count = 1},
 
@@ -7004,11 +7300,6 @@ inline constexpr z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "ADEO", .model_name = "ZBEK-26",
     .z2s_device_uid = 25750,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_ADEO_ENKI_REMOTE_CONTROL,
-	  .z2s_device_endpoints_count = 1},
-
-  {	.manufacturer_name = "ADEO", .model_name = "LDSENK08",
-    .z2s_device_uid = 24700,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR,
 	  .z2s_device_endpoints_count = 1},
 
   {	.manufacturer_name = "ADEO", .model_name = "LDSENK09",
@@ -7994,23 +8285,39 @@ inline constexpr z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_DIMMER_CT_LIGHT_SOURCE,
     .z2s_device_endpoints_count = 1},
 
-  {	.manufacturer_name = "eWeLink", .model_name = "SNZB-06P24",
+  {	.manufacturer_name = "SONOFF", .model_name = "SNZB-06P24",
     .z2s_device_uid = 38700,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_PRESENCE_SENSOR,
 	  .z2s_device_endpoints_count = 1}
 //DEVICES_END
 };
 
-constexpr int32_t findDuplicateDeviceUidIndex() {
+constexpr size_t Z2S_DEVICES_DESC_COUNT =
+  sizeof(Z2S_DEVICES_DESC) / sizeof(Z2S_DEVICES_DESC[0]);
 
-  constexpr size_t count = sizeof(Z2S_DEVICES_LIST) / 
-    sizeof(Z2S_DEVICES_LIST[0]);
-  for (size_t i = 0; i < count; ++i) {
-    if (Z2S_DEVICES_LIST[i].z2s_device_uid == 0) continue;
-    for (size_t j = i + 1; j < count; ++j) {
-      if (Z2S_DEVICES_LIST[i].z2s_device_uid == 
-          Z2S_DEVICES_LIST[j].z2s_device_uid) {
-        return j;
+constexpr size_t Z2S_DEVICES_LIST_COUNT =
+  sizeof(Z2S_DEVICES_LIST) / sizeof(Z2S_DEVICES_LIST[0]);
+
+constexpr size_t Z2S_REPORTING_SETS_DESC_COUNT =
+  sizeof(Z2S_REPORTING_SETS_DESC) / sizeof(Z2S_REPORTING_SETS_DESC[0]);
+
+// Verifies both strict ascending order AND uniqueness of z2s_device_uid in O(N)
+constexpr int32_t findUnsortedOrDuplicateDeviceUidIndex() {
+  for (size_t i = 1; i < Z2S_DEVICES_LIST_COUNT; ++i) {
+    if (Z2S_DEVICES_LIST[i].z2s_device_uid <=
+        Z2S_DEVICES_LIST[i - 1].z2s_device_uid) {
+      return static_cast<int32_t>(i);
+    }
+  }
+  return -1;
+}
+
+constexpr int32_t findDuplicateDeviceDescIdIndex() {
+  for (size_t i = 0; i < Z2S_DEVICES_DESC_COUNT; ++i) {
+    for (size_t j = i + 1; j < Z2S_DEVICES_DESC_COUNT; ++j) {
+      if (Z2S_DEVICES_DESC[i].z2s_device_desc_id ==
+          Z2S_DEVICES_DESC[j].z2s_device_desc_id) {
+        return static_cast<int32_t>(j);
       }
     }
   }
@@ -8018,8 +8325,54 @@ constexpr int32_t findDuplicateDeviceUidIndex() {
 }
 
 static_assert(
-  findDuplicateDeviceUidIndex() == -1, 
-  "Duplicate z2s_device_uid found in Z2S_DEVICES_LIST!");
+  findUnsortedOrDuplicateDeviceUidIndex() == -1,
+  "Z2S_DEVICES_LIST is unsorted or has a duplicate z2s_device_uid!");
+
+static_assert(
+  findDuplicateDeviceDescIdIndex() == -1,
+  "Duplicate z2s_device_desc_id found in Z2S_DEVICES_DESC!");
+
+constexpr int32_t findInvalidDeviceListEndpointConfigIndex() {
+  for (size_t i = 0; i < Z2S_DEVICES_LIST_COUNT; ++i) {
+    const auto &dev = Z2S_DEVICES_LIST[i];
+    bool is_mirrored = (dev.z2s_device_flags &
+      (Z2S_DEVICE_CONFIG_FLAG_MIRROR_ALL_ENDPOINTS |
+       Z2S_DEVICE_CONFIG_FLAG_MIRROR_2_ENDPOINTS)) != 0;
+    bool is_ext = (dev.z2s_device_flags &
+      Z2S_DEVICE_CONFIG_FLAG_EXT_ENDPOINTS) != 0;
+    if (!is_mirrored && !is_ext &&
+        dev.z2s_device_endpoints_count > MAX_BOUND_ENDPOINTS) {
+      return static_cast<int32_t>(i);
+    }
+  }
+  return -1;
+}
+
+static_assert(
+  findInvalidDeviceListEndpointConfigIndex() == -1,
+  "Device in Z2S_DEVICES_LIST exceeds MAX_BOUND_ENDPOINTS without EXT or MIRROR flags!");
+
+constexpr auto buildSortedDeviceDescIndices() {
+  std::array<uint16_t, Z2S_DEVICES_DESC_COUNT> indices{};
+  for (size_t i = 0; i < Z2S_DEVICES_DESC_COUNT; ++i) {
+    indices[i] = static_cast<uint16_t>(i);
+  }
+  for (size_t i = 1; i < Z2S_DEVICES_DESC_COUNT; ++i) {
+    uint16_t key_idx = indices[i];
+    uint32_t key_id = Z2S_DEVICES_DESC[key_idx].z2s_device_desc_id;
+    size_t j = i;
+    while (j > 0 &&
+           Z2S_DEVICES_DESC[indices[j - 1]].z2s_device_desc_id > key_id) {
+      indices[j] = indices[j - 1];
+      --j;
+    }
+    indices[j] = key_idx;
+  }
+  return indices;
+}
+
+inline constexpr auto Z2S_DEVICES_DESC_SORTED_IDX PROGMEM =
+  buildSortedDeviceDescIndices();
 
 #endif
 //

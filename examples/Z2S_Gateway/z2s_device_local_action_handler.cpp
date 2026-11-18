@@ -443,6 +443,7 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
       auto* vb = initOrCastLocalElement<Supla::Sensor::LocalVirtualBinary>(
           idx, ch, el, true, true);
       vb->setDefaultFunction(SUPLA_CHANNELFNC_BINARY_SENSOR);
+      //log_i("registering notification");
       if (Supla::Notification::RegisterNotification(
             vb->getZ2SChannelNumber(), false, true)) {
         vb->registerNotification();

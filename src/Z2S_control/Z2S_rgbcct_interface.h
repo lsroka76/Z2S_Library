@@ -79,14 +79,21 @@ class Z2S_RGBCCTInterface : public ChannelElement, public ActionHandler,
 
 public:
 
-  Z2S_RGBCCTInterface();
+  Z2S_RGBCCTInterface(
+    uint32_t default_function = SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB);
 
   void onLoadState() override;
   void onSaveState() override;
 
-  int32_t handleNewValueFromServer(TSD_SuplaChannelNewValue *newValue) override;
+  ApplyConfigResult applyChannelConfig(
+    TSD_ChannelConfig *result, bool local) override;
+
+
+  int32_t handleNewValueFromServer(
+    TSD_SuplaChannelNewValue *newValue) override;
 
   void onInit() override;
+  void onRegistered(Supla::Protocol::SuplaSrpc *suplaSrpc) override;
   void iterateAlways() override;
 
   virtual void handleAction(int event, int action) override;
@@ -130,6 +137,39 @@ public:
   
   
 protected:
+
+  bool isDimmerSupported() {
+    switch (channel.getDefaultFunction()) {
+      case SUPLA_CHANNELFNC_DIMMER:
+      case SUPLA_CHANNELFNC_DIMMER_CCT:
+      case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+      case SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  bool isCCTSupported() {
+    switch (channel.getDefaultFunction()) {
+      case SUPLA_CHANNELFNC_DIMMER_CCT:
+      case SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  bool isRGBSupported() {
+    switch (channel.getDefaultFunction()) {
+      case SUPLA_CHANNELFNC_RGBLIGHTING:
+      case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+      case SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB:
+        return true;
+      default:
+        return false;
+    }
+  }
 
   void increaseBrightness(int8_t add_to_brightness);
   void sendOnOffCmd(bool state);

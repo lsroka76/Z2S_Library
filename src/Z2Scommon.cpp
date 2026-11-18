@@ -1358,6 +1358,8 @@ bool Z2S_Core::updateLocalVirtualRelayParams() {
 
 /*****************************************************************************/
 
+/*****************************************************************************/
+
 /*                          Z2S_Device                                       */
 
 /*****************************************************************************/
@@ -1422,17 +1424,13 @@ bool Z2S_Device::hasZbDevice(uint32_t desc_id) {
 
 void Z2S_Device::syncDeviceDescFlags(uint32_t devices_desc_slot) {
 
-  uint32_t desc_flags = 
-    Z2S_DEVICES_DESC[devices_desc_slot].z2s_device_config_flags;
-    
-  uint32_t user_flags = getUserDataFlags();
+  if (devices_desc_slot >= Z2S_DEVICES_DESC_COUNT)
+    return;
 
-  user_flags &= ~(
-    ZBD_USER_DATA_FLAG_TUYA_QUERY_AFTER_REJOIN | 
-    ZBD_USER_DATA_FLAG_TUYA_MCU_VERSION_REQUEST | 
-    ZBD_USER_DATA_FLAG_TUYA_FORCE_TIME_SYNC | 
-    ZBD_USER_DATA_FLAG_TUYA_USE_SEND_DATA
-  );
+  uint32_t desc_flags =
+    Z2S_DEVICES_DESC[devices_desc_slot].z2s_device_config_flags;
+
+  uint32_t user_flags = getUserDataFlags();
 
   if (desc_flags & Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_REJOIN_QUERY)
     user_flags |= ZBD_USER_DATA_FLAG_TUYA_QUERY_AFTER_REJOIN;
@@ -1446,80 +1444,93 @@ void Z2S_Device::syncDeviceDescFlags(uint32_t devices_desc_slot) {
   if (desc_flags & Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_USE_SEND_DATA)
     user_flags |= ZBD_USER_DATA_FLAG_TUYA_USE_SEND_DATA;
 
+  if (desc_flags & Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_REJOIN_QUERY)
+    user_flags |= ZBD_USER_DATA_FLAG_IAS_ZONE_STATUS_QUERY_AFTER_REJOIN;
+
+  if (desc_flags & Z2S_DEVICE_DESC_CONFIG_FLAG_ON_OFF_REJOIN_QUERY)
+    user_flags |= ZBD_USER_DATA_FLAG_ON_OFF_STATE_QUERY_AFTER_REJOIN;
+
+  if (desc_flags & Z2S_DEVICE_DESC_CONFIG_FLAG_REBIND_AFTER_REJOIN)
+    user_flags |= ZBD_USER_DATA_FLAG_REBIND_AFTER_REJOIN;
+
+  if (desc_flags & Z2S_DEVICE_DESC_CONFIG_FLAG_CONFIGURE_AFTER_REJOIN)
+    user_flags |= ZBD_USER_DATA_FLAG_CONFIGURE_AFTER_REJOIN;
+
   setUserDataFlags(user_flags, false);
+}
+
+/*****************************************************************************/
+
+void Z2S_Device::syncDeviceDescFlags() {
+
+  uint32_t user_flags = getUserDataFlags();
+
+  user_flags &= ~(
+    ZBD_USER_DATA_FLAG_TUYA_QUERY_AFTER_REJOIN |
+    ZBD_USER_DATA_FLAG_TUYA_MCU_VERSION_REQUEST |
+    ZBD_USER_DATA_FLAG_TUYA_FORCE_TIME_SYNC |
+    ZBD_USER_DATA_FLAG_TUYA_USE_SEND_DATA |
+    ZBD_USER_DATA_FLAG_IAS_ZONE_STATUS_QUERY_AFTER_REJOIN |
+    ZBD_USER_DATA_FLAG_ON_OFF_STATE_QUERY_AFTER_REJOIN |
+    ZBD_USER_DATA_FLAG_REBIND_AFTER_REJOIN |
+    ZBD_USER_DATA_FLAG_CONFIGURE_AFTER_REJOIN
+  );
+  setUserDataFlags(user_flags, false);
+
+  int32_t desc_idx = Z2S_findDeviceDescIdxById(getDeviceDescId());
+  if (desc_idx >= 0) {
+    syncDeviceDescFlags(static_cast<uint32_t>(desc_idx));
+  }
+
+  uint32_t list_idx = getDevicesListIdx();
+  if (list_idx < Z2S_DEVICES_LIST_COUNT) {
+    uint8_t ep_count = Z2S_DEVICES_LIST[list_idx].z2s_device_endpoints_count;
+    for (uint8_t ep_i = 0; ep_i < ep_count; ++ep_i) {
+      z2s_resolved_endpoint_t ep = {};
+      if (Z2S_resolveDeviceEndpointByIndex(list_idx, ep_i, ep) &&
+          ep.desc_id != Z2S_DEVICE_DESC_NULL) {
+        int32_t ep_desc_idx = Z2S_findDeviceDescIdxById(ep.desc_id);
+        if (ep_desc_idx >= 0) {
+          syncDeviceDescFlags(static_cast<uint32_t>(ep_desc_idx));
+        }
+      }
+    }
+  }
 }
 
 /*****************************************************************************/
 
 bool Z2S_Device::updateDeviceUidIdx(
   const char *manufacturer_name, const char *model_name) {
-  
-  bool idx_scan = false;
 
-  if ((manufacturer_name == nullptr) || (model_name == nullptr))
-    idx_scan = true;
+  int32_t list_idx = -1;
 
-  uint16_t devices_list_table_size = 
-    sizeof(Z2S_DEVICES_LIST) / sizeof(Z2S_DEVICES_LIST[0]);
-
-  uint16_t devices_desc_table_size = 
-    sizeof(Z2S_DEVICES_DESC) / sizeof(Z2S_DEVICES_DESC[0]);
-
-  for (uint32_t devices_desc_counter = 0; 
-    devices_desc_counter < devices_desc_table_size; devices_desc_counter++) {
-
-    uint32_t device_desc_id = 
-      Z2S_DEVICES_DESC[devices_desc_counter].z2s_device_desc_id;
-    
-    if (getDeviceDescId() == device_desc_id) {
-                   
-      log_i("Syncing flags for model 0x%04X", device_desc_id);
-
-      syncDeviceDescFlags(devices_desc_counter);
-      break;
+  if ((manufacturer_name == nullptr) || (model_name == nullptr)) {
+    list_idx = Z2S_findDeviceListIdxByUid(getDeviceUid());
+  } else {
+    list_idx = Z2S_findDeviceListIdxByManufacturerAndModel(
+      manufacturer_name, model_name);
+    if (list_idx >= 0) {
+      setDeviceUid(Z2S_DEVICES_LIST[list_idx].z2s_device_uid, false);
     }
   }
 
-  for (int devices_list_counter = 0; 
-       devices_list_counter < devices_list_table_size; 
-       devices_list_counter++) {
-
-    if (idx_scan) {
-      if (Z2S_DEVICES_LIST[devices_list_counter].z2s_device_uid == 
-          getDeviceUid()) {
-
-        setDevicesListIdx(devices_list_counter, false);
-
-        log_i(
-          "device uid = %lu, devices list index = %lu", getDeviceUid(),
-          getDevicesListIdx());
-
-        return true;
-      }
-    } 
-    else {
-      
-      if ((strcmp(model_name, 
-            Z2S_DEVICES_LIST[devices_list_counter].model_name) == 0) &&
-          (strcmp(manufacturer_name, 
-            Z2S_DEVICES_LIST[devices_list_counter].manufacturer_name) == 0)) {
-
-        setDeviceUid(
-          Z2S_DEVICES_LIST[devices_list_counter].z2s_device_uid, false);
-
-        setDevicesListIdx(devices_list_counter, false);
-
-        log_i(
-          "Manufacturer name: %s, model name: %s, device uid = %lu, "
-          "devices list index = %lu", manufacturer_name ? 
-          manufacturer_name : "none", model_name ? model_name : "none", 
-          getDeviceUid(), getDevicesListIdx());
-
-        return true;
-      }
-    }
+  if (list_idx < 0) {
+    setDevicesListIdx(0, false);
+    return false;
   }
-  return false;
+
+  setDevicesListIdx(static_cast<uint32_t>(list_idx), false);
+  syncDeviceDescFlags();
+
+  log_i(
+    "Manufacturer name: %s, model name: %s, device uid = %lu, "
+    "devices list index = %lu",
+    manufacturer_name ? manufacturer_name : getManufacturerName(),
+    model_name ? model_name : getModelName(),
+    getDeviceUid(), getDevicesListIdx());
+
+  return true;
 }
 
 /*****************************************************************************/
@@ -1528,16 +1539,16 @@ const char* Z2S_Device::getManufacturerName() {
 
   switch (getRecordId()) {
 
-
     case 1: 
     case 2:
       return "Critical error - report to @vajera!";
 
-
-    case 3: 
-
-      return Z2S_DEVICES_LIST[getDevicesListIdx()].manufacturer_name;
-    
+    case 3: {
+      uint32_t idx = getDevicesListIdx();
+      return (idx < Z2S_DEVICES_LIST_COUNT)
+               ? Z2S_DEVICES_LIST[idx].manufacturer_name
+               : "Unknown";
+    }
   }
   return "Invalid device id!";
 }
@@ -1546,19 +1557,21 @@ const char* Z2S_Device::getManufacturerName() {
 
 bool Z2S_Device::hasManufacturerName(const char *manufacturer_name) {
 
-  switch (getRecordId()) {
+  if (!manufacturer_name)
+    return false;
 
+  switch (getRecordId()) {
 
     case 1: 
     case 2:
       return false;
 
-
-    case 3: 
-
-      return (strcmp(Z2S_DEVICES_LIST[getDevicesListIdx()].manufacturer_name, 
-        manufacturer_name) == 0);
-    
+    case 3: {
+      uint32_t idx = getDevicesListIdx();
+      return (idx < Z2S_DEVICES_LIST_COUNT) &&
+             (strcmp(Z2S_DEVICES_LIST[idx].manufacturer_name,
+                     manufacturer_name) == 0);
+    }
   }
   return false;
 }
@@ -1569,16 +1582,16 @@ const char* Z2S_Device::getModelName() {
 
   switch (getRecordId()) {
 
-
     case 1: 
     case 2:
       return "Critical error - report to @vajera!";
 
-
-    case 3: 
-
-      return Z2S_DEVICES_LIST[getDevicesListIdx()].model_name;
-    
+    case 3: {
+      uint32_t idx = getDevicesListIdx();
+      return (idx < Z2S_DEVICES_LIST_COUNT)
+               ? Z2S_DEVICES_LIST[idx].model_name
+               : "Unknown";
+    }
   }
   return "Invalid device id!";
 }
@@ -1587,19 +1600,21 @@ const char* Z2S_Device::getModelName() {
 
 bool Z2S_Device::isModelName(const char *zb_device_name) {
 
-  switch (getRecordId()) {
+  if (!zb_device_name)
+    return false;
 
+  switch (getRecordId()) {
 
     case 1: 
     case 2:
       return false;
 
-
-    case 3: 
-
-      return (strcmp(
-        zb_device_name, 
-        Z2S_DEVICES_LIST[getDevicesListIdx()].model_name) == 0);
+    case 3: {
+      uint32_t idx = getDevicesListIdx();
+      return (idx < Z2S_DEVICES_LIST_COUNT) &&
+             (strcmp(zb_device_name,
+                     Z2S_DEVICES_LIST[idx].model_name) == 0);
+    }
   }
   return false;
 }

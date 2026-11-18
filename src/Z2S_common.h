@@ -74,6 +74,8 @@
 #define ZBD_USER_DATA_FLAG_TUYA_QUERY_AFTER_REJOIN              (1 << 16)
 #define ZBD_USER_DATA_FLAG_IAS_ZONE_STATUS_QUERY_AFTER_REJOIN   (1 << 17)
 #define ZBD_USER_DATA_FLAG_ON_OFF_STATE_QUERY_AFTER_REJOIN      (1 << 18)
+#define ZBD_USER_DATA_FLAG_REBIND_AFTER_REJOIN                  (1 << 19)
+#define ZBD_USER_DATA_FLAG_CONFIGURE_AFTER_REJOIN               (1 << 20)
 
 /*****************************************************************************/
 
@@ -264,6 +266,7 @@ class Z2S_Device {
       const char *model_name = nullptr);
 
     void syncDeviceDescFlags(uint32_t devices_desc_slot);
+    void syncDeviceDescFlags();
 
     const char* getManufacturerName();
     bool hasManufacturerName(const char *manufacturer_name);
@@ -2619,5 +2622,9 @@ protected:
   int16_t _channel_index = -1;
   z2s_device_params_t _z2s_channel {};
 };
+
+/*****************************************************************************/
+
+#include "Z2S_configure.h"
 
 #endif //SRC_Z2S_COMMON_H_

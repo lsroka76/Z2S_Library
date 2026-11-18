@@ -89,8 +89,8 @@ static constexpr GlSpiMusicParams GL_SPI_MUSIC_MODES[6] = {
 
 /*****************************************************************************/
 
-Supla::Control::Z2S_RGBCCTInterface::Z2S_RGBCCTInterface() 
-  : Z2S_Core(this) {
+Supla::Control::Z2S_RGBCCTInterface::Z2S_RGBCCTInterface(
+  uint32_t default_function) : Z2S_Core(this) {
 
   channel.setType(SUPLA_CHANNELTYPE_DIMMERANDRGBLED);
   channel.setFlag(SUPLA_CHANNEL_FLAG_RGBW_COMMANDS_SUPPORTED);
@@ -99,7 +99,7 @@ Supla::Control::Z2S_RGBCCTInterface::Z2S_RGBCCTInterface()
       SUPLA_RGBW_BIT_FUNC_DIMMER | SUPLA_RGBW_BIT_FUNC_RGB_LIGHTING |
       SUPLA_RGBW_BIT_FUNC_DIMMER_AND_RGB_LIGHTING |
       SUPLA_RGBW_BIT_FUNC_DIMMER_CCT | SUPLA_RGBW_BIT_FUNC_DIMMER_CCT_AND_RGB);
-  channel.setDefault(SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB);
+  channel.setDefault(default_function);
   usedConfigTypes.set(SUPLA_CONFIG_TYPE_DEFAULT);
 }
 
@@ -178,6 +178,8 @@ void Supla::Control::Z2S_RGBCCTInterface::onInit() {
   //at this stage ZigBee is still not active
   if ((_brightness == 0) && (_last_brightness == 0))
     _last_brightness = 100;
+
+  log_i("onInit called");
 }
 
 /*****************************************************************************/
@@ -205,6 +207,16 @@ int32_t Supla::Control::Z2S_RGBCCTInterface::handleNewValueFromServer(
   }
   if (brightness > 100) {
     brightness = 100;
+  }
+
+  if (!isRGBSupported()) {
+    colorBrightness = 0;
+  }
+  if (!isDimmerSupported()) {
+    brightness = 0;
+  }
+  if (!isCCTSupported()) {
+    whiteTemperature = 0;
   }
 
   bool modeSwitched = false;
@@ -355,36 +367,30 @@ void Supla::Control::Z2S_RGBCCTInterface::sendValueToDevice(
 
   if (Zigbee.started()) {
 
-    log_i("turnOnOff %u", turnOnOff);
+    log_i("turnOnOff %u, func %lu", turnOnOff, channel.getDefaultFunction());
 
     switch (turnOnOff) {
 
-
       case 0: {
-
         sendOnOffCmd(false);
         return;
       } break;
 
-      
       case 1: {
-
         sendOnOffCmd(true);
-        //return;
       } break;
 
-
       case 3: {
-
         sendOnOffCmd(true);
         turnOnOff = 2;
       } break;
 
-
       default: 
       break;
     }
-    if (colorBrightness > 0) {
+
+    // --- RGB SENDING (Only for functions 190, 200, 205) ---
+    if (isRGBSupported() && (colorBrightness > 0)) {
 
       log_i(
         "red %d, green %d, blue %d, color brightness %d", red, green, blue, 
@@ -393,54 +399,24 @@ void Supla::Control::Z2S_RGBCCTInterface::sendValueToDevice(
       ColorHSV hsv;
       ColorRGB rgb;
 
-      uint8_t red_cb = red; //(red*colorBrightness) / 100;
-      uint8_t green_cb = green; //(green*colorBrightness) / 100;
-      uint8_t blue_cb = blue; //(blue*colorBrightness) / 100;
+      uint8_t red_cb = red;
+      uint8_t green_cb = green;
+      uint8_t blue_cb = blue;
 
       rgb.m_r = (float)red_cb / 255;
       rgb.m_g = (float)green_cb / 255;
       rgb.m_b = (float)blue_cb / 255;
 
-      log_i(
-        "rgb.m_r = %.4f, m_g = %.4f, m_b = %.4f", rgb.m_r, rgb.m_g, rgb.m_b);
-
       hsv = rgbToHsv(rgb);
 
-      log_i(
-        "hsv.m_h = %.4f, m_s = %.4f, m_v = %.4f", hsv.m_h, hsv.m_s, hsv.m_v);
-
-      uint16_t _hue = hsv.m_h*360;
+      uint16_t _hue = hsv.m_h * 360;
       uint16_t _hue_360 = _hue;
-      uint8_t  _saturation = hsv.m_s * 100; //colorBrightness;
-      uint8_t _value = hsv.m_v * 100;
-      uint16_t  _saturation_1000 = hsv.m_s*1000;
+      uint8_t  _saturation = hsv.m_s * 100;
+      uint8_t  _value = mapFloat(colorBrightness, 1, 100, 1, 254);
+      uint16_t _saturation_1000 = hsv.m_s * 1000;
 
-      log_i("hue %d, saturation %d (before mapping)", _hue, _saturation);
       _hue = mapFloat(_hue, 0, 360, 0, 254);
       _saturation = mapFloat(_saturation, 0, 100, 0, 254);
-      log_i("hue %d, saturation %d (after mapping)", _hue, _saturation);
-      //_value = mapFloat(_value, 0, 100, 1, 254);
-
-      _value = mapFloat(colorBrightness, 1, 100, 1, 254);
-
-      uint16_t rev_hue = mapFloat(_hue, 0, 254, 0, 360);
-      uint8_t rev_saturation = mapFloat(_saturation, 0, 254, 0, 100);
-      log_i("hue %d, saturation %d (reversed)", rev_hue, rev_saturation);
-
-      hsv.m_h = (float)rev_hue / 360;
-      hsv.m_s = (float)rev_saturation / 100;
-
-      log_i(
-        "hsv.m_h = %.4f, m_s = %.4f, m_v = %.4f", hsv.m_h, hsv.m_s, hsv.m_v);
-      
-      rgb = hsvToRgb(hsv);
-
-      log_i(
-        "rgb.m_r = %.4f, m_g = %.4f, m_b = %.4f", rgb.m_r, rgb.m_g, rgb.m_b);
-
-      log_i(
-        "rgb.m_r = %.4f, m_g = %.4f, m_b = %.4f", rgb.m_r * 255, 
-        rgb.m_g * 255, rgb.m_b * 255);
 
       uint8_t light_mode = 0x01;
 
@@ -448,21 +424,16 @@ void Supla::Control::Z2S_RGBCCTInterface::sendValueToDevice(
 
         case Z2S_COLOR_HS_RGB:
         case Z2S_PHILIPS_COLOR_HS_RGB:
-
           zbGateway.sendColorMoveToHueAndSaturationCmd(
             _short_addr, _endpoint, _hue, _saturation, 1); 
           zbGateway.sendLevelMoveToLevelCmd(_short_addr, _endpoint, _value, 1);
         break;
 
-
         case Z2S_COLOR_XY_RGB:
         case Z2S_PHILIPS_COLOR_XY_RGB: {
-
           espXyColor_t xy_color = espRgbToXYColor(red_cb, green_cb, blue_cb);
-          xy_color.x = map(xy_color.x, 0 ,0xFFFF, 0, 0xFEFF);
-          xy_color.y = map(xy_color.y, 0 ,0xFFFF, 0, 0xFEFF);
-
-          _value = mapFloat(colorBrightness, 1, 100, 1, 254);
+          xy_color.x = map(xy_color.x, 0, 0xFFFF, 0, 0xFEFF);
+          xy_color.y = map(xy_color.y, 0, 0xFFFF, 0, 0xFEFF);
 
           log_i("XY color mode x:0x%x, y:0x%x", xy_color.x, xy_color.y);
           
@@ -471,27 +442,23 @@ void Supla::Control::Z2S_RGBCCTInterface::sendValueToDevice(
           zbGateway.sendLevelMoveToLevelCmd(_short_addr, _endpoint, _value, 1);
         } break;
 
-
         case Z2S_TUYA_COLOR_HS_RGB: {
-          
           zbGateway.sendCustomClusterCmd(
             _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 0xF0, 
-            ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &light_mode ,false);
+            ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &light_mode, false);
 
           zbGateway.sendColorMoveToHueAndSaturationCmd(
             _short_addr, _endpoint, _hue, _saturation, 1);
         } break;
 
-
         case Z2S_TUYA_COLOR_XY_RGB: {
-          
           zbGateway.sendCustomClusterCmd(
             _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_COLOR_CONTROL, 0xF0, 
             ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &light_mode, false);
 
           espXyColor_t xy_color = espRgbToXYColor(red_cb, green_cb, blue_cb);
-          xy_color.x = map(xy_color.x, 0 ,0xFFFF, 0, 0xFEFF);
-          xy_color.y = map(xy_color.y, 0 ,0xFFFF, 0, 0xFEFF);
+          xy_color.x = map(xy_color.x, 0, 0xFFFF, 0, 0xFEFF);
+          xy_color.y = map(xy_color.y, 0, 0xFFFF, 0, 0xFEFF);
 
           log_i("Tuya XY color mode x:0x%x, y:0x%x", xy_color.x, xy_color.y);
           
@@ -499,19 +466,7 @@ void Supla::Control::Z2S_RGBCCTInterface::sendValueToDevice(
             _short_addr, _endpoint, xy_color.x, xy_color.y, 1);
         } break;
 
-
-        case Z2S_TUYA_DP_COLOR_HS_RGB:{
-
-          rgb.m_r = (float)red / 255;
-          rgb.m_g = (float)green / 255;
-          rgb.m_b = (float)blue / 255;
-
-          hsv = rgbToHsv(rgb);
-
-          _hue_360 = hsv.m_h*360;
-      
-          _saturation_1000 = hsv.m_s*1000;
-
+        case Z2S_TUYA_DP_COLOR_HS_RGB: {
           uint16_t _color_brightness_1000 = map(
             colorBrightness, 0, 100, 0, 1000);
 
@@ -539,15 +494,15 @@ void Supla::Control::Z2S_RGBCCTInterface::sendValueToDevice(
           test_buffer[15] = 11;                           
           test_buffer[16] = 0x00;
           test_buffer[17] = 0x01; // COLOR
-          test_buffer[18] = 0x00; // GRADIENT (0x00 = instant, 0x01 = smooth transition)
+          test_buffer[18] = 0x00; // GRADIENT
           test_buffer[19] = 0x14;
           test_buffer[20] = 0x00; // SEGMENT
           test_buffer[21] = (_hue_360 >> 8) & 0x00FF;
-          test_buffer[22] = _hue_360 & 0x00FF; // COLOR (Hue 0-360)
+          test_buffer[22] = _hue_360 & 0x00FF;
           test_buffer[23] = (_saturation_1000 >> 8) & 0x00FF;
-          test_buffer[24] = _saturation_1000 & 0x00FF; // SATURATION (0-1000)
+          test_buffer[24] = _saturation_1000 & 0x00FF;
           test_buffer[25] = (_color_brightness_1000 >> 8) & 0x00FF;
-          test_buffer[26] = _color_brightness_1000 & 0x00FF; // BRIGHTNESS (10-1000)
+          test_buffer[26] = _color_brightness_1000 & 0x00FF;
 
           zbGateway.sendCustomClusterCmd(
             _short_addr, _endpoint, TUYA_PRIVATE_CLUSTER_EF00, 
@@ -557,10 +512,10 @@ void Supla::Control::Z2S_RGBCCTInterface::sendValueToDevice(
       }
     }
     
-    if (brightness > 0) {
+    // --- DIMMER & CCT SENDING (Dimmer: 180, 185, 200, 205 | CCT: 185, 205) ---
+    if (isDimmerSupported() && (brightness > 0)) {
 
       switch (getRGBColorMode()) {
-
 
         case Z2S_TUYA_DP_COLOR_HS_RGB: {
 
@@ -582,55 +537,57 @@ void Supla::Control::Z2S_RGBCCTInterface::sendValueToDevice(
           test_buffer[10] = 0x01;            
           test_buffer[11] = 0x00;         
 
-          // --- DP 4: Color Temperature (8 bytes) ---
-          // Range: 0 - 1000 (0 = warm / 370 mireds, 1000 = cold / 153 mireds)
-
-          uint16_t color_temperature = mapFloat(
-            whiteTemperature, 0, 100, 0, 1000);
-          test_buffer[12] = 0x04;               
-          test_buffer[13] = TUYA_DP_TYPE_VALUE; 
-          test_buffer[14] = 0x00;
-          test_buffer[15] = 0x04;               
-          test_buffer[16] = 0x00;
-          test_buffer[17] = 0x00;
-          test_buffer[18] = (color_temperature >> 8) & 0x00FF;
-          test_buffer[19] = color_temperature & 0x00FF;
-
           // --- DP 3: White Brightness (8 bytes) ---
-          // Range: 10 - 1000
-
           uint16_t _white_brightness_1000 = mapFloat(
             brightness, 1, 100, 10, 1000);
           
-          test_buffer[20] = 0x03;             
-          test_buffer[21] = TUYA_DP_TYPE_VALUE; 
-          test_buffer[22] = 0x00;
-          test_buffer[23] = 0x04;              
-          test_buffer[24] = 0x00;
-          test_buffer[25] = 0x00;
-          test_buffer[26] = (_white_brightness_1000 >> 8) & 0x00FF;
-          test_buffer[27] = _white_brightness_1000 & 0x00FF;
+          test_buffer[12] = 0x03;             
+          test_buffer[13] = TUYA_DP_TYPE_VALUE; 
+          test_buffer[14] = 0x00;
+          test_buffer[15] = 0x04;              
+          test_buffer[16] = 0x00;
+          test_buffer[17] = 0x00;
+          test_buffer[18] = (_white_brightness_1000 >> 8) & 0x00FF;
+          test_buffer[19] = _white_brightness_1000 & 0x00FF;
+
+          uint16_t packet_len = 20;
+
+          // --- DP 4: Color Temperature (8 bytes) - ONLY FOR 185 & 205 ---
+          if (isCCTSupported()) {
+            uint16_t color_temperature = mapFloat(
+              whiteTemperature, 0, 100, 0, 1000);
+            test_buffer[20] = 0x04;               
+            test_buffer[21] = TUYA_DP_TYPE_VALUE; 
+            test_buffer[22] = 0x00;
+            test_buffer[23] = 0x04;               
+            test_buffer[24] = 0x00;
+            test_buffer[25] = 0x00;
+            test_buffer[26] = (color_temperature >> 8) & 0x00FF;
+            test_buffer[27] = color_temperature & 0x00FF;
+            packet_len = 28;
+          }
 
           zbGateway.sendCustomClusterCmd(
             _short_addr, _endpoint, TUYA_PRIVATE_CLUSTER_EF00, TUYA_REQUEST_CMD, 
-            ESP_ZB_ZCL_ATTR_TYPE_SET, 28, test_buffer, false);
+            ESP_ZB_ZCL_ATTR_TYPE_SET, packet_len, test_buffer, false);
         } break;
-
 
         default: {
           
           uint8_t level = mapFloat(brightness, 1, 100, 1, 254);
           zbGateway.sendLevelMoveToLevelCmd(_short_addr, _endpoint, level, 1);
-  
-          log_i(
-            "SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB - sending white "
-            "temperature!");
 
-          uint16_t color_temperature = mapFloat(
-            whiteTemperature, 0, 100, _max_warm_cct, _min_cool_cct);
-        
-	          zbGateway.sendColorMoveToColorTemperatureCmd(
+          // Send White Temperature ONLY for SUPLA_CHANNELFNC_DIMMER_CCT (185)
+          // and SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB (205)
+          if (isCCTSupported()) {
+            log_i("Sending white temperature!");
+
+            uint16_t color_temperature = mapFloat(
+              whiteTemperature, 0, 100, _max_warm_cct, _min_cool_cct);
+          
+            zbGateway.sendColorMoveToColorTemperatureCmd(
               _short_addr, _endpoint, color_temperature, 1);
+          }
         } break;
       }
     }
@@ -700,6 +657,12 @@ void Supla::Control::Z2S_RGBCCTInterface::ping() {
 
 void Supla::Control::Z2S_RGBCCTInterface::turnOn() {
 
+  if (!isRGBSupported()) {
+    
+    turnOnDimmer();
+    return;
+  }
+  
   if (turnOnOff == 0) {
 
     turnOnOff = 1;
@@ -734,6 +697,10 @@ void Supla::Control::Z2S_RGBCCTInterface::turnOn() {
 void Supla::Control::Z2S_RGBCCTInterface::turnOnDimmer() {
 
   log_i("turnOnOff %u", turnOnOff);
+
+  if (!isDimmerSupported())
+    
+    return;
 
   if ((turnOnOff > 0) && (_brightness > 0))
     return; 
@@ -794,6 +761,67 @@ void Supla::Control::Z2S_RGBCCTInterface::turnOff() {
   }
 
   _lastServerMsgReceivedMs = 1;
+}
+
+/*****************************************************************************/
+
+void Supla::Control::Z2S_RGBCCTInterface::onRegistered(
+  Supla::Protocol::SuplaSrpc *suplaSrpc) {
+
+  Supla::ChannelElement::onRegistered(suplaSrpc);
+
+  log_i("Function is %lu", channel.getDefaultFunction());
+
+}
+
+
+Supla::ApplyConfigResult Supla::Control::Z2S_RGBCCTInterface::applyChannelConfig(
+    TSD_ChannelConfig *result, bool local) {
+
+  log_i("applyChannelConfig - Function is %lu", channel.getDefaultFunction());
+
+  bool stateChanged = false;
+
+  // 1. If RGB is no longer supported (e.g. switched to DIMMER or DIMMER_CCT)
+  if (!isRGBSupported() && (_colorBrightness > 0)) {
+    log_i("RGB no longer supported by function - switching RGB OFF");
+    _last_red = _red;
+    _last_green = _green;
+    _last_blue = _blue;
+    _last_colorBrightness = _colorBrightness;
+    _colorBrightness = 0;
+    stateChanged = true;
+  }
+
+  // 2. If Dimmer is no longer supported (e.g. switched to RGBLIGHTING)
+  if (!isDimmerSupported() && (_brightness > 0)) {
+    log_i("Dimmer no longer supported by function - switching Dimmer OFF");
+    _last_brightness = _brightness;
+    _last_whiteTemperature = _whiteTemperature;
+    _brightness = 0;
+    _whiteTemperature = 0;
+    stateChanged = true;
+  }
+
+  // 3. If CCT is no longer supported (e.g. switched to DIMMER 180 or DIMMERANDRGB 200)
+  if (!isCCTSupported() && (_whiteTemperature > 0)) {
+    log_i("CCT no longer supported by function - resetting whiteTemperature");
+    _last_whiteTemperature = _whiteTemperature;
+    _whiteTemperature = 0;
+    stateChanged = true;
+  }
+
+  if (stateChanged) {
+    if (!isOn()) {
+      turnOnOff = 0;
+    } else {
+      turnOnOff = 2;
+    }
+    _lastServerMsgReceivedMs = 1;
+    Supla::Storage::ScheduleSave(5000, 2000);
+  }
+
+  return ApplyConfigResult::Success;
 }
 
 /*****************************************************************************/
@@ -885,6 +913,9 @@ void Supla::Control::Z2S_RGBCCTInterface::iterateAlways() {
 
 void Supla::Control::Z2S_RGBCCTInterface::increaseBrightness(
   int8_t add_to_brightness) {
+
+  if (!isDimmerSupported())
+    return;
 
   bool wasOn = isOn();
 

@@ -30,6 +30,7 @@
 
 #include <Z2S_StorageManager.h>
 #include <Z2S_common.h>
+#include <Z2S_configure.h>
 
 #include "z2s_web_gui.h"
 

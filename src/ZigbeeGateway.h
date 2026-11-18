@@ -73,6 +73,12 @@ typedef struct esp_zb_ota_image_header_s {
 #define TUYA_SEND_CMD                                         0x04 //TUYA_PRIVATE_CLUSTER_EF00
 #define TUYA_SETUP_CMD                                        0xF0 //ESP_ZB_ZCL_CLUSTER_ID_BASIC 
 
+#define TUYA_DATA_REPORT_CMD                                  0x02
+#define TUYA_MCU_SYNC_TIME                                    0x24
+#define TUYA_MCU_VERSION_REQUEST                              0x10                
+#define TUYA_MCU_VERSION_RESPONSE                             0x11
+#define TUYA_MCU_GATEWAY_CONNECTION_STATUS_REQUEST            0x25
+
 #define TUYA_MANUFACTURER_CODE                                0x125D
 
 #define IKEA_PRIVATE_CLUSTER                                  0xFC7F

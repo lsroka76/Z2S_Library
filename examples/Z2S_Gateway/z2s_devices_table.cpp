@@ -480,145 +480,74 @@ uint8_t updateChannelDesc(
   uint8_t update_result = 0;
   Z2S_Device *device = nullptr;
 
-  if (z2s_channel_params.valid_record && 
+  if (z2s_channel_params.valid_record &&
       (z2s_channel_params.local_channel_type == 0)) {
 
     device = Z2S_Device::getZ2SDeviceByIeeeAddress(
       z2s_channel_params.ieee_addr);
-    
-    if (device == nullptr) {
 
-      log_e("missing ZigBee device for channel index %u", channel_index);
+    if (device == nullptr) {
+      log_e(
+        "missing ZigBee device for channel index %u - removing orphaned "
+        "channel", channel_index);
+      elementsStorage.remove(channel_index);
       return 4;
     }
 
     uint8_t new_Zb_device_id = device->getDeviceIndex();
 
     if (z2s_channel_params.Zb_device_id != new_Zb_device_id) {
-    
       z2s_channel_params.Zb_device_id = new_Zb_device_id;
       update_result |= 1;
     }
-                
-    if (device->getDeviceUid() == 0) {
 
+    if (device->getDeviceUid() == 0) {
       log_e(
         "Unknown ZigBee device couldn't be restored - removing device #%u"
         " and element #%u", new_Zb_device_id, channel_index);
 
       Z2S_removeZbDevice(new_Zb_device_id);
       elementsStorage.remove(channel_index);
-
       return 4;
     }
 
     uint32_t devices_list_idx = device->getDevicesListIdx();
-
-    const auto& z2s_device_list = Z2S_DEVICES_LIST[devices_list_idx];
-
-    uint8_t z2s_device_endpoints_count = 
-      z2s_device_list.z2s_device_endpoints_count;
-
+    const auto &z2s_device_list = Z2S_DEVICES_LIST[devices_list_idx];
     uint32_t device_desc_id = z2s_device_list.z2s_device_desc_id;
-  
-    if (device->getDeviceDescId() != device_desc_id) {
 
+    if (device->getDeviceDescId() != device_desc_id) {
       log_i(
-        "Zb device model id mismatch, changing from 0x%04X to "
-        "0x%04X", device->getDeviceDescId(), device_desc_id);
+        "Zb device model id mismatch, changing from 0x%04X to 0x%04X",
+        device->getDeviceDescId(), device_desc_id);
 
       device->setDeviceDescId(device_desc_id, false);
+      device->syncDeviceDescFlags();
       update_result |= 2;
     }
 
-    if (z2s_device_endpoints_count == 1) {
+    z2s_resolved_endpoint_t resolved_ep = {};
+    if (Z2S_resolveDeviceEndpointById(
+          devices_list_idx, z2s_channel_params.endpoint, resolved_ep)) {
 
-      if ((z2s_channel_params.endpoint == 1) &&
-          (z2s_channel_params.model_id != device_desc_id)) {
-
+      if (z2s_channel_params.model_id != resolved_ep.desc_id) {
         log_i(
           "Channel model id mismatch, changing from %lu to %lu",
-          z2s_channel_params.model_id, device_desc_id);
+          z2s_channel_params.model_id, resolved_ep.desc_id);
 
-        z2s_channel_params.model_id = device_desc_id;
+        z2s_channel_params.model_id = resolved_ep.desc_id;
         update_result |= 1;
       }
-    } 
-    else {
-      
-      const z2s_device_endpoint_t *z2s_device_endpoints_ptr = 
-        z2s_device_list.z2s_device_endpoints;
-
-      if (z2s_device_list.z2s_device_flags & 
-          Z2S_DEVICE_CONFIG_FLAG_EXT_ENDPOINTS)
-        z2s_device_endpoints_ptr = z2s_device_list.z2s_device_endpoints_ext;
-
-      for (uint8_t endpoints_counter = 0; 
-           endpoints_counter < z2s_device_endpoints_count; 
-           endpoints_counter++) {
-
-        uint8_t endpoints_idx = endpoints_counter;
-
-        if (z2s_device_list.z2s_device_flags & 
-            Z2S_DEVICE_CONFIG_FLAG_MIRROR_ALL_ENDPOINTS)
-          endpoints_idx = 0;
-
-        if (z2s_device_list.z2s_device_flags & 
-            Z2S_DEVICE_CONFIG_FLAG_MIRROR_2_ENDPOINTS) {
-          
-          if (endpoints_counter < 
-              z2s_device_list.z2s_device_endpoints_count_m1) 
-            endpoints_idx = 0;
-          else
-            endpoints_idx = 1;
-        }
-
-        device_desc_id = 
-          (z2s_device_endpoints_ptr + endpoints_idx)->z2s_device_desc_id;
-
-        uint8_t endpoint_id = 
-        (z2s_device_endpoints_ptr + endpoints_idx)->endpoint_id;
-
-        //mirrored endpoints must be numbered in sequential order 
-        //starting from 1st endpoint id, i.e. 7, 8, 9...
-        if (z2s_device_list.z2s_device_flags & 
-            Z2S_DEVICE_CONFIG_FLAG_MIRROR_ALL_ENDPOINTS)
-          endpoint_id += endpoints_counter;
-
-        if (z2s_device_list.z2s_device_flags & 
-            Z2S_DEVICE_CONFIG_FLAG_MIRROR_2_ENDPOINTS) {
-          
-          if (endpoints_counter < 
-              z2s_device_list.z2s_device_endpoints_count_m1)
-            endpoint_id += endpoints_counter; 
-          else
-            endpoint_id += (endpoints_counter - 
-              z2s_device_list.z2s_device_endpoints_count_m1);
-        }
-        if ((z2s_channel_params.endpoint == endpoint_id) &&
-            (z2s_channel_params.model_id != device_desc_id)) {
-
-          log_i(
-            "Channel model id mismatch, changing from %lu to %lu",
-            z2s_channel_params.model_id, device_desc_id);
-            
-          z2s_channel_params.model_id = device_desc_id;
-          update_result |= 1;
-        }
-      }
-    }   
+    }
   }
-  
-  if (update_result & 1) {
 
+  if (update_result & 1) {
     elementsStorage.save(channel_index, z2s_channel_params);
   }
-  
+
   if (update_result & 2) {
-  
     device->saveDeviceData();
   }
-  
+
   return update_result;
 }
 
@@ -990,6 +919,10 @@ Z2S_Device *Z2S_addZbDeviceTableSlot(
       device->setDeviceDescId(desc_id, false);
       device->setPowerSource(power_source, false);
       device->setBatteryPercentage(0xFF, false);
+      if (!join_init) {
+        device->clearDeviceUserDataFlags(
+          ZBD_USER_DATA_FLAG_BINDING_REQUIRED, false);
+      }
 
       device->saveDeviceData();
             
@@ -1030,6 +963,8 @@ Z2S_Device *Z2S_addZbDeviceTableSlot(
       device->setEndpointsCount(endpoints_count, false);
       device->setDeviceDescId(desc_id, false);
       device->setPowerSource(power_source, false);
+      device->clearDeviceUserDataFlags(
+        ZBD_USER_DATA_FLAG_BINDING_REQUIRED, false);
 
       if (device->saveDeviceData())
         log_i("ZigBee device updated!");
@@ -6880,7 +6815,21 @@ void Z2S_onDeviceRejoin(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {
   Z2S_Device *z2s_device = Z2S_Device::getZ2SDeviceByIeeeAddress(ieee_addr);
 
   if (z2s_device == nullptr) {
-    return; 
+    return;
+  }
+
+  bool rebind_after_rejoin = z2s_device->checkDeviceUserDataFlags(
+    ZBD_USER_DATA_FLAG_REBIND_AFTER_REJOIN);
+  bool configure_after_rejoin = z2s_device->checkDeviceUserDataFlags(
+    ZBD_USER_DATA_FLAG_CONFIGURE_AFTER_REJOIN);
+
+  if (rebind_after_rejoin || configure_after_rejoin) {
+    log_i(
+      "Rejoin actions for 0x%04X: rebind=%u, configure=%u",
+      short_addr, rebind_after_rejoin, configure_after_rejoin);
+
+    Z2S_rebindAndConfigureDevice(
+      z2s_device, rebind_after_rejoin, configure_after_rejoin);
   }
 
   zbg_device_params_t device = {};
@@ -6892,23 +6841,55 @@ void Z2S_onDeviceRejoin(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {
   device.model_id = z2s_device->getDeviceDescId();
 
   if (z2s_device->checkDeviceUserDataFlags(
-    ZBD_USER_DATA_FLAG_IAS_ZONE_STATUS_QUERY_AFTER_REJOIN)) {
-    
-    log_i("IAS zone status query after rejoin");
-  
-    zbGateway.sendAttributeRead(
-      &device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE, 
-      ESP_ZB_ZCL_ATTR_IAS_ZONE_ZONESTATUS_ID, false);
-  }
+        ZBD_USER_DATA_FLAG_IAS_ZONE_STATUS_QUERY_AFTER_REJOIN) ||
+      z2s_device->checkDeviceUserDataFlags(
+        ZBD_USER_DATA_FLAG_ON_OFF_STATE_QUERY_AFTER_REJOIN)) {
 
-  if (z2s_device->checkDeviceUserDataFlags(
-    ZBD_USER_DATA_FLAG_ON_OFF_STATE_QUERY_AFTER_REJOIN)) {
-    
-    log_i("On/Off state query after rejoin");
-  
-    zbGateway.sendAttributeRead(
-      &device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
-      ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, false);
+    uint32_t list_idx = z2s_device->getDevicesListIdx();
+    uint8_t ep_count = (list_idx < Z2S_DEVICES_LIST_COUNT)
+                         ? Z2S_DEVICES_LIST[list_idx].z2s_device_endpoints_count
+                         : 1;
+
+    for (uint8_t ep_i = 0; ep_i < ep_count; ++ep_i) {
+      z2s_resolved_endpoint_t resolved_ep = {};
+      const z2s_device_desc_t *ep_desc = nullptr;
+
+      if (list_idx < Z2S_DEVICES_LIST_COUNT &&
+          Z2S_resolveDeviceEndpointByIndex(list_idx, ep_i, resolved_ep)) {
+        if (resolved_ep.desc_id == Z2S_DEVICE_DESC_NULL)
+          continue;
+        device.endpoint = resolved_ep.endpoint_id;
+        ep_desc = Z2S_getDeviceDescById(resolved_ep.desc_id);
+      } else {
+        device.endpoint = 0x01;
+        ep_desc = Z2S_getDeviceDescById(z2s_device->getDeviceDescId());
+      }
+
+      uint32_t ep_flags = ep_desc ? ep_desc->z2s_device_config_flags : 0;
+
+      if (z2s_device->checkDeviceUserDataFlags(
+            ZBD_USER_DATA_FLAG_IAS_ZONE_STATUS_QUERY_AFTER_REJOIN) &&
+          ((ep_flags & Z2S_DEVICE_DESC_CONFIG_FLAG_IAS_ZONE_REJOIN_QUERY) ||
+           Z2S_deviceDescHasCluster(ep_desc, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE))) {
+
+        log_i("IAS zone status query after rejoin (ep 0x%02X)", device.endpoint);
+        zbGateway.sendAttributeRead(
+          &device, ESP_ZB_ZCL_CLUSTER_ID_IAS_ZONE,
+          ESP_ZB_ZCL_ATTR_IAS_ZONE_ZONESTATUS_ID, false);
+      }
+
+      if (z2s_device->checkDeviceUserDataFlags(
+            ZBD_USER_DATA_FLAG_ON_OFF_STATE_QUERY_AFTER_REJOIN) &&
+          ((ep_flags & Z2S_DEVICE_DESC_CONFIG_FLAG_ON_OFF_REJOIN_QUERY) ||
+           Z2S_deviceDescHasCluster(ep_desc, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF))) {
+
+        log_i("On/Off state query after rejoin (ep 0x%02X)", device.endpoint);
+        zbGateway.sendAttributeRead(
+          &device, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+          ESP_ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID, false);
+      }
+    }
+    device.endpoint = 0x01;
   }
 
   if (z2s_device->checkDeviceUserDataFlags(
@@ -6977,6 +6958,18 @@ uint8_t Z2S_addZ2SDevice(
     device->cluster_id, ALL_SUPLA_CHANNEL_TYPES, sub_id);
   
   if (!z2s_core) {
+
+    switch (device->model_id) {
+      case Z2S_DEVICE_DESC_NULL:
+      case Z2S_DEVICE_DESC_TUYA_REPEATER:
+      case Z2S_DEVICE_DESC_REPEATER:
+      case Z2S_DEVICE_DESC_SHELLY_RPC:
+      case Z2S_DEVICE_DESC_PHILIPS_HUE_DIMMER_SWITCH_1:
+      case Z2S_DEVICE_DESC_LUMI_CUBE_T1_PRO_2:
+        return ADD_Z2S_DEVICE_STATUS_OK;
+      default:
+        break;
+    }
 
     log_i("No channel found for address %s, adding new one!",ieee_addr_str);
     
@@ -8966,7 +8959,8 @@ case Z2S_DEVICE_DESC_LUMI_W500: {
 
 /******************************************************************************/     
 
-      case Z2S_DEVICE_DESC_LUMI_CUBE_T1_PRO: 
+      case Z2S_DEVICE_DESC_LUMI_CUBE_T1_PRO:
+      case Z2S_DEVICE_DESC_LUMI_CUBE_T1_PRO_1:
 
         addZ2SDeviceActionTrigger(
           device, first_free_slot, sub_id, 
