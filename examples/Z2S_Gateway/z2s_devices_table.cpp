@@ -7862,7 +7862,7 @@ case Z2S_DEVICE_DESC_LUMI_W500: {
 
       case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_A:
       case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B:
-      case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_NO_CT:
+      //case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_NO_CT:
       case Z2S_DEVICE_DESC_IKEA_RGBW_BULB:
       case Z2S_DEVICE_DESC_ADEO_RGBW_BULB:
       case Z2S_DEVICE_DESC_RGBW_BULB_XY:
@@ -7926,7 +7926,16 @@ case Z2S_DEVICE_DESC_LUMI_W500: {
           SUPLA_CHANNELFNC_DIMMER_CCT_AND_RGB); 
       } break; 
 
-/*****************************************************************************/     
+/*****************************************************************************/
+
+      case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_NO_CT: {
+        
+        addZ2SDeviceRGBCCT(
+          device, first_free_slot, "RGBW", 
+          SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING); 
+      } break; 
+
+/*****************************************************************************/
 
       case Z2S_DEVICE_DESC_TUYA_LED_DIMMER:
       case Z2S_DEVICE_DESC_LED_DIMMER:
