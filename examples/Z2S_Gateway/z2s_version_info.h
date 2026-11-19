@@ -11,7 +11,7 @@
 
 /*****************************************************************************/
 
-#define Z2S_VERSION "Z2S-1.7.69-18/11/26"
+#define Z2S_VERSION "Z2S-1.7.70-19/11/26"
 
 /*****************************************************************************/
 
@@ -28,7 +28,8 @@ bool isHardwareCapableOfOta();
 /*****************************************************************************/
 
 bool checkGitHubForUpdate(
-  char *response_buffer = nullptr, size_t response_buffer_size = 0);
+  char *response_buffer = nullptr, size_t response_buffer_size = 0,
+  char *latest_tag_buffer = nullptr, size_t latest_tag_buffer_size = 0);
 
 /*****************************************************************************/
 
@@ -37,6 +38,10 @@ void startBackgroundGitHubOtaTask(otaProgressCallback progressCb = nullptr);
 /*****************************************************************************/
 
 void startBackgroundGitHubNcpOtaTask(otaProgressCallback progressCb = nullptr);
+
+/*****************************************************************************/
+
+void setGitHubOtaProgressCallback(otaProgressCallback progressCb);
 
 /*****************************************************************************/
 

@@ -88,7 +88,10 @@ static bool appendEscapedJson(char *buf, size_t max_len, size_t &off, const char
   return true;
 }
 
-static bool appendFmt(char *buf, size_t max_len, size_t &off, const char *fmt, ...) {
+/*****************************************************************************/
+
+static bool appendFmt(
+  char *buf, size_t max_len, size_t &off, const char *fmt, ...) {
   if (off >= max_len) return false;
   va_list args;
   va_start(args, fmt);
@@ -98,6 +101,8 @@ static bool appendFmt(char *buf, size_t max_len, size_t &off, const char *fmt, .
   off += n;
   return true;
 }
+
+/*****************************************************************************/
 
 static const char Z2S_INDEX_HTML[] PROGMEM = R"rawliteral(<!DOCTYPE html>
 <html lang="en">
@@ -170,12 +175,13 @@ input:checked+.slider:before{transform:translateX(22px)}
 <body>
 <header>
   <div class="hdr-inner">
-    <h1 id="ui-title">ZIGBEE &lt;=&gt; SUPLA CONTROL PANEL</h1>
+    <h1 id="ui-title">ZIGBEE ⇄ SUPLA CONTROL PANEL</h1>
     <span id="ws-status">Connecting...</span>
   </div>
 </header>
 <div class="tabs-bar"><nav class="tabs-nav" id="tabs-nav"></nav></div>
 <main id="tabs-content"></main>
+<script src="/z2s_backup.js"></script>
 <script>
 window.websock=null;
 window.__z2sUiReady=false;
@@ -189,81 +195,15 @@ function sendWs(msg){
 }
 function redirect2ZigbeeOTA(){window.location.assign("/zigbee_ota");}
 
-async function downloadPartition(label,btn){
-  if(btn)btn.innerText=`Downloading ${label}... 0%`;
-  const res=await fetch(`/partition?label=${label}`);
-  if(!res.ok)throw new Error(`Failed to fetch ${label} (HTTP ${res.status})`);
-  const total=parseInt(res.headers.get("content-length")||"0",10);
-  const reader=res.body.getReader();
-  const chunks=[];
-  let loaded=0;
-  while(true){
-    const {done,value}=await reader.read();
-    if(done)break;
-    chunks.push(value);
-    loaded+=value.length;
-    if(total&&btn)btn.innerText=`Downloading ${label}... ${Math.round((loaded/total)*100)}%`;
-  }
-  const url=window.URL.createObjectURL(new Blob(chunks,{type:"application/octet-stream"}));
-  const a=document.createElement("a");
-  a.style.display="none";
-  a.href=url;
-  a.download=`${window.location.hostname.replace(".local","")}_${label}_backup.bin`;
-  document.body.appendChild(a);
-  a.click();
-  window.URL.revokeObjectURL(url);
-  a.remove();
-  return new Promise(r=>setTimeout(r,300));
-}
-
-async function backupAndRedirectToOTA(buttonId){
-  const btn=document.getElementById(buttonId);
-  const orig=btn?btn.innerText:"";
-  if(btn)btn.disabled=true;
-  try{
-    await downloadPartition("nvs",btn);
-    await downloadPartition("spiffs",btn);
-)rawliteral"
-#if !CONFIG_IDF_TARGET_ESP32S3
-R"rawliteral(
-await downloadPartition("zb_storage",btn);
-)rawliteral"
-#endif
-R"rawliteral(
-    if(btn)btn.innerText="Redirecting to OTA...";
-    setTimeout(()=>window.location.assign("/update"),500);
-  }catch(e){
-    alert(`Backup failed: ${e.message}. Redirecting to OTA anyway...`);
-    window.location.assign("/update");
-    if(btn){btn.innerText=orig;btn.disabled=false;}
-  }
-}
-
-async function backupAndContinue(buttonId){
-  const btn=document.getElementById(buttonId);
-  const orig=btn?btn.innerText:"";
-  if(btn)btn.disabled=true;
-  try{
-    await downloadPartition("nvs",btn);
-    await downloadPartition("spiffs",btn);
-    await downloadPartition("zb_storage",btn);
-  }finally{
-    if(btn){btn.innerText=orig;btn.disabled=false;}
-  }
-  const id=buttonId.replace("btn","");
-  sendWs("bdown:"+id);
-  setTimeout(()=>sendWs("bup:"+id),50);
-}
-
 window.onGatewayCommand=function(cmd,labelId){
   if(cmd==="Z2S_GUI_CMD_START_BACKUP"){
     const el=document.getElementById("id"+labelId)||document.getElementById("l"+labelId);
-    if(el)el.innerHTML="Downloading...";
-    (async()=>{
-      await downloadPartition("nvs",null);
-      await downloadPartition("spiffs",null);
-      await downloadPartition("zb_storage",null);
-    })();
+    if(el)el.innerHTML="Downloading backup...";
+    window.Z2SBackup.backupPartitions(window.Z2SBackup.PARTITIONS,(name,pct)=>{
+      if(el)el.innerHTML=`Downloading ${name}... ${pct}%`;
+    }).then(r=>{
+      if(el)el.innerHTML=r.ok?"Backup complete!":"Backup failed: "+r.failed.join(", ");
+    });
   }else if(cmd==="Z2S_GUI_CMD_UI_LOCKDOWN"){
     document.body.style.pointerEvents="none";
     document.body.style.opacity="0.5";
@@ -275,10 +215,29 @@ window.onGatewayCommand=function(cmd,labelId){
 
 window.buttonclick=function(id,isdown){
   const btn=document.getElementById("btn"+id);
+  if(btn&&btn.disabled)return;
   const txt=btn?btn.textContent.trim():"";
-  if(id==30||txt==="Gateway firmware update"){if(!isdown)backupAndRedirectToOTA("btn"+id);return;}
-  if(id==31||txt==="Upload Zigbee OTA file"){if(!isdown)redirect2ZigbeeOTA();return;}
-  if(id==34||txt==="GitHub gateway firmware update"){if(!isdown)backupAndContinue("btn"+id);return;}
+  if(txt==="Gateway firmware update"){
+    if(!isdown)window.location.assign("/update");
+    return;
+  }
+  if(txt==="Upload Zigbee OTA file"){
+    if(!isdown)redirect2ZigbeeOTA();
+    return;
+  }
+  if(txt==="GitHub gateway firmware update"){
+    if(!isdown){
+      window.Z2SBackup.confirmAndRun({
+        title:"GitHub Gateway Firmware Update",
+        actionLabel:"Update",
+        onProceed:()=>{
+          sendWs("bdown:"+id);
+          setTimeout(()=>sendWs("bup:"+id),50);
+        }
+      });
+    }
+    return;
+  }
   sendWs((isdown?"bdown:":"bup:")+id);
 };
 
@@ -522,8 +481,8 @@ function formatActionTableCell(cellContent,colIdx,isIr,isPo){
     return `<span class="action-flat-btn">${str}</span>`;
   }
   if(colIdx===2||colIdx===4){
-    const safe=str.split('"').join("&quot;");
-    return `<span class="channel-cell-wrap"><span class="channel-chain-btn" data-channel="${safe}" title="Filter actions linked to this channel">&#128279;</span><span class="channel-cell-name">${str}</span></span>`;
+    const safe=str.split('"').join("\x26quot;");
+    return `<span class="channel-cell-wrap"><span class="channel-chain-btn" data-channel="${safe}" title="Filter actions linked to this channel">🔗</span><span class="channel-cell-name">${str}</span></span>`;
   }
   return str;
 }
@@ -622,7 +581,7 @@ function renderActionTableImmediate(targetLabel,data){
       const style=(absoluteIndex===data.s)?"background-color:rgba(59,130,246,0.28);font-weight:bold;":"font-weight:normal;";
       rowsHtml+=`<tr style="${style}" data-action-idx="${absoluteIndex}">`;
       row.forEach((cell,colIdx)=>{
-        const cleanCell=String(cell).split('"').join("&quot;");
+        const cleanCell=String(cell).split('"').join("\x26quot;");
         rowsHtml+=`<td style="padding:4px 6px;border-bottom:1px solid rgba(255,255,255,0.08);vertical-align:middle;" title="${cleanCell}">${formatActionTableCell(cell,colIdx,isIr,isPo)}</td>`;
       });
       rowsHtml+="</tr>";
@@ -671,12 +630,12 @@ function renderActionTableImmediate(targetLabel,data){
     :isPo
     ?"<th style='padding:5px 6px;width:80px;'>ID (sid)</th><th style='padding:5px 6px;width:220px;'>Message Name</th><th style='padding:5px 6px;width:420px;'>Message Text</th>"
     :"<th style='padding:5px 6px;width:135px;'>Name (state)</th><th style='padding:5px 6px;width:135px;'>Supla event</th><th style='padding:5px 6px;width:180px;'>Source channel</th><th style='padding:5px 6px;width:120px;'>Supla action</th><th style='padding:5px 6px;width:180px;'>Destination channel</th>";
-  const safeSavedSearch=savedSearch.split('"').join("&quot;");
+  const safeSavedSearch=savedSearch.split('"').join("\x26quot;");
   html+=`<div class="table-search-bar">`+
     `<input type="text" class="table-search-input" placeholder="\uD83D\uDD0D ${searchPlaceholder}" value="${safeSavedSearch}" autocomplete="off">`+
-    `<span class="table-search-clear" title="Clear search">&#10005;</span>`+
+    `<span class="table-search-clear" title="Clear search">✕</span>`+
     `<span class="table-search-count">0</span>`+
-    `<span class="table-expand-btn" title="Toggle table height">${isExpanded?"&#10529;":"&#10530;"}</span>`+
+    `<span class="table-expand-btn" title="Toggle table height">${isExpanded?"⤡":"⤢"}</span>`+
   `</div>`+
   `<div tabindex="0" class="${isExpanded?"table-fullscreen":""}">`+
     `<table style="width:100%;min-width:750px;table-layout:fixed;border-collapse:collapse;text-align:left;">`+
@@ -685,8 +644,8 @@ function renderActionTableImmediate(targetLabel,data){
   `</div>`+
   `<div class="table-footer-hints">`+
     `<span><span class="table-status-badge badge-active">Active</span></span>`+
-    `<span><kbd>&uarr;</kbd><kbd>&darr;</kbd> Navigate</span>`+
-    `<span><kbd>PgUp</kbd><kbd>PgDn</kbd> &plusmn;5 Rows</span>`+
+    `<span><kbd>↑</kbd><kbd>↓</kbd> Navigate</span>`+
+    `<span><kbd>PgUp</kbd><kbd>PgDn</kbd> ±5 Rows</span>`+
     `<span><kbd>Home</kbd><kbd>End</kbd> First/Last</span>`+
   `</div>`;
   targetLabel.innerHTML=html;
@@ -714,7 +673,7 @@ function renderActionTableImmediate(targetLabel,data){
     expandBtn.addEventListener("click",()=>{
       const isFull=container.classList.toggle("table-fullscreen");
       targetLabel.dataset.isExpanded=isFull?"1":"0";
-      expandBtn.innerHTML=isFull?"&#10529;":"&#10530;";
+      expandBtn.innerHTML=isFull?"⤡":"⤢";
     });
   }
   filterActionTable(data.target);
@@ -897,7 +856,7 @@ function syncSubactionDropdown(){
   }else{
     optionsData.forEach(opt=>{
       const selected=String(opt.id)===currentVal?" selected":"";
-      html+=`<option value="${opt.id}"${selected}>${opt.label.split('"').join("&quot;")}</option>`;
+      hhtml+=`<option value="${opt.id}"${selected}>${opt.label.split('"').join("\x26quot;")}</option>`;
     });
   }
   helperSelect.innerHTML=html;

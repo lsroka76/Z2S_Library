@@ -60,6 +60,7 @@ enum gui_commands : uint8_t {
   gui_cmd_synchronize_all,
   gui_cmd_check_github_ota,
   gui_cmd_perform_github_ota,
+  gui_cmd_enable_cloud_ota,
   gui_cmd_sort_channels_selectors,
   gui_cmd_sort_zbdevices_selectors,
   gui_cmd_sort_zbdevices_and_channels_selectors,

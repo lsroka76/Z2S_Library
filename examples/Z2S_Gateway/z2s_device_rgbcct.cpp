@@ -110,7 +110,8 @@ void addZ2SDeviceRGBCCT(
   zbg_device_params_t *device, uint8_t free_slot,const char *name, 
   uint32_t func) {
   
-  auto Supla_Z2S_RGBCCTInterface = new Supla::Control::Z2S_RGBCCTInterface();
+  auto Supla_Z2S_RGBCCTInterface = new Supla::Control::Z2S_RGBCCTInterface(
+    func);
 
   if (Supla_Z2S_RGBCCTInterface) {
 

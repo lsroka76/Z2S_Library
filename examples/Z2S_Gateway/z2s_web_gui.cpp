@@ -46,6 +46,7 @@ extern uint8_t _force_config_on_start;
 
 extern uint8_t _rebuild_Supla_channels_on_start;
 extern uint8_t _use_new_at_model;
+extern uint8_t _enable_cloud_ota;
 extern uint32_t _auto_connection_reset_timeout;
 
 extern uint8_t _z2s_security_level;
@@ -69,6 +70,7 @@ uint16_t gateway_mdns_name_text;
 uint16_t use_new_at_model_switcher;
 uint16_t github_ota_button;
 uint16_t github_ota_info_label;
+uint16_t enable_cloud_ota_switcher;
 
 uint16_t wifi_ssid_text;
 uint16_t wifi_pass_text;
@@ -466,6 +468,7 @@ volatile PushoverMessageGUIState previous_pushover_message_gui_state =
 #define GUI_CB_GUI_RESTART_FLAG 0x0107
 #define GUI_CB_GUI_CHECK_GITHUB_OTA_FLAG 0x0108
 #define GUI_CB_GUI_PERFORM_GITHUB_OTA_FLAG 0x0109
+#define GUI_CB_ENABLE_CLOUD_OTA_FLAG 0x010A
 
 #define GUI_CB_SAVE_FLAG 0x1000
 #define GUI_CB_RESTART_FLAG 0x1001
@@ -1519,6 +1522,16 @@ void buildGatewayTabGUI() {
 
 	addEmptyLineLabel(web_ota_button);
 
+	enable_cloud_ota_switcher = ESPUI.addControl(
+	  Control::Type::Switcher, "Enable Cloud firmware update",
+	  (long int)0, Control::Color::Dark, web_ota_button,
+	  gatewayCallback, (void *)GUI_CB_ENABLE_CLOUD_OTA_FLAG);
+
+	ESPUI.setElementStyle(
+	  enable_cloud_ota_switcher, "width: 100%; margin: 4px 0;");
+
+	addEmptyLineLabel(web_ota_button);
+
 	save_button = ESPUI.addControl(
 	  Control::Type::Button, empty_str, "Restart gateway", Control::Color::Dark,
 	  web_ota_button, gatewayCallback, (void *)GUI_CB_GUI_RESTART_FLAG);
@@ -1530,6 +1543,10 @@ void buildGatewayTabGUI() {
 	ESPUI.updateNumber(force_config_switcher, _force_config_on_start);
 	ESPUI.updateNumber(use_new_at_model_switcher, _use_new_at_model);
 	enableControlStyle(github_ota_button, false);
+	ESPUI.updateNumber(enable_cloud_ota_switcher, _enable_cloud_ota);
+	if (!isHardwareCapableOfOta()) {
+		enableControlStyle(enable_cloud_ota_switcher, false);
+	}
 }
 
 /*****************************************************************************/
@@ -5383,6 +5400,194 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 
 /*****************************************************************************/
 
+static volatile bool s_http_ota_restart_pending = false;
+
+static const char Z2S_BACKUP_JS[] PROGMEM = R"rawliteral(
+(function(){
+  const PARTITIONS = ["nvs", "spiffs", "zb_storage"];
+
+  function ensureModal(){
+    let ov = document.getElementById("z2s-bk-overlay");
+    if (ov) return ov;
+    const style = document.createElement("style");
+    style.textContent =
+      "#z2s-bk-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:9999;display:none;align-items:center;justify-content:center;padding:16px}" +
+      "#z2s-bk-box{background:#252a32;border:1px solid #374151;border-bottom:3px solid #111317;border-radius:8px;max-width:440px;width:100%;padding:16px;color:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;box-shadow:0 12px 32px rgba(0,0,0,.55)}" +
+      "#z2s-bk-title{font-size:15px;font-weight:700;margin:0 0 8px 0;color:#fff}" +
+      "#z2s-bk-msg{font-size:12.5px;color:#cbd5e1;margin:0 0 12px 0;line-height:1.45}" +
+      "#z2s-bk-pwrap{display:none;background:#14171c;border:1px solid #374151;border-radius:4px;overflow:hidden;height:20px;margin-bottom:8px}" +
+      "#z2s-bk-pbar{width:0%;height:100%;background:#3b82f6;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;transition:width .12s}" +
+      "#z2s-bk-st{font-size:12px;min-height:16px;margin-bottom:12px;color:#cbd5e1}" +
+      "#z2s-bk-st.err{color:#f87171}" +
+      "#z2s-bk-st.ok{color:#34d399}" +
+      "#z2s-bk-btns{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}" +
+      ".z2s-bk-btn{border-radius:4px;padding:0 12px;height:34px;font-size:12px;font-weight:600;cursor:pointer;color:#fff;border:1px solid #4c566a;border-bottom:3px solid #2e3440;background:#3b4252}" +
+      ".z2s-bk-btn:hover{background:#434c5e}" +
+      ".z2s-bk-btn:disabled{opacity:.5;cursor:not-allowed}" +
+      ".z2s-bk-btn.primary{background:#2563eb;border-color:#3b82f6;border-bottom-color:#1d4ed8}" +
+      ".z2s-bk-btn.primary:hover{background:#3b82f6}" +
+      ".z2s-bk-btn.emerald{background:#059669;border-color:#10b981;border-bottom-color:#065f46}" +
+      ".z2s-bk-btn.emerald:hover{background:#10b981}" +
+      ".z2s-bk-btn.danger{background:#c0392b;border-color:#e74c3c;border-bottom-color:#922b21}" +
+      ".z2s-bk-btn.danger:hover{background:#e74c3c}";
+    document.head.appendChild(style);
+
+    ov = document.createElement("div");
+    ov.id = "z2s-bk-overlay";
+    ov.innerHTML =
+      "<div id='z2s-bk-box'>" +
+        "<div id='z2s-bk-title'></div>" +
+        "<div id='z2s-bk-msg'></div>" +
+        "<div id='z2s-bk-pwrap'><div id='z2s-bk-pbar'>0%</div></div>" +
+        "<div id='z2s-bk-st'></div>" +
+        "<div id='z2s-bk-btns'>" +
+          "<button type='button' class='z2s-bk-btn danger' id='z2s-bk-cancel'>Cancel</button>" +
+          "<button type='button' class='z2s-bk-btn emerald' id='z2s-bk-skip'></button>" +
+          "<button type='button' class='z2s-bk-btn primary' id='z2s-bk-do'></button>" +
+        "</div>" +
+      "</div>";
+    document.body.appendChild(ov);
+    return ov;
+  }
+
+  async function downloadPartition(label, onProgress){
+    if (onProgress) onProgress(label, 0);
+    const res = await fetch("/partition?label=" + encodeURIComponent(label), { cache: "no-store" });
+    if (!res.ok) throw new Error(label + " (HTTP " + res.status + ")");
+    const total = parseInt(res.headers.get("content-length") || "0", 10);
+    const reader = res.body.getReader();
+    const chunks = [];
+    let loaded = 0;
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+      loaded += value.length;
+      if (total > 0 && onProgress) {
+        onProgress(label, Math.min(100, Math.round((loaded / total) * 100)));
+      }
+    }
+    if (onProgress) onProgress(label, 100);
+    const blobUrl = window.URL.createObjectURL(new Blob(chunks, { type: "application/octet-stream" }));
+    const a = document.createElement("a");
+    a.style.display = "none";
+    a.href = blobUrl;
+    a.download = window.location.hostname.replace(".local", "") + "_" + label + "_backup.bin";
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(blobUrl);
+    a.remove();
+    await new Promise(r => setTimeout(r, 350));
+  }
+
+  async function backupPartitions(labels, onProgress){
+    const list = (Array.isArray(labels) && labels.length) ? labels : PARTITIONS;
+    const failed = [];
+    for (let i = 0; i < list.length; i++) {
+      const lbl = list[i];
+      try {
+        await downloadPartition(lbl, (name, pct) => {
+          if (onProgress) onProgress(name, pct, i, list.length);
+        });
+      } catch (e) {
+        failed.push(e.message || lbl);
+      }
+    }
+    return { ok: failed.length === 0, failed };
+  }
+
+  function confirmAndRun(opts){
+    const ov = ensureModal();
+    const titleEl = document.getElementById("z2s-bk-title");
+    const msgEl   = document.getElementById("z2s-bk-msg");
+    const pwrap   = document.getElementById("z2s-bk-pwrap");
+    const pbar    = document.getElementById("z2s-bk-pbar");
+    const stEl    = document.getElementById("z2s-bk-st");
+    const btnDo   = document.getElementById("z2s-bk-do");
+    const btnSkip = document.getElementById("z2s-bk-skip");
+    const btnCan  = document.getElementById("z2s-bk-cancel");
+
+    const labels = (opts && opts.partitions && opts.partitions.length) ? opts.partitions : PARTITIONS;
+    const verb   = (opts && opts.actionLabel) ? opts.actionLabel : "Update";
+
+    titleEl.textContent = (opts && opts.title) ? opts.title : "Firmware Update Backup";
+    msgEl.innerHTML = "Do you want to back up partitions (<b>" + labels.join(", ") + "</b>) before starting the update?";
+    pwrap.style.display = "none";
+    pbar.style.width = "0%";
+    pbar.textContent = "0%";
+    stEl.className = "";
+    stEl.textContent = "";
+
+    btnDo.textContent = "Backup & " + verb;
+    btnSkip.textContent = verb + " without Backup";
+    btnDo.disabled = false;
+    btnSkip.disabled = false;
+    btnCan.disabled = false;
+    btnDo.style.display = "";
+
+    let busy = false;
+    const close = () => {
+      if (busy) return;
+      ov.style.display = "none";
+      document.removeEventListener("keydown", onKey);
+    };
+    const onKey = (e) => { if (e.key === "Escape") close(); };
+    document.addEventListener("keydown", onKey);
+
+    ov.onclick = (e) => { if (e.target === ov) close(); };
+    btnCan.onclick = () => { close(); if (opts && opts.onCancel) opts.onCancel(); };
+    btnSkip.onclick = () => {
+      if (busy) return;
+      ov.style.display = "none";
+      document.removeEventListener("keydown", onKey);
+      if (opts && opts.onProceed) opts.onProceed(false);
+    };
+    btnDo.onclick = async () => {
+      if (busy) return;
+      busy = true;
+      btnDo.disabled = true;
+      btnSkip.disabled = true;
+      btnCan.disabled = true;
+      pwrap.style.display = "block";
+      stEl.className = "";
+      stEl.textContent = "Starting backup...";
+
+      const res = await backupPartitions(labels, (name, pct, idx, total) => {
+        const overall = Math.round(((idx + pct / 100) / total) * 100);
+        pbar.style.width = overall + "%";
+        pbar.textContent = overall + "%";
+        stEl.textContent = "Backing up " + name + " (" + pct + "%)...";
+      });
+
+      busy = false;
+      if (res.ok) {
+        stEl.className = "ok";
+        stEl.textContent = "Backup complete! Starting update...";
+        setTimeout(() => {
+          ov.style.display = "none";
+          document.removeEventListener("keydown", onKey);
+          if (opts && opts.onProceed) opts.onProceed(true);
+        }, 350);
+      } else {
+        stEl.className = "err";
+        stEl.textContent = "Backup failed: " + res.failed.join(", ");
+        btnDo.textContent = "Retry Backup";
+        btnSkip.textContent = "Continue Anyway";
+        btnDo.disabled = false;
+        btnSkip.disabled = false;
+        btnCan.disabled = false;
+      }
+    };
+
+    ov.style.display = "flex";
+  }
+
+  window.Z2SBackup = { PARTITIONS, downloadPartition, backupPartitions, confirmAndRun };
+})();
+)rawliteral";
+
+/*****************************************************************************/
+
 void Z2S_startWebGUI() {
 
 	//Z2S_PsramScope psram_scope;
@@ -5403,7 +5608,16 @@ void Z2S_startWebGUI() {
 	AsyncWebServer *server = ESPUI.WebServer();
 
 	if (server && !custom_routes_registered) {
+		
 		custom_routes_registered = true;
+
+		server->on("/z2s_backup.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+			AsyncWebServerResponse *response =
+			  request->beginResponse_P(200, "application/javascript", Z2S_BACKUP_JS);
+			response->addHeader("Cache-Control", "no-store");
+			response->addHeader("Connection", "close");
+			request->send(response);
+		});
 
 		// Redirect /zigbee_ota to the unified /update#zigbee page
 		server->on("/zigbee_ota", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -5450,6 +5664,37 @@ void Z2S_startWebGUI() {
 			}
 
 			const char *label = pLabel ? pLabel->value().c_str() : nullptr;
+
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+			if (label && strcmp(label, "zb_storage") == 0) {
+				uint32_t zbSize = GeminiBridge::hostZbStorageSize();
+				if (zbSize == 0) {
+					request->send(503, "text/plain", "C6 NCP zb_storage unavailable");
+					return;
+				}
+				AsyncWebServerResponse *response = request->beginChunkedResponse(
+				  "application/octet-stream",
+				  [zbSize](uint8_t *buffer, size_t maxLen, size_t index) -> size_t {
+					  if (index >= zbSize) return 0;
+					  size_t len = std::min<size_t>(maxLen, zbSize - index);
+					  if (len > 512) len = 512;
+					  return GeminiBridge::hostZbStorageRead(index, buffer, len) ? len : 0;
+				  });
+				response->addHeader("Content-Disposition", "attachment; filename=zb_storage.bin");
+				response->addHeader("Cache-Control", "no-store");
+				response->setContentLength(zbSize);
+				request->send(response);
+				return;
+			}
+#endif
+
+			if (label && strcmp(label, "spiffs") == 0) {
+				auto cfg = Supla::Storage::ConfigInstance();
+				if (cfg) {
+					cfg->saveIfNeeded();
+				}
+			}
+
 			esp_partition_type_t type = pType
 			  ? static_cast<esp_partition_type_t>(pType->value().toInt())
 			  : ESP_PARTITION_TYPE_ANY;
@@ -5482,6 +5727,7 @@ void Z2S_startWebGUI() {
 			  disp_hdr, sizeof(disp_hdr), "attachment; filename=%s.bin",
 			  partition->label);
 			response->addHeader("Content-Disposition", disp_hdr);
+			response->addHeader("Cache-Control", "no-store");
 			response->setContentLength(partition->size);
 
 			request->send(response);
@@ -5528,19 +5774,14 @@ void onUpdateBegin(const UpdateType type, int &result) {
 /*****************************************************************************/
 
 void onUpdateEnd(const UpdateType type, int &result) {
-
+	(void)type;
 	rgbLedWrite(RGB_BUILTIN, 0, 0, 0);
 
 	if (result == UpdateResult::UPDATE_OK) {
-
-		log_i("OTA update finished successfully - cleaning before reset");
-
-		Zigbee.stop();
-		delay(500);
-
-		log_i("software reset - closing LittleFs");
-
-		Z2S_endLittleFs(true);
+		log_i("HTTP OTA finished successfully - scheduling clean soft restart");
+		// Hand off to loopTask so AsyncWebServer flushes HTTP 200 immediately
+		// and STATUS_SOFTWARE_RESET stops Zigbee & LittleFS safely.
+		s_http_ota_restart_pending = true;
 	}
 }
 
@@ -5610,77 +5851,49 @@ static int16_t previousOtaProgress = -1;
 void guiGitHubOtaProgress(size_t current, size_t total) {
 
 	if (total == 0) {
-
 		switch (current) {
-
-
 			case 0:
-				{
-
-					rgbLedWrite(RGB_BUILTIN, 0, 0, 0);
-					ESPUI.updateLabel(github_ota_info_label, "OTA Successful. Rebooting...");
-				}
+				rgbLedWrite(RGB_BUILTIN, 0, 0, 0);
+				ESPUI.updateLabel(github_ota_info_label, "OTA Successful. Rebooting...");
+				ESPUI.flush(false);
 				break;
-
 
 			case 1:
-				{
-
-					rgbLedWrite(RGB_BUILTIN, 255, 0, 255);
-					ESPUI.updateLabel(github_ota_info_label, "Starting OTA from GitHub...");
-				}
+				previousOtaProgress = -1;
+				rgbLedWrite(RGB_BUILTIN, 255, 0, 255);
+				ESPUI.updateLabel(github_ota_info_label, "Starting OTA from GitHub...");
 				break;
 
-
 			case 2:
-				{
-
-					rgbLedWrite(RGB_BUILTIN, 0, 0, 0);
-					ESPUI.updateLabel(github_ota_info_label, "GitHub OTA failed - check logs for error code!");
-				}
+				rgbLedWrite(RGB_BUILTIN, 0, 0, 0);
+				ESPUI.updateLabel(
+				  github_ota_info_label,
+				  "GitHub OTA failed - check logs for error code!");
 				break;
 		}
 		return;
 	}
 
 	size_t currentOtaProgress = (current * 100) / total;
-
-	if ((currentOtaProgress % 5 == 0) && (currentOtaProgress != previousOtaProgress)) {
-
-		previousOtaProgress = currentOtaProgress;
-
+	if ((currentOtaProgress % 5 == 0) &&
+	    (static_cast<int16_t>(currentOtaProgress) != previousOtaProgress)) {
+		previousOtaProgress = static_cast<int16_t>(currentOtaProgress);
 		char ota_info_buffer[64];
-
-		sprintf(
-		  ota_info_buffer, "GitHub OTA progress: %02u%%", currentOtaProgress);
-
+		snprintf(ota_info_buffer, sizeof(ota_info_buffer),
+		         "GitHub OTA progress: %02u%%",
+		         static_cast<unsigned>(currentOtaProgress));
 		ESPUI.updateLabel(github_ota_info_label, ota_info_buffer);
 	}
 }
-
 /*****************************************************************************/
 
 void Z2S_loopWebGUI() {
 
-	/*if (new_connect) {
-
-		if (ESPUI.isSynchronized()) {
-
-			log_i("synchronized");
-			new_connect = false;
-			sortZbDevicesSelectorsMain();
-			sortChannelsSelectorsMain();
-			sortActionsEventsSelectorsMain();
-			sortClustersSelectorsMain();
-			sortAttributesSelectorsMain();
-			sortAttributeValuesSelectorsMain();
-			sortTuyaDatapointsSelectorsMain();
-			buildActionsTableJsonPayload(actions_table_label_2, 0);
-		} else {
-
-			//log_i("not yet synchronized");
-		}
-	}*/
+	if (s_http_ota_restart_pending) {
+		
+		s_http_ota_restart_pending = false;
+		SuplaDevice.scheduleSoftRestart(1000);
+	}
 
 	if (gui_commands_queue == nullptr) {
 		return;
@@ -5708,29 +5921,64 @@ void Z2S_loopWebGUI() {
 			} break;
 
 
-			case gui_cmd_check_github_ota:
-				{
+			case gui_cmd_check_github_ota: {
 
-					char response_buffer[128];
+				char response_buffer[128];
 
-					if (checkGitHubForUpdate(response_buffer, sizeof(response_buffer))) {
+				if (checkGitHubForUpdate(response_buffer, sizeof(response_buffer)) &&
+    				isHardwareCapableOfOta()) {
+  					
+					enableControlStyle(github_ota_button, true);
+  				_github_ota_enabled = true;
+				}
+				ESPUI.updateLabel(github_ota_info_label, response_buffer);
+			} break;
 
-						enableControlStyle(github_ota_button, true);
-						_github_ota_enabled = true;
+
+			case gui_cmd_perform_github_ota: {
+
+				if (_github_ota_enabled &&
+				    SuplaDevice.getDeviceMode() == Supla::DEVICE_MODE_NORMAL) {
+
+					setGitHubOtaProgressCallback(guiGitHubOtaProgress);
+					SuplaDevice.handleAction(0, Supla::CHECK_SW_UPDATE);
+					if (SuplaDevice.getDeviceMode() != Supla::DEVICE_MODE_SW_UPDATE) {
+						
+						setGitHubOtaProgressCallback(nullptr);
 					}
-
-					ESPUI.updateLabel(github_ota_info_label, response_buffer);
 				}
-				break;
+			} break;
 
 
-			case gui_cmd_perform_github_ota:
-				{
+			case gui_cmd_enable_cloud_ota: {
 
-					if (_github_ota_enabled)
-						startBackgroundGitHubOtaTask(guiGitHubOtaProgress);
+				if (!isHardwareCapableOfOta()) {
+					
+					ESPUI.updateNumber(enable_cloud_ota_switcher, 0);
+					break;
 				}
-				break;
+
+				uint8_t enable_cloud_ota =ESPUI.getControl(
+					enable_cloud_ota_switcher)->getValueInt() ? 1 : 0;
+
+				auto cfg = Supla::Storage::ConfigInstance();
+				if (cfg && cfg->setUInt8(Z2S_ENABLE_CLOUD_OTA, enable_cloud_ota)) {
+
+					if (enable_cloud_ota && cfg->getAutoUpdatePolicy() != 
+								Supla::AutoUpdatePolicy::Disabled) {
+						cfg->setAutoUpdatePolicy(Supla::AutoUpdatePolicy::Disabled);
+					}
+					cfg->commit();
+				}
+
+				_enable_cloud_ota = enable_cloud_ota;
+
+				if (_enable_cloud_ota) {
+
+					SuplaDevice.setAutomaticFirmwareUpdateSupported(true);
+					Supla::Network::DisconnectProtocols();
+				}
+			} break;
 
 
 			case gui_cmd_sort_channels_selectors:
@@ -10321,88 +10569,71 @@ void gatewayCallback(BasicControl *sender, int type, void *param) {
 	switch ((uint32_t)param) {
 
 
-		case GUI_CB_ENABLE_GUI_FLAG:
-			{
+		case GUI_CB_ENABLE_GUI_FLAG: {
 
-				if (Supla::Storage::ConfigInstance()->setInt8(Z2S_ENABLE_GUI_ON_START_V2,
-				                                              ESPUI.getControl(enable_gui_switcher)->getValueInt()))
-					Supla::Storage::ConfigInstance()->commit();
+			if (Supla::Storage::ConfigInstance()->setInt8(
+						Z2S_ENABLE_GUI_ON_START_V2,
+						ESPUI.getControl(enable_gui_switcher)->getValueInt()))
+				Supla::Storage::ConfigInstance()->commit();
+			} break;
+
+
+		case GUI_CB_FORCE_CONFIG_FLAG: {
+
+			if (Supla::Storage::ConfigInstance()->setUInt8(
+					Z2S_FORCE_CONFIG_ON_START,
+			  	ESPUI.getControl(force_config_switcher)->getValueInt()))
+				Supla::Storage::ConfigInstance()->commit();
+		} break;
+
+
+		case GUI_CB_GUI_DELAY_FLAG: {
+
+			if (Supla::Storage::ConfigInstance()->setInt32(
+					Z2S_GUI_ON_START_DELAY_V2,
+					ESPUI.getControl(gui_start_delay_number)->getValueInt()))
+				Supla::Storage::ConfigInstance()->commit();
+			} break;
+
+
+		case GUI_CB_ACR_TIMEOUT_FLAG: {
+
+			int32_t auto_connection_reset_timeout = ESPUI.getControl(
+				auto_connection_reset_timeout_number)->getValueInt();
+
+			if (Supla::Storage::ConfigInstance()->setInt32(
+				  	Z2S_AUTO_CONNECTION_RESET_TIMEOUT,
+				  	auto_connection_reset_timeout)) {
+
+				Supla::Storage::ConfigInstance()->commit();
+
+				_auto_connection_reset_timeout = auto_connection_reset_timeout;
+				SuplaDevice.setAutomaticResetOnConnectionProblem(
+					_auto_connection_reset_timeout);
 			}
-			break;
+		} break;
 
 
-		case GUI_CB_FORCE_CONFIG_FLAG:
-			{
+		case GUI_CB_SAVE_MDNS_NAME_FLAG: {
 
-				if (Supla::Storage::ConfigInstance()->setUInt8(Z2S_FORCE_CONFIG_ON_START,
-				                                               ESPUI.getControl(force_config_switcher)->getValueInt()))
+				if (Supla::Storage::ConfigInstance()->setString(
+							Z2S_GATEWAY_MDNS_LOCAL_NAME,
+				    	ESPUI.getControl(gateway_mdns_name_text)->getValueCstr()))
 					Supla::Storage::ConfigInstance()->commit();
-			}
-			break;
+		} break;
 
 
-		case GUI_CB_GUI_DELAY_FLAG:
-			{
+		case GUI_CB_USE_NEW_AT_FLAG: {
 
-				if (Supla::Storage::ConfigInstance()->setInt32(Z2S_GUI_ON_START_DELAY_V2,
-				                                               ESPUI.getControl(gui_start_delay_number)->getValueInt()))
-					Supla::Storage::ConfigInstance()->commit();
-			}
-			break;
+			uint8_t use_new_at_model =ESPUI.getControl(
+				use_new_at_model_switcher)->getValueInt();
 
-
-		case GUI_CB_ACR_TIMEOUT_FLAG:
-			{
-
-				int32_t auto_connection_reset_timeout = ESPUI.getControl(
-				                                               auto_connection_reset_timeout_number)
-				                                          ->getValueInt();
-
-				if (Supla::Storage::ConfigInstance()->setInt32(
-				      Z2S_AUTO_CONNECTION_RESET_TIMEOUT,
-				      auto_connection_reset_timeout)) {
-
-					Supla::Storage::ConfigInstance()->commit();
-
-					_auto_connection_reset_timeout = auto_connection_reset_timeout;
-					SuplaDevice.setAutomaticResetOnConnectionProblem(
-					  _auto_connection_reset_timeout);
-				}
-			}
-			break;
-
-
-		case GUI_CB_SAVE_MDNS_NAME_FLAG:
-			{
-
-				if (Supla::Storage::ConfigInstance()->setString(Z2S_GATEWAY_MDNS_LOCAL_NAME,
-				                                                ESPUI.getControl(gateway_mdns_name_text)->getValueCstr()))
-					Supla::Storage::ConfigInstance()->commit();
-			}
-			break;
-
-
-			/*case GUI_CB_REBUILD_CHANNELS_FLAG: {
-
-			if (Supla::Storage::ConfigInstance()->setUInt8(Z2S_REBUILD_CHANNELS_ON_START, 
-					ESPUI.getControl(rebuild_Supla_channels_switcher)->getValueInt()))
-      	Supla::Storage::ConfigInstance()->commit();
-		} break;*/
-
-
-		case GUI_CB_USE_NEW_AT_FLAG:
-			{
-
-				uint8_t use_new_at_model =
-				  ESPUI.getControl(use_new_at_model_switcher)->getValueInt();
-
-				if (Supla::Storage::ConfigInstance()->setUInt8(Z2S_USE_NEW_AT_MODEL,
-				                                               use_new_at_model))
-					Supla::Storage::ConfigInstance()->commit();
+			if (Supla::Storage::ConfigInstance()->setUInt8(
+						Z2S_USE_NEW_AT_MODEL, use_new_at_model))
+				Supla::Storage::ConfigInstance()->commit();
 
 				_use_new_at_model = use_new_at_model;
-			}
-			break;
+		} break;
 
 
 		case GUI_CB_GUI_RESTART_FLAG: {
@@ -10424,6 +10655,12 @@ void gatewayCallback(BasicControl *sender, int type, void *param) {
 			if (type == B_UP)
 				addGUICommand(gui_cmd_perform_github_ota);
 			break;
+
+
+		case GUI_CB_ENABLE_CLOUD_OTA_FLAG:
+
+			addGUICommand(gui_cmd_enable_cloud_ota);
+		break;
 	}
 }
 

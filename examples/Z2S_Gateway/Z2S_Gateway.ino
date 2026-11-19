@@ -38,6 +38,8 @@
 #include <supla/control/hvac_base.h>
 #include <supla/device/status_led.h>
 #include <supla/device/register_device.h>
+#include <supla/device/auto_update_policy.h>
+#include <supla/storage/config.h>
 
 #include <supla/network/esp_web_server.h>
 #include <supla/network/html/device_info.h>
@@ -133,6 +135,7 @@ uint8_t	_force_config_on_start = 0;
 uint8_t _rebuild_Supla_channels_on_start = 0;
 
 uint8_t _use_new_at_model = 1;
+uint8_t _enable_cloud_ota = 0;
 
 //1.4.81-06/03/26 - 
 int32_t _auto_connection_reset_timeout = 0; 
@@ -932,10 +935,22 @@ void setup() {
     log_i(
       "Z2S_USE_NEW_AT_MODEL = %d", _use_new_at_model);
 
-  } else {
+  } 
+  else {
 
     log_i("Z2S_USE_NEW_AT_MODEL not configured - turning on");
     _use_new_at_model = 1;
+  }
+
+  if (Supla::Storage::ConfigInstance()->getUInt8(
+        Z2S_ENABLE_CLOUD_OTA, &_enable_cloud_ota)) {
+    
+    log_i("Z2S_ENABLE_CLOUD_OTA = %d", _enable_cloud_ota);
+  } 
+  else {
+    
+    log_i("Z2S_ENABLE_CLOUD_OTA not configured - turning off");
+    _enable_cloud_ota = 0;
   }
   
   Supla::Storage::ConfigInstance()->getUInt8(
@@ -999,7 +1014,20 @@ void setup() {
 
   }
 
+  if (isHardwareCapableOfOta() && _enable_cloud_ota) {
+    
+    SuplaDevice.setAutomaticFirmwareUpdateSupported(true);
+  }
+
   SuplaDevice.begin(28);      
+
+  if (cfg && cfg->getAutoUpdatePolicy() != 
+          Supla::AutoUpdatePolicy::Disabled) {
+    
+    cfg->setAutoUpdatePolicy(Supla::AutoUpdatePolicy::Disabled);
+    cfg->commit();
+  }
+
   
   refresh_time = millis();
 

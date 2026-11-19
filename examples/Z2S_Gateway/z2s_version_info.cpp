@@ -7,8 +7,13 @@
 #include <esp_ota_ops.h>
 
 #include <SuplaDevice.h>
+#include <supla/device/sw_update.h>
 
 #include "z2s_version_info.h"
+
+/*****************************************************************************/
+
+extern uint8_t _enable_cloud_ota;
 
 /*****************************************************************************/
 
@@ -39,6 +44,25 @@ static TaskHandle_t otaTaskHandle = nullptr;
 
 /*****************************************************************************/
 
+enum class OtaTaskState : uint8_t {
+  IDLE,
+  RUNNING,
+  SUCCESS,
+  FAILED,
+  NO_UPDATES
+};
+
+static volatile OtaTaskState otaTaskState = OtaTaskState::IDLE;
+static volatile size_t otaCurrentBytes = 0;
+static volatile size_t otaTotalBytes = 0;
+static otaProgressCallback s_pendingOtaProgressCb = nullptr;
+
+void setGitHubOtaProgressCallback(otaProgressCallback progressCb) {
+  s_pendingOtaProgressCb = progressCb;
+}
+
+/*****************************************************************************/
+
 bool isVersionNewer(const char* current, const char* latest) {
   int currentMajor = 0, currentMinor = 0, currentPatch = 0;
   int latestMajor = 0, latestMinor = 0, latestPatch = 0;
@@ -63,11 +87,21 @@ bool isVersionNewer(const char* current, const char* latest) {
 /*****************************************************************************/
 
 bool isHardwareCapableOfOta() {
+
+  static int8_t cachedResult = -1;
+  
+  if (cachedResult >= 0) {
+    return cachedResult == 1;
+  }
+  
   uint32_t flashSize = ESP.getFlashChipSize();
 
   if (flashSize < (8 * 1024 * 1024)) {
+
     log_e("OTA Error: Insufficient flash. Found %u MB, require 8 MB.",
           flashSize / (1024 * 1024));
+
+    cachedResult = 0;
     return false;
   }
 
@@ -75,15 +109,21 @@ bool isHardwareCapableOfOta() {
     esp_ota_get_next_update_partition(nullptr);
 
   if (update_partition == nullptr) {
+
     log_e("OTA Error: No alternate OTA partition found.");
+
+    cachedResult = 0;
     return false;
   }
 
   size_t currentSketchSize = ESP.getSketchSize();
 
   if (update_partition->size < currentSketchSize) {
+
     log_e("OTA Error: Update partition '%s' is too small (%u bytes).",
           update_partition->label, update_partition->size);
+    
+    cachedResult = 0;
     return false;
   }
 
@@ -91,12 +131,16 @@ bool isHardwareCapableOfOta() {
         flashSize / (1024 * 1024), update_partition->label,
         update_partition->size);
 
+  cachedResult = 1;
   return true;
 }
 
 /*****************************************************************************/
 
-bool checkGitHubForUpdate(char *response_buffer, size_t response_buffer_size) {
+bool checkGitHubForUpdate(
+  char *response_buffer, size_t response_buffer_size, char *latest_tag_buffer,
+  size_t latest_tag_buffer_size) {
+  
   WiFiClientSecure client;
   client.setInsecure();
   client.setHandshakeTimeout(5); // Handshake timeout is in SECONDS (5s)
@@ -144,8 +188,14 @@ bool checkGitHubForUpdate(char *response_buffer, size_t response_buffer_size) {
     }
 
     if (len > 0) {
-      log_i("Current: %s | Latest: %s", Z2S_VERSION, latestTag);
 
+      if (latest_tag_buffer && latest_tag_buffer_size > 0) {
+        
+        snprintf(latest_tag_buffer, latest_tag_buffer_size, "%s", latestTag);
+      }
+
+      log_i("Current: %s | Latest: %s", Z2S_VERSION, latestTag);
+      
       if (isVersionNewer(Z2S_VERSION, latestTag)) {
         if (response_buffer) {
           snprintf(
@@ -192,21 +242,25 @@ void performBackgroundGitHubOta(void *pvParameters) {
   otaProgressCallback activeOtaProgressCb =
     reinterpret_cast<otaProgressCallback>(pvParameters);
 
-  if (activeOtaProgressCb) {
-    httpUpdate.onProgress(activeOtaProgressCb);
-  } else {
-    httpUpdate.onProgress([](size_t current, size_t total) {
-      if (total == 0) return;
+  size_t lastLoggedPct = 0xFF;
 
-      static size_t lastLoggedPct = 0xFF;
-      size_t currentOtaProgress = (current * 100) / total;
+  httpUpdate.onProgress(
+    [activeOtaProgressCb, lastLoggedPct](size_t current, size_t total) mutable {
+      otaCurrentBytes = current;
+      otaTotalBytes = total;
 
-      if ((currentOtaProgress % 10 == 0) && (currentOtaProgress != lastLoggedPct)) {
-        lastLoggedPct = currentOtaProgress;
-        log_i("OTA Progress: %02u %%", static_cast<unsigned>(currentOtaProgress));
+      if (activeOtaProgressCb) {
+        activeOtaProgressCb(current, total);
+      } else if (total > 0) {
+        size_t currentOtaProgress = (current * 100) / total;
+        if ((currentOtaProgress % 10 == 0) &&
+            (currentOtaProgress != lastLoggedPct)) {
+          lastLoggedPct = currentOtaProgress;
+          log_i("OTA Progress: %02u %%",
+                static_cast<unsigned>(currentOtaProgress));
+        }
       }
     });
-  }
 
   log_i("Starting OTA from GitHub: %s", FIRMWARE_URL);
 
@@ -215,6 +269,7 @@ void performBackgroundGitHubOta(void *pvParameters) {
   }
 
   t_httpUpdate_return ret = httpUpdate.update(client, FIRMWARE_URL);
+  OtaTaskState finalState = OtaTaskState::FAILED;
 
   switch (ret) {
     case HTTP_UPDATE_FAILED:
@@ -224,10 +279,12 @@ void performBackgroundGitHubOta(void *pvParameters) {
       log_e("OTA Failed. Error (%d): %s",
             httpUpdate.getLastError(),
             httpUpdate.getLastErrorString().c_str());
+      finalState = OtaTaskState::FAILED;
       break;
 
     case HTTP_UPDATE_NO_UPDATES:
       log_i("No updates found.");
+      finalState = OtaTaskState::NO_UPDATES;
       break;
 
     case HTTP_UPDATE_OK:
@@ -235,12 +292,16 @@ void performBackgroundGitHubOta(void *pvParameters) {
         activeOtaProgressCb(0, 0);
       }
       log_i("OTA Successful. Rebooting...");
-      SuplaDevice.scheduleSoftRestart(1000);
+      finalState = OtaTaskState::SUCCESS;
+      if (SuplaDevice.getDeviceMode() != Supla::DEVICE_MODE_SW_UPDATE) {
+        SuplaDevice.scheduleSoftRestart(1000);
+      }
       break;
   }
 
   log_i("OTA Task finished. Deleting thread.");
   otaTaskHandle = nullptr;
+  otaTaskState = finalState;
   vTaskDelete(nullptr);
 }
 
@@ -249,6 +310,10 @@ void performBackgroundGitHubOta(void *pvParameters) {
 void startBackgroundGitHubOtaTask(otaProgressCallback progressCb) {
   if (otaTaskHandle == nullptr) {
     if (isHardwareCapableOfOta()) {
+      otaCurrentBytes = 0;
+      otaTotalBytes = 0;
+      otaTaskState = OtaTaskState::RUNNING;
+
       BaseType_t res = xTaskCreate(
         performBackgroundGitHubOta,
         "GitHub_OTA",
@@ -259,16 +324,17 @@ void startBackgroundGitHubOtaTask(otaProgressCallback progressCb) {
 
       if (res != pdPASS) {
         otaTaskHandle = nullptr;
+        otaTaskState = OtaTaskState::FAILED;
         log_e("Failed to create OTA task (Out of RAM)!");
       }
     } else {
+      otaTaskState = OtaTaskState::FAILED;
       log_e("Aborting OTA due to hardware limits.");
     }
   } else {
     log_i("OTA is already running in the background!");
   }
 }
-
 /*****************************************************************************/
 
 #if defined(USE_GEMINI_PROTOCOL_HOST)
@@ -365,4 +431,179 @@ void startBackgroundGitHubNcpOtaTask(otaProgressCallback progressCb) {
     }
   }
 #endif
+}
+
+/*****************************************************************************/
+
+class Z2sGitHubSwUpdate : public Supla::Device::SwUpdate {
+ public:
+  Z2sGitHubSwUpdate(SuplaDeviceClass *sdc,
+                    const char *newUrl,
+                    Supla::SwUpdateMode mode)
+      : Supla::Device::SwUpdate(sdc, newUrl, mode) {}
+
+  void iterate() override {
+    if (!isStarted()) {
+      return;
+    }
+
+    // Enforce manual-only updates even if auto-update policy is changed remotely
+    if (mode == Supla::SwUpdateMode::PeriodicCheckAndUpdate) {
+      finished = true;
+      abort = true;
+      retryAllowed = false;
+      return;
+    }
+
+    // 1. Supla Cloud "Check for update" button
+    if (mode == Supla::SwUpdateMode::OnlyCheck) {
+      if (!_enable_cloud_ota) {
+        if (sdc) {
+          sdc->addLastStateLog("SW update: Cloud OTA disabled in Web GUI");
+        }
+        notifyFinished(Supla::Device::SwUpdateResult::UP_TO_DATE);
+        finished = true;
+        abort = true;
+        retryAllowed = false;
+        return;
+      }
+
+      char latestTag[32] = {};
+      if (checkGitHubForUpdate(nullptr, 0, latestTag, sizeof(latestTag)) &&
+          latestTag[0] != '\0') {
+        size_t verLen = strlen(latestTag) + 1;
+        newVersion = new char[verLen];
+        if (newVersion) {
+          snprintf(newVersion, verLen, "%s", latestTag);
+        }
+
+        char releaseUrl[128] = {};
+        int written = snprintf(
+          releaseUrl, sizeof(releaseUrl),
+          "https://%s/lsroka76/Z2S_Library/releases/tag/%s",
+          GITHUB_HOST, latestTag);
+
+        if (written > 0 &&
+            static_cast<size_t>(written + 1) < SUPLA_URL_PATH_MAXSIZE) {
+          changelogUrl = new char[written + 1];
+          if (changelogUrl) {
+            snprintf(changelogUrl, written + 1, "%s", releaseUrl);
+          }
+        }
+
+        notifyFinished(true);
+      } else {
+        notifyFinished(Supla::Device::SwUpdateResult::UP_TO_DATE);
+      }
+
+      finished = true;
+      abort = true;
+      retryAllowed = false;
+      return;
+    }
+
+    // 2. Supla Cloud or GUI "Start firmware update"
+    if (mode == Supla::SwUpdateMode::CheckAndUpdate) {
+      if (!taskStarted) {
+        guiProgressCb = s_pendingOtaProgressCb;
+        s_pendingOtaProgressCb = nullptr;
+
+        // Block Cloud-initiated updates when switcher is OFF;
+        // Web GUI GitHub OTA still runs because guiProgressCb != nullptr.
+        if (!_enable_cloud_ota && guiProgressCb == nullptr) {
+          if (sdc) {
+            sdc->addLastStateLog("SW update: Cloud OTA disabled in Web GUI");
+          }
+          notifyFinished(false, "Cloud OTA disabled in Web GUI");
+          finished = true;
+          abort = true;
+          retryAllowed = false;
+          return;
+        }
+
+        char latestTag[32] = {};
+        if (!checkGitHubForUpdate(nullptr, 0, latestTag, sizeof(latestTag))) {
+          if (sdc) {
+            sdc->addLastStateLog("SW update: firmware is already up to date");
+          }
+          if (guiProgressCb) guiProgressCb(2, 0);
+          notifyFinished(Supla::Device::SwUpdateResult::UP_TO_DATE);
+          finished = true;
+          abort = true;
+          retryAllowed = false;
+          return;
+        }
+
+        // Pass nullptr to task so guiProgressCb runs strictly on loopTask
+        startBackgroundGitHubOtaTask(nullptr);
+        if (otaTaskState != OtaTaskState::RUNNING) {
+          if (sdc) {
+            sdc->addLastStateLog("SW update: failed to start GitHub OTA task");
+          }
+          if (guiProgressCb) guiProgressCb(2, 0);
+          notifyFinished(false, "Failed to start OTA task");
+          finished = true;
+          abort = true;
+          retryAllowed = false;
+          return;
+        }
+
+        taskStarted = true;
+        lastReportedBytes = 0;
+        if (guiProgressCb) guiProgressCb(1, 0);
+        notifyProgress(0, 0);
+        return;
+      }
+
+      size_t cur = otaCurrentBytes;
+      size_t total = otaTotalBytes;
+      if (cur != lastReportedBytes) {
+        lastReportedBytes = cur;
+        if (guiProgressCb && total > 0) {
+          guiProgressCb(cur, total);
+        }
+        notifyProgress(static_cast<uint32_t>(cur),
+                       static_cast<uint32_t>(total));
+      }
+
+      OtaTaskState state = otaTaskState;
+      if (state == OtaTaskState::RUNNING) {
+        return;
+      }
+
+      otaTaskState = OtaTaskState::IDLE;
+
+      if (state == OtaTaskState::SUCCESS) {
+        if (guiProgressCb) guiProgressCb(0, 0);
+        notifyProgress(static_cast<uint32_t>(total),
+                       static_cast<uint32_t>(total));
+        notifyFinished(true);
+        finished = true;
+        abort = false;  // SuplaDevice will delete swUpdate and soft-restart
+      } else {
+        const char *reason = (state == OtaTaskState::NO_UPDATES)
+                                 ? "SW update: no updates found"
+                                 : "SW update: GitHub OTA failed";
+        if (sdc) {
+          sdc->addLastStateLog(reason);
+        }
+        if (guiProgressCb) guiProgressCb(2, 0);
+        notifyFinished(false, reason);
+        finished = true;
+        abort = true;
+        retryAllowed = false;  // Return to normal mode and reconnect to Cloud
+      }
+      return;
+    }
+  }
+
+ private:
+  bool taskStarted = false;
+  size_t lastReportedBytes = 0;
+  otaProgressCallback guiProgressCb = nullptr;
+};
+
+Supla::Device::SwUpdate *Supla::Device::SwUpdate::Create(
+    SuplaDeviceClass *sdc, const char *newUrl, Supla::SwUpdateMode mode) {
+  return new Z2sGitHubSwUpdate(sdc, newUrl, mode);
 }

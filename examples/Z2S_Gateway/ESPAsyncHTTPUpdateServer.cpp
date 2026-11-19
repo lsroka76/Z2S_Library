@@ -6,116 +6,20 @@
 #ifdef ESP32
     #include <Update.h>
     #include <esp_partition.h>
-    #if CONFIG_ZB_ENABLED
-        #include "esp_zigbee_core.h"
-    #endif
+
+    // Weak hooks fulfilled by GeminiProtocol.cpp on ESP32-S3 Host builds
+    extern "C" bool z2s_ncp_ota_begin() __attribute__((weak));
+    extern "C" bool z2s_ncp_ota_write(const uint8_t *data, size_t len) __attribute__((weak));
+    extern "C" bool z2s_ncp_ota_end() __attribute__((weak));
+    extern "C" bool z2s_zb_storage_begin() __attribute__((weak));
+    extern "C" bool z2s_zb_storage_write(const uint8_t *data, size_t len) __attribute__((weak));
+    extern "C" bool z2s_zb_storage_end() __attribute__((weak));
 #elif defined(ESP8266)
     #include <flash_hal.h>
     #include <FS.h>
 #else
     #error "This library only supports boards with an ESP8266 or ESP32 processor."
 #endif
-
-#define Z2S_ZB_STORAGE_SIZE_16K  0x4000UL  // 16,384 bytes
-#define Z2S_ZB_STORAGE_SIZE_64K  0x10000UL // 65,536 bytes
-#define Z2S_ZB_PAGE_OFFSET_16K   0x2000UL  // 8 KB
-#define Z2S_ZB_PAGE_OFFSET_64K   0x8000UL  // 32 KB
-
-static const esp_partition_t *s_local_zb_stage_part   = nullptr;
-static uint32_t               s_local_zb_stage_offset = 0;
-static bool                   s_local_zb_stage_error  = false;
-
-static bool z2s_copy_local_stage_to_zb(
-    const esp_partition_t *stage_part, const esp_partition_t *zb_part,
-    uint32_t src_off, uint32_t dst_off, uint32_t len)
-{
-    uint8_t buf[256];
-    for (uint32_t off = 0; off < len; off += sizeof(buf)) {
-        if (esp_partition_read(stage_part, src_off + off, buf, sizeof(buf)) != ESP_OK ||
-            esp_partition_write(zb_part, dst_off + off, buf, sizeof(buf)) != ESP_OK) {
-            return false;
-        }
-    }
-    return true;
-}
-
-// Weak hooks overridden by GeminiProtocol.cpp when compiled for ESP32-S3 Host
-extern "C" __attribute__((weak)) bool z2s_ncp_ota_begin() { return false; }
-extern "C" __attribute__((weak)) bool z2s_ncp_ota_write(const uint8_t *data, size_t len) { return false; }
-extern "C" __attribute__((weak)) bool z2s_ncp_ota_end() { return false; }
-
-extern "C" __attribute__((weak)) bool z2s_zb_storage_begin() {
-    s_local_zb_stage_offset = 0;
-    s_local_zb_stage_error  = true;
-    s_local_zb_stage_part   = esp_partition_find_first(
-        ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "reserved");
-
-    if (!s_local_zb_stage_part || s_local_zb_stage_part->size < Z2S_ZB_STORAGE_SIZE_64K) {
-        return false;
-    }
-    if (esp_partition_erase_range(s_local_zb_stage_part, 0, Z2S_ZB_STORAGE_SIZE_64K) != ESP_OK) {
-        return false;
-    }
-    s_local_zb_stage_error = false;
-    return true;
-}
-
-extern "C" __attribute__((weak)) bool z2s_zb_storage_write(const uint8_t *data, size_t len) {
-    if (s_local_zb_stage_error || !s_local_zb_stage_part) return false;
-    if (s_local_zb_stage_offset + len > Z2S_ZB_STORAGE_SIZE_64K) {
-        s_local_zb_stage_error = true;
-        return false;
-    }
-    if (esp_partition_write(s_local_zb_stage_part, s_local_zb_stage_offset, data, len) != ESP_OK) {
-        s_local_zb_stage_error = true;
-        return false;
-    }
-    s_local_zb_stage_offset += len;
-    return true;
-}
-
-extern "C" __attribute__((weak)) bool z2s_zb_storage_end() {
-    if (s_local_zb_stage_error || !s_local_zb_stage_part) return false;
-    if (s_local_zb_stage_offset != Z2S_ZB_STORAGE_SIZE_16K &&
-        s_local_zb_stage_offset != Z2S_ZB_STORAGE_SIZE_64K) {
-        return false;
-    }
-
-    const esp_partition_t *zb_part = esp_partition_find_first(
-        ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "zb_storage");
-    if (!zb_part || s_local_zb_stage_offset > zb_part->size) {
-        return false;
-    }
-
-#if CONFIG_ZB_ENABLED
-    esp_zb_lock_acquire(portMAX_DELAY);
-#endif
-
-    bool ok = false;
-    if (esp_partition_erase_range(zb_part, 0, zb_part->size) == ESP_OK) {
-        if (s_local_zb_stage_offset == Z2S_ZB_STORAGE_SIZE_16K &&
-            zb_part->size == Z2S_ZB_STORAGE_SIZE_64K) {
-            ok = z2s_copy_local_stage_to_zb(s_local_zb_stage_part, zb_part, 0x0000, 0x0000, Z2S_ZB_PAGE_OFFSET_16K) &&
-                 z2s_copy_local_stage_to_zb(s_local_zb_stage_part, zb_part, Z2S_ZB_PAGE_OFFSET_16K, Z2S_ZB_PAGE_OFFSET_64K, Z2S_ZB_PAGE_OFFSET_16K);
-        } else {
-            ok = z2s_copy_local_stage_to_zb(s_local_zb_stage_part, zb_part, 0x0000, 0x0000, s_local_zb_stage_offset);
-        }
-    }
-    return ok;
-}
-
-extern "C" __attribute__((weak)) uint32_t z2s_zb_storage_size() {
-    const esp_partition_t *part = esp_partition_find_first(
-        ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "zb_storage");
-    return part ? (uint32_t)part->size : 0;
-}
-
-extern "C" __attribute__((weak)) bool z2s_zb_storage_read(uint32_t offset, uint8_t *dst, size_t len) {
-    const esp_partition_t *part = esp_partition_find_first(
-        ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "zb_storage");
-    if (!part || (offset + len > part->size)) return false;
-    return (esp_partition_read(part, offset, dst, len) == ESP_OK);
-}
 
 #ifndef ESPASYNCHTTPUPDATESERVER_SerialOutput
     #define ESPASYNCHTTPUPDATESERVER_SerialOutput Serial
@@ -166,27 +70,32 @@ select{background:#14171c;color:#fff;border:1px solid #4b5563;border-radius:4px;
 <body>
 <header>
   <div class="hdr-inner">
-    <h1>ZIGBEE &lt;=&gt; SUPLA UPDATE CENTER</h1>
-    <button class="btn" onclick="location.href='/'">&#8592; Back to Control Panel</button>
+    <h1>ZIGBEE ⇄ SUPLA UPDATE CENTER</h1>
+    <button class="btn" onclick="location.href='/'">← Back to Control Panel</button>
   </div>
 </header>
 <main>
   <section class="panel" id="sec-fw">
     <div class="panel-hdr">
-      <span>1. Gateway Firmware, C6 Co-Processor &amp; Filesystem Update</span>
+      <span>1. Gateway Firmware & Partition Update</span>
       <span class="badge">ESP32 OTA</span>
     </div>
-    <p class="desc">Select a compiled gateway firmware image (<b>.bin</b>), C6 NCP co-processor image (<b>Z2S_C6_NCP*.bin</b>), or filesystem image and click <b>Start Gateway Update</b>. The gateway will reboot automatically after the update.</p>
+    <p class="desc">Select a target image (<b>.bin</b>) and click <b>Start Gateway Update</b>. You will be offered an optional partition backup before flashing.</p>
     <div class="row">
       <select id="fw-type">
         <option value="firmware">Gateway Firmware (.bin)</option>
-        <option value="ncp_firmware">ZigBee C6 Co-Processor NCP (.bin)</option>
-        <option value="zb_storage">ZigBee Storage Partition (zb_storage .bin 16KB/64KB)</option>
         <option value="filesystem">Gateway Filesystem (.bin)</option>
+)rawliteral"
+#if CONFIG_IDF_TARGET_ESP32S3
+R"rawliteral(
+        <option value="ncp">C6 NCP Firmware (.bin)</option>
+        <option value="zb_storage">C6 ZigBee Storage Restore (16KB / 64KB .bin)</option>
+)rawliteral"
+#endif
+R"rawliteral(
       </select>
       <input type="file" id="fw-file" accept=".bin,.bin.gz">
       <button class="btn primary" id="fw-btn" onclick="uploadGateway()">Start Gateway Update</button>
-      <a class="btn" href="/zb_storage.bin" download="zb_storage.bin" title="Download C6 zb_storage partition backup">Download zb_storage.bin</a>
     </div>
     <div class="prog-wrap" id="fw-prog-wrap"><div class="prog-bar" id="fw-prog-bar">0%</div></div>
     <div class="status" id="fw-status"></div>
@@ -205,7 +114,24 @@ select{background:#14171c;color:#fff;border:1px solid #4b5563;border-radius:4px;
     <div class="prog-wrap" id="zb-prog-wrap"><div class="prog-bar" id="zb-prog-bar">0%</div></div>
     <div class="status" id="zb-status"></div>
   </section>
+
+  <section class="panel" id="sec-bk">
+    <div class="panel-hdr">
+      <span>3. Partition Backup</span>
+      <span class="badge">NVS / LittleFS / ZigBee</span>
+    </div>
+    <p class="desc">Download raw backups of gateway configuration and ZigBee coordinator storage directly to your computer.</p>
+    <div class="row">
+      <button class="btn primary" data-bk-btn onclick="runManualBackup(['nvs','spiffs','zb_storage'])">Backup All Partitions</button>
+      <button class="btn" data-bk-btn onclick="runManualBackup(['nvs'])">NVS</button>
+      <button class="btn" data-bk-btn onclick="runManualBackup(['spiffs'])">LittleFS (spiffs)</button>
+      <button class="btn" data-bk-btn onclick="runManualBackup(['zb_storage'])">ZigBee (zb_storage)</button>
+    </div>
+    <div class="prog-wrap" id="bk-prog-wrap"><div class="prog-bar" id="bk-prog-bar">0%</div></div>
+    <div class="status" id="bk-status"></div>
+  </section>
 </main>
+<script src="/z2s_backup.js"></script>
 <script>
 if(location.hash==="#zigbee"){
   const el=document.getElementById("sec-zb");
@@ -257,15 +183,36 @@ function runUpload(url,fileInputId,fieldName,btnId,wrapId,barId,statusId,onSucce
 }
 
 function uploadGateway(){
+  const fileEl=document.getElementById("fw-file");
+  const st=document.getElementById("fw-status");
+  if(!fileEl.files||!fileEl.files[0]){
+    st.className="status err";
+    st.textContent="Please select a file first!";
+    return;
+  }
   const type=document.getElementById("fw-type").value;
-  runUpload("/update?name="+encodeURIComponent(type),"fw-file",type,"fw-btn","fw-prog-wrap","fw-prog-bar","fw-status",function(st){
-    let sec=15;
-    st.textContent=`Update successful! Rebooting gateway (${sec}s)...`;
-    const timer=setInterval(function(){
-      sec--;
-      if(sec<=0){clearInterval(timer);location.href="/";}
-      else st.textContent=`Update successful! Rebooting gateway (${sec}s)...`;
-    },1000);
+  const partitions=(type==="ncp"||type==="zb_storage")?["zb_storage"]:window.Z2SBackup.PARTITIONS;
+  const labels={
+    firmware:"Gateway Firmware Update",
+    filesystem:"Gateway Filesystem Update",
+    ncp:"C6 NCP Firmware Update",
+    zb_storage:"C6 ZigBee Storage Restore"
+  };
+  window.Z2SBackup.confirmAndRun({
+    title:labels[type]||"Gateway Update",
+    actionLabel:"Update",
+    partitions:partitions,
+    onProceed:function(){
+      runUpload("/update?name="+encodeURIComponent(type),"fw-file",type,"fw-btn","fw-prog-wrap","fw-prog-bar","fw-status",function(st){
+        let sec=15;
+        st.textContent=`Update successful! Rebooting gateway (${sec}s)...`;
+        const timer=setInterval(function(){
+          sec--;
+          if(sec<=0){clearInterval(timer);location.href="/";}
+          else st.textContent=`Update successful! Rebooting gateway (${sec}s)...`;
+        },1000);
+      });
+    }
   });
 }
 
@@ -273,6 +220,33 @@ function uploadZigbeeOta(){
   runUpload("/upload_zigbee_ota","zb-file","data","zb-btn","zb-prog-wrap","zb-prog-bar","zb-status",function(st,resp){
     st.textContent="ZigBee OTA file uploaded ("+resp+")! Ready for OTA in ZigBee devices tab.";
   });
+}
+
+async function runManualBackup(labels){
+  const btns=document.querySelectorAll("[data-bk-btn]");
+  const wrap=document.getElementById("bk-prog-wrap");
+  const bar=document.getElementById("bk-prog-bar");
+  const st=document.getElementById("bk-status");
+  btns.forEach(b=>b.disabled=true);
+  wrap.style.display="block";
+  bar.style.width="0%";
+  bar.textContent="0%";
+  st.className="status";
+  st.textContent="Starting partition backup...";
+  const res=await window.Z2SBackup.backupPartitions(labels,(name,pct,idx,total)=>{
+    const overall=Math.round(((idx+pct/100)/total)*100);
+    bar.style.width=overall+"%";
+    bar.textContent=overall+"%";
+    st.textContent=`Downloading ${name} (${pct}%)...`;
+  });
+  btns.forEach(b=>b.disabled=false);
+  if(res.ok){
+    st.className="status ok";
+    st.textContent="Backup completed: "+labels.join(", ");
+  }else{
+    st.className="status err";
+    st.textContent="Backup failed: "+res.failed.join(", ");
+  }
 }
 </script>
 </body>
@@ -308,44 +282,6 @@ void ESPAsyncHTTPUpdateServer::setup(AsyncWebServer *server, const String &path,
         request->send_P(200, "text/html", UPDATE_CENTER_HTML);
     });
 
-    _server->on("/zb_storage.bin", HTTP_GET, [&](AsyncWebServerRequest *request) {
-        if (_username.length() > 0 && _password.length() > 0) {
-            if (!request->authenticate(_username.c_str(), _password.c_str())) {
-                return request->requestAuthentication();
-            }
-        }
-
-        uint32_t partSize = z2s_zb_storage_size();
-        if (partSize == 0) {
-            request->send(500, "text/plain", "Error: zb_storage partition not found or C6 NCP offline.");
-            return;
-        }
-
-        AsyncWebServerResponse *response = request->beginResponse(
-            "application/octet-stream", partSize,
-            [request, partSize](uint8_t *buffer, size_t maxLen, size_t index) -> size_t {
-                if (index >= partSize) return 0;
-
-                size_t toRead = partSize - index;
-                if (toRead > maxLen) toRead = maxLen;
-                if (toRead > 512) toRead = 512;
-
-                if (!z2s_zb_storage_read((uint32_t)index, buffer, toRead)) {
-                    // Abort the TCP connection so the browser rejects the incomplete file,
-                    // and return RESPONSE_TRY_AGAIN so ESPAsyncWebServer exits its while() loop!
-                    request->client()->close(true);
-                    return RESPONSE_TRY_AGAIN;
-                }
-
-                vTaskDelay(1); // Yield 1 tick so IDLE1 feeds the Task Watchdog
-                return toRead;
-            });
-
-        response->addHeader("Content-Disposition", "attachment; filename=\"zb_storage.bin\"");
-        response->addHeader("Cache-Control", "no-store");
-        request->send(response);
-    });
-
     _server->on(path.c_str(), HTTP_OPTIONS, [&](AsyncWebServerRequest *request) {
         AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "y");
         response->addHeader("Access-Control-Allow-Headers", "*");
@@ -374,25 +310,26 @@ void ESPAsyncHTTPUpdateServer::setup(AsyncWebServer *server, const String &path,
                 request->send(response);
             } else {
                 request->send_P(200, "text/html", successResponse);
-                Log("Rebooting...\n");
-                restartTimer.once_ms(1000, []() { ESP.restart(); });
+                // When onUpdateEnd is registered, it handles clean soft restart on loopTask.
+                if (onUpdateEnd == NULL) {
+                    Log("Rebooting...\n");
+                    restartTimer.once_ms(1000, []() { ESP.restart(); });
+                }
             }
         },
         [&](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
-            if (!index) {
-                const AsyncWebParameter *pName = request->getParam("name");
-                if (pName && strcmp(pName->value().c_str(), "filesystem") == 0) {
-                    _updateType = UpdateType::FILE_SYSTEM;
-                } else if ((pName && strcmp(pName->value().c_str(), "ncp_firmware") == 0) ||
-                           filename.startsWith("Z2S_C6_NCP")) {
-                    _updateType = UpdateType::NCP_FIRMWARE;
-                } else if ((pName && strcmp(pName->value().c_str(), "zb_storage") == 0) ||
-                           filename.startsWith("zb_storage")) {
-                    _updateType = UpdateType::ZB_STORAGE;
-                } else {
-                    _updateType = UpdateType::FIRMWARE;
-                }
+            const AsyncWebParameter *pName = request->getParam("name");
+            if (pName && strcmp(pName->value().c_str(), "filesystem") == 0) {
+                _updateType = UpdateType::FILE_SYSTEM;
+            } else if (pName && strcmp(pName->value().c_str(), "ncp") == 0) {
+                _updateType = UpdateType::NCP_FIRMWARE;
+            } else if (pName && strcmp(pName->value().c_str(), "zb_storage") == 0) {
+                _updateType = UpdateType::ZB_STORAGE;
+            } else {
+                _updateType = UpdateType::FIRMWARE;
+            }
 
+            if (!index) {
                 _updaterError.clear();
 
                 _authenticated = (_username.length() == 0 || _password.length() == 0 ||
@@ -415,14 +352,16 @@ void ESPAsyncHTTPUpdateServer::setup(AsyncWebServer *server, const String &path,
                 Log("Update: %s (type=%d)\n", filename.c_str(), (int)_updateType);
 
                 if (_updateType == UpdateType::NCP_FIRMWARE) {
-                    if (!z2s_ncp_ota_begin()) {
-                        _updaterError = "C6 NCP OTA begin failed";
+                    if (!z2s_ncp_ota_begin || !z2s_ncp_ota_begin()) {
+                        _updaterError = F("C6 NCP OTA begin failed");
                         _updateResult = UpdateResult::UPDATE_ERROR;
+                        if (onUpdateEnd) onUpdateEnd(_updateType, _updateResult);
                     }
                 } else if (_updateType == UpdateType::ZB_STORAGE) {
-                    if (!z2s_zb_storage_begin()) {
-                        _updaterError = "C6 zb_storage staging begin failed";
+                    if (!z2s_zb_storage_begin || !z2s_zb_storage_begin()) {
+                        _updaterError = F("C6 zb_storage stage begin failed");
                         _updateResult = UpdateResult::UPDATE_ERROR;
+                        if (onUpdateEnd) onUpdateEnd(_updateType, _updateResult);
                     }
                 } else if (_updateType == UpdateType::FILE_SYSTEM) {
                     size_t fsSize = UPDATE_SIZE_UNKNOWN;
@@ -442,49 +381,47 @@ void ESPAsyncHTTPUpdateServer::setup(AsyncWebServer *server, const String &path,
 
             if (_authenticated && len && _updateResult == UpdateResult::UPDATE_OK) {
                 if (_updateType == UpdateType::NCP_FIRMWARE) {
-                    if (!z2s_ncp_ota_write(data, len)) {
-                        _updaterError = "C6 NCP OTA write failed";
+                    if (!z2s_ncp_ota_write || !z2s_ncp_ota_write(data, len)) {
+                        _updaterError = F("C6 NCP OTA write failed");
                         _updateResult = UpdateResult::UPDATE_ERROR;
+                        if (onUpdateEnd) onUpdateEnd(_updateType, _updateResult);
                     }
                 } else if (_updateType == UpdateType::ZB_STORAGE) {
-                    if (!z2s_zb_storage_write(data, len)) {
-                        _updaterError = "C6 zb_storage write failed (max 64KB)";
+                    if (!z2s_zb_storage_write || !z2s_zb_storage_write(data, len)) {
+                        _updaterError = F("C6 zb_storage write failed");
                         _updateResult = UpdateResult::UPDATE_ERROR;
+                        if (onUpdateEnd) onUpdateEnd(_updateType, _updateResult);
                     }
-                } else {
-                    if (Update.write(data, len) != len) {
-                        _setUpdaterError();
-                    }
+                } else if (Update.write(data, len) != len) {
+                    _setUpdaterError();
                 }
             }
 
             if (_authenticated && final && _updateResult == UpdateResult::UPDATE_OK) {
                 if (_updateType == UpdateType::NCP_FIRMWARE) {
-                    if (z2s_ncp_ota_end()) {
-                        Log("C6 NCP Update Success.\n");
+                    if (z2s_ncp_ota_end && z2s_ncp_ota_end()) {
                         _updateResult = UpdateResult::UPDATE_OK;
                         if (onUpdateEnd) onUpdateEnd(_updateType, _updateResult);
                     } else {
-                        _updaterError = "C6 NCP OTA end failed";
+                        _updaterError = F("C6 NCP OTA end failed");
                         _updateResult = UpdateResult::UPDATE_ERROR;
+                        if (onUpdateEnd) onUpdateEnd(_updateType, _updateResult);
                     }
                 } else if (_updateType == UpdateType::ZB_STORAGE) {
-                    if (z2s_zb_storage_end()) {
-                        Log("C6 zb_storage Update Success.\n");
+                    if (z2s_zb_storage_end && z2s_zb_storage_end()) {
                         _updateResult = UpdateResult::UPDATE_OK;
                         if (onUpdateEnd) onUpdateEnd(_updateType, _updateResult);
                     } else {
-                        _updaterError = "C6 zb_storage end failed (file must be 16KB or 64KB)";
+                        _updaterError = F("C6 zb_storage restore failed (check 16KB/64KB size)");
                         _updateResult = UpdateResult::UPDATE_ERROR;
-                    }
-                } else {
-                    if (Update.end(true)) {
-                        Log("Update Success.\n");
-                        _updateResult = UpdateResult::UPDATE_OK;
                         if (onUpdateEnd) onUpdateEnd(_updateType, _updateResult);
-                    } else {
-                        _setUpdaterError();
                     }
+                } else if (Update.end(true)) {
+                    Log("Update Success.\n");
+                    _updateResult = UpdateResult::UPDATE_OK;
+                    if (onUpdateEnd) onUpdateEnd(_updateType, _updateResult);
+                } else {
+                    _setUpdaterError();
                 }
             }
         });

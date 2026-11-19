@@ -193,6 +193,8 @@ inline constexpr const char Z2S_GATEWAY_MDNS_LOCAL_NAME[] PROGMEM =
   "Z2S_mdns_name";
 inline constexpr const char Z2S_AUTO_CONNECTION_RESET_TIMEOUT[] PROGMEM = 
   "Z2S_acrt";
+inline constexpr const char Z2S_ENABLE_CLOUD_OTA[] PROGMEM =
+  "z2s_cloud_ota";
 
 /*****************************************************************************/
 
