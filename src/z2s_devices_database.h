@@ -3148,8 +3148,8 @@ inline constexpr z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] =
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER_1,
     .z2s_device_clusters_count = 3,
-    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_LUMI_INIT |
-      Z2S_DEVICE_DESC_CONFIG_FLAG_REBIND_AFTER_REJOIN,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_LUMI_INIT,
+    //| Z2S_DEVICE_DESC_CONFIG_FLAG_REBIND_AFTER_REJOIN,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_WINDOW_COVERING,
                              ESP_ZB_ZCL_CLUSTER_ID_MULTI_OUTPUT,
                              ESP_ZB_ZCL_CLUSTER_ID_ANALOG_OUTPUT }},

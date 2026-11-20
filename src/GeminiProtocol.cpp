@@ -261,6 +261,7 @@ bool GeminiBridge::hostNcpOtaBegin() {
 }
 
 bool GeminiBridge::hostNcpOtaWrite(const uint8_t *data, size_t len) {
+  static uint32_t s_ota_bytes = 0; // reset to 0 in hostNcpOtaBegin()
   size_t offset = 0;
   while (offset < len) {
     uint16_t chunk = ((len - offset) > 256) ? 256 : (uint16_t)(len - offset);
@@ -270,11 +271,17 @@ bool GeminiBridge::hostNcpOtaWrite(const uint8_t *data, size_t len) {
 
     uint8_t rsp[2] = {};
     if (!sendCommandWaitReply(
-          G_CMD_NCP_OTA_WRITE, &pkt, sizeof(uint16_t) + chunk, G_RSP_STATUS, rsp, sizeof(rsp), 3000) ||
-        rsp[0] == 0) {
+          G_CMD_NCP_OTA_WRITE, &pkt, sizeof(uint16_t) + chunk,
+          G_RSP_STATUS, rsp, sizeof(rsp), 3000)) {
+      log_e("C6 NCP OTA write TIMEOUT at offset %lu", (unsigned long)s_ota_bytes);
+      return false;
+    }
+    if (rsp[0] == 0) {
+      log_e("C6 NCP OTA write ERROR=%u at offset %lu", rsp[1], (unsigned long)s_ota_bytes);
       return false;
     }
     offset += chunk;
+    s_ota_bytes += chunk;
   }
   return true;
 }

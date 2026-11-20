@@ -256,6 +256,8 @@ class LocalActionHandlerWithTrigger : public LocalActionHandler,
     const char* getOperatorName();
     
   protected:
+    void evaluateLogic();
+
     uint32_t _pending_postponed_turn_on_ms = 0;
     uint32_t _pending_postponed_turn_off_ms = 0;
   

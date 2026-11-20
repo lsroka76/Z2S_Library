@@ -131,6 +131,7 @@ uint8_t LocalActionHandlerWithTrigger::validateLogicPinsNumber(
     case PIN_LOGIC_OPERATOR_INHIBIT:
     case PIN_LOGIC_OPERATOR_MAJORITY:
     case PIN_LOGIC_OPERATOR_SR_LATCH:
+    case PIN_LOGIC_OPERATOR_D_LATCH:
 
       return (pins < 2) ? 2 : ((pins > 32) ? 32 : pins);
 
@@ -245,8 +246,6 @@ void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
   if ((mask == 0) || (op == PIN_LOGIC_OPERATOR_NONE))
     return;
 
-  setLogicPinsChanged(false);
-
   switch (action) {
 
     case Z2S_SUPLA_ACTION_SET_LOGIC_GATE_PIN_FIRST_ACTION ... 
@@ -348,8 +347,20 @@ void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
         hasLogicPinsChanged() ? "TRUE" : "FALSE");
     } break;
   }
-  
-  if (!hasLogicPinsChanged())
+}
+
+/*****************************************************************************/
+
+void LocalActionHandlerWithTrigger::evaluateLogic() {
+
+  setLogicPinsChanged(false);
+
+  uint32_t mask        = getLogicMask();
+  uint32_t val         = getLogicValue() & mask;
+  uint8_t  op          = getLogicOperator();
+  uint8_t  last_result = getLastLogicResult();
+
+  if ((mask == 0) || (op == PIN_LOGIC_OPERATOR_NONE))
     return;
 
   uint32_t active = val & mask;
@@ -462,7 +473,7 @@ void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
       if (e)
         logic_operation_result = d;       // Transparent when enabled
       else
-      logic_operation_result = (last_result == 1); // Hold state when disabled
+        logic_operation_result = (last_result == 1); // Hold state when disabled
     } break;
 
 
@@ -477,7 +488,7 @@ void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
       if (e && t)
         logic_operation_result = (last_result != 1); // Toggle when T and E are active
       else
-      logic_operation_result = (last_result == 1); // Otherwise hold state
+        logic_operation_result = (last_result == 1); // Otherwise hold state
     } break;
   }
   
@@ -534,7 +545,12 @@ void LocalActionHandlerWithTrigger::handleAction(int event, int action) {
 
 void LocalActionHandlerWithTrigger::iterateAlways() {
 
+  if (hasLogicPinsChanged()) {
+    evaluateLogic();
+  }
+
   uint32_t millis_ms = millis();
+  if (millis_ms == 0) millis_ms = 1;
 
   if ((_pending_postponed_turn_on_ms) && 
       ((millis_ms - _pending_postponed_turn_on_ms) > getPostponedTurnOnMs())) {
