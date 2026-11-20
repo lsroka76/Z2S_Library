@@ -116,90 +116,101 @@ void addZ2SDeviceActionTrigger(
 
 /*****************************************************************************/
 
-void addZ2SDeviceActionTriggerV2(
-  zbg_device_params_t *device, uint8_t free_slot, int8_t sub_id, 
-  const char *name, uint32_t func) {
+bool updateExistingZ2SDeviceActionTriggerV2(
+  zbg_device_params_t *device, int8_t sub_id) {
+
+  if (!_use_new_at_model) {
+    return false;
+  }
 
   virtual_button_data_t virtual_button_data = {};
-
-  getVirtualButtonNumber(
-    virtual_button_data, device->endpoint, device->cluster_id, 
-    device->model_id, sub_id);
+  if (!getVirtualButtonNumber(
+        virtual_button_data, device->endpoint, device->cluster_id,
+        device->model_id, sub_id)) {
+    return false;
+  }
 
   Supla::Element *element = Z2S_findZ2SElementV2(
-    device->short_addr, device->endpoint, device->cluster_id, 
-    SUPLA_CHANNELTYPE_ACTIONTRIGGER, 0x40 + virtual_button_data.button_id, 
+    device->short_addr, device->endpoint, device->cluster_id,
+    SUPLA_CHANNELTYPE_ACTIONTRIGGER, 0x40 + virtual_button_data.button_id,
     USER_DATA_FLAG_ACTION_TRIGGER_VERSION_2_0);
-  
-  if (element == nullptr)  {
 
-    log_i("no AT channel found - registering new one!");
+  if (element == nullptr) {
+    return false;
+  }
 
-    auto Supla_Z2S_ActionTrigger = new Supla::Control::LocalActionTrigger();
+  auto Supla_Z2S_ActionTrigger =
+    static_cast<Supla::Control::LocalActionTrigger *>(element);
 
-    if (getVirtualButtonNumber(
-          virtual_button_data, device->endpoint, device->cluster_id, 
-          device->model_id, sub_id)) {
+  uint32_t button_flags = Supla_Z2S_ActionTrigger->getButtonFlags();
 
-      Supla_Z2S_ActionTrigger->getChannel()->setActionTriggerCaps(
-        virtual_button_data.button_action_trigger_flag);
-      
-      Supla_Z2S_ActionTrigger->setInitialCaption(
-        virtual_button_data.button_action_trigger_name);
-    }
+  log_i(
+    "AT channel found at slot %02u, virtual button flags %08x",
+    Supla_Z2S_ActionTrigger->getZ2SChannelIndex(), button_flags);
 
-    Z2S_setChannelData(
-      Supla_Z2S_ActionTrigger->getZ2SCorePtr(), device, free_slot,
-      Supla_Z2S_ActionTrigger->getChannelNumber(), 
-      SUPLA_CHANNELTYPE_ACTIONTRIGGER, 0x40 + virtual_button_data.button_id,
-      virtual_button_data.button_action_trigger_name, func);
+  uint32_t new_flags =
+    button_flags | virtual_button_data.button_action_trigger_flag;
 
-    Supla_Z2S_ActionTrigger->setButtonFlags(
+  if (new_flags != button_flags) {
+    Supla_Z2S_ActionTrigger->getChannel()->setActionTriggerCaps(new_flags);
+    Supla_Z2S_ActionTrigger->setButtonFlags(new_flags);
+  }
+  return true;
+}
+
+/*****************************************************************************/
+
+void addZ2SDeviceActionTriggerV2(
+  zbg_device_params_t *device, uint8_t free_slot, int8_t sub_id,
+  const char *name, uint32_t func) {
+
+  if (updateExistingZ2SDeviceActionTriggerV2(device, sub_id)) {
+    return;
+  }
+
+  log_i("no AT channel found - registering new one!");
+
+  virtual_button_data_t virtual_button_data = {};
+  auto Supla_Z2S_ActionTrigger = new Supla::Control::LocalActionTrigger();
+
+  if (getVirtualButtonNumber(
+        virtual_button_data, device->endpoint, device->cluster_id,
+        device->model_id, sub_id)) {
+
+    Supla_Z2S_ActionTrigger->getChannel()->setActionTriggerCaps(
       virtual_button_data.button_action_trigger_flag);
-    Supla_Z2S_ActionTrigger->setChannelUserDataFlags(
-      USER_DATA_FLAG_ACTION_TRIGGER_VERSION_2_0, true);
 
-    initZ2SDeviceActionTriggerV2(
-      free_slot, Supla_Z2S_ActionTrigger->getZ2SChannel(), 
-      Supla_Z2S_ActionTrigger->getZ2SElementPtr());
+    Supla_Z2S_ActionTrigger->setInitialCaption(
+      virtual_button_data.button_action_trigger_name);
+  }
 
+  Z2S_setChannelData(
+    Supla_Z2S_ActionTrigger->getZ2SCorePtr(), device, free_slot,
+    Supla_Z2S_ActionTrigger->getChannelNumber(),
+    SUPLA_CHANNELTYPE_ACTIONTRIGGER, 0x40 + virtual_button_data.button_id,
+    virtual_button_data.button_action_trigger_name, func);
 
-    Supla_Z2S_ActionTrigger->getChannel()->setSubDeviceId(
-      device->zb_device_id + 1);
-    Supla_Z2S_ActionTrigger->getChannel()->setFlag(
-      SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
+  Supla_Z2S_ActionTrigger->setButtonFlags(
+    virtual_button_data.button_action_trigger_flag);
+  Supla_Z2S_ActionTrigger->setChannelUserDataFlags(
+    USER_DATA_FLAG_ACTION_TRIGGER_VERSION_2_0, true);
 
-    Supla_Z2S_ActionTrigger->onLoadConfig(&SuplaDevice);
-    Supla_Z2S_ActionTrigger->onInit();
+  initZ2SDeviceActionTriggerV2(
+    free_slot, Supla_Z2S_ActionTrigger->getZ2SChannel(),
+    Supla_Z2S_ActionTrigger->getZ2SElementPtr());
 
-    if (!Supla::Storage::IsStateStorageValid()) 
-      Supla::Storage::WriteStateStorage();
-          
-    Supla::Storage::ConfigInstance()->commit();
-  } 
-  else {
+  Supla_Z2S_ActionTrigger->getChannel()->setSubDeviceId(
+    device->zb_device_id + 1);
+  Supla_Z2S_ActionTrigger->getChannel()->setFlag(
+    SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
 
-    auto Supla_Z2S_ActionTrigger = 
-      static_cast<Supla::Control::LocalActionTrigger *>(element);
+  Supla_Z2S_ActionTrigger->onLoadConfig(&SuplaDevice);
+  Supla_Z2S_ActionTrigger->onInit();
 
-    uint32_t button_flags = Supla_Z2S_ActionTrigger->getButtonFlags();
-    
-    log_i(
-      "AT channel found at slot %02u, virtual button flags %08x", 
-      Supla_Z2S_ActionTrigger->getZ2SChannelIndex(), button_flags);
+  if (!Supla::Storage::IsStateStorageValid())
+    Supla::Storage::WriteStateStorage();
 
-    if (getVirtualButtonNumber(
-          virtual_button_data, device->endpoint, device->cluster_id, 
-          device->model_id, sub_id)) {
-
-      button_flags |= virtual_button_data.button_action_trigger_flag;
-
-      Supla_Z2S_ActionTrigger->getChannel()->setActionTriggerCaps(
-        button_flags);
-        
-      Supla_Z2S_ActionTrigger->setButtonFlags(button_flags);
-    }
-  }  
+  Supla::Storage::ConfigInstance()->commit();
 }
 
 /*****************************************************************************/

@@ -856,7 +856,7 @@ function syncSubactionDropdown(){
   }else{
     optionsData.forEach(opt=>{
       const selected=String(opt.id)===currentVal?" selected":"";
-      hhtml+=`<option value="${opt.id}"${selected}>${opt.label.split('"').join("\x26quot;")}</option>`;
+      html+=`<option value="${opt.id}"${selected}>${opt.label.split('"').join("\x26quot;")}</option>`;
     });
   }
   helperSelect.innerHTML=html;

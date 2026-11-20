@@ -39,6 +39,11 @@ void addZ2SDeviceActionTrigger(
 
 /*****************************************************************************/
 
+bool updateExistingZ2SDeviceActionTriggerV2(
+  zbg_device_params_t *device, int8_t sub_id);
+
+/*****************************************************************************/
+
 void addZ2SDeviceActionTriggerV2(
   zbg_device_params_t *device, uint8_t free_slot, int8_t sub_id = -1, 
   const char *name = nullptr, uint32_t func = 0);

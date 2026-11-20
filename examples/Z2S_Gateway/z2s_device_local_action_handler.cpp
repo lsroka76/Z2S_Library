@@ -94,12 +94,12 @@ void registerNewLocalChannel(
     obj->setDefaultFunction(desc.default_func);
   }
 
+  post_setup(obj);
+  obj->saveChannelData();
+
   if (desc.init_fn) {
     desc.init_fn(slot, obj->getZ2SChannel(), obj->getZ2SElementPtr());
   }
-
-  post_setup(obj);
-  obj->saveChannelData();
 
   if (auto* ch = obj->getChannel()) {
     ch->setFlag(SUPLA_CHANNEL_FLAG_ALWAYS_ALLOW_CHANNEL_DELETION);
@@ -268,8 +268,8 @@ constexpr LocalChannelDescriptor LOCAL_CHANNEL_REGISTRY[] = {
         hc->setLocalHCSR04TrigPin(5);
         hc->setLocalHCSR04EchoPin(6);
         hc->setLocalHCSR04MinIn(0);
-        hc->setLocalHCSR04MinOut(500);
-        hc->setLocalHCSR04MaxIn(0);
+        hc->setLocalHCSR04MaxIn(500);
+        hc->setLocalHCSR04MinOut(0);
         hc->setLocalHCSR04MaxOut(500);
       });
     }

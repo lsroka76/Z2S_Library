@@ -51,6 +51,8 @@ extern uint32_t _auto_connection_reset_timeout;
 
 extern uint8_t _z2s_security_level;
 
+extern void disableZ2SNotifications();
+
 static volatile bool GUIstarted = false;
 static volatile bool GUIbuilt = false;
 
@@ -5624,32 +5626,143 @@ void Z2S_startWebGUI() {
 			request->redirect("/update#zigbee");
 		});
 
+		static AsyncWebServerRequest *s_ota_upload_req = nullptr;
+		static bool   s_ota_upload_ok                  = false;
+		static size_t s_ota_max_bytes                  = 0;
+
 		server->on(
 		  "/upload_zigbee_ota", HTTP_POST,
 		  [](AsyncWebServerRequest *request) {
-			  request->send(200, "text/plain", "Upload OK");
+			  bool ok = false;
+			  if (Z2S_lockFs()) {
+				  if (s_ota_upload_req == request) {
+					  ok               = s_ota_upload_ok;
+					  s_ota_upload_req = nullptr;
+					  s_ota_max_bytes  = 0;
+				  }
+				  Z2S_unlockFs();
+			  }
+
+			  if (ok) {
+				  request->send(200, "text/plain", "Upload OK");
+			  } else {
+				  request->send(500, "text/plain", "Upload FAILED");
+			  }
 		  },
 		  [](AsyncWebServerRequest *request, String filename, size_t index,
 		     uint8_t *data, size_t len, bool final) {
-			  if (index == 0) {
-				  Z2S_initLittleFs();
-				  if (!LittleFS.exists("/zigbee_ota")) {
-					  LittleFS.mkdir("/zigbee_ota");
-				  }
-				  request->_tempFile =
-				    LittleFS.open("/zigbee_ota/zigbee_ota_file.ota", "w");
+			  static constexpr const char *OTA_DIR = "/zigbee_ota";
+			  static constexpr const char *OTA_DST = "/zigbee_ota/zigbee_ota_file.ota";
+			  // Keep headroom for LittleFS COW blocks, Z2S storage, and Supla config
+			  static constexpr size_t OTA_FS_RESERVE_BYTES = 64 * 1024;
+
+			  // Call Z2S_initLittleFs() BEFORE Z2S_lockFs() to avoid recursive mutex deadlock
+			  if (index == 0 && !Z2S_initLittleFs()) {
+				  log_e("Zigbee OTA upload: LittleFS init failed");
+				  return;
 			  }
 
-			  if (len && request->_tempFile) {
-				  request->_tempFile.write(data, len);
+			  if (!Z2S_lockFs()) {
+				  log_e("Zigbee OTA upload: mutex timeout at offset %u", (unsigned)index);
+				  return;
+			  }
+
+			  if (index == 0) {
+				  if (s_ota_upload_req != nullptr && s_ota_upload_req != request) {
+					  log_w("Zigbee OTA upload: another upload is already in progress");
+					  Z2S_unlockFs();
+					  return;
+				  }
+
+				  s_ota_upload_req = request;
+				  s_ota_upload_ok  = false;
+				  s_ota_max_bytes  = 0;
+
+				  request->onDisconnect([request]() {
+					  if (Z2S_lockFs()) {
+						  if (request->_tempFile) {
+							  request->_tempFile.close();
+							  LittleFS.remove(OTA_DST);
+						  }
+						  if (s_ota_upload_req == request) {
+							  s_ota_upload_req = nullptr;
+							  s_ota_max_bytes  = 0;
+						  }
+						  Z2S_unlockFs();
+					  }
+				  });
+
+				  if (!LittleFS.exists(OTA_DIR) && !LittleFS.mkdir(OTA_DIR)) {
+					  log_e("Zigbee OTA upload: failed to create %s", OTA_DIR);
+					  Z2S_unlockFs();
+					  return;
+				  }
+
+				  // Reclaim all flash blocks from the previous OTA file before measuring free space
+				  if (LittleFS.exists(OTA_DST)) {
+					  LittleFS.remove(OTA_DST);
+				  }
+
+				  size_t total_bytes = LittleFS.totalBytes();
+				  size_t used_bytes  = LittleFS.usedBytes();
+				  size_t free_bytes  = (total_bytes > used_bytes) ? (total_bytes - used_bytes) : 0;
+
+				  if (free_bytes <= OTA_FS_RESERVE_BYTES) {
+					  log_e("Zigbee OTA upload: insufficient LittleFS space (free=%u B)",
+					        (unsigned)free_bytes);
+					  Z2S_unlockFs();
+					  return;
+				  }
+
+				  s_ota_max_bytes = free_bytes - OTA_FS_RESERVE_BYTES;
+
+				  request->_tempFile = LittleFS.open(OTA_DST, "w");
+				  if (!request->_tempFile) {
+					  log_e("Zigbee OTA upload: failed to open %s", OTA_DST);
+					  Z2S_unlockFs();
+					  return;
+				  }
+
+				  s_ota_upload_ok = true;
+			  }
+
+			  if (s_ota_upload_req != request) {
+				  Z2S_unlockFs();
+				  return;
+			  }
+
+			  if (len > 0 && s_ota_upload_ok && request->_tempFile) {
+				  if ((index + len) > s_ota_max_bytes) {
+					  log_e("Zigbee OTA upload: file exceeds safe LittleFS budget (%u > %u B)",
+					        (unsigned)(index + len), (unsigned)s_ota_max_bytes);
+					  s_ota_upload_ok = false;
+					  request->_tempFile.close();
+					  LittleFS.remove(OTA_DST);
+				  } else {
+					  size_t written = request->_tempFile.write(data, len);
+					  if (written != len) {
+						  log_e("Zigbee OTA upload: short write (%u/%u B) at offset %u",
+						        (unsigned)written, (unsigned)len, (unsigned)index);
+						  s_ota_upload_ok = false;
+						  request->_tempFile.close();
+						  LittleFS.remove(OTA_DST);
+					  }
+				  }
 			  }
 
 			  if (final) {
 				  if (request->_tempFile) {
+					  request->_tempFile.flush();
 					  request->_tempFile.close();
 				  }
-				  Z2S_endLittleFs();
+
+				  if (!s_ota_upload_ok || (index + len) == 0) {
+					  s_ota_upload_ok = false;
+					  LittleFS.remove(OTA_DST);
+				  }
 			  }
+
+			  Z2S_unlockFs();
 		  });
 
 		server->on("/partition", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -5688,13 +5801,6 @@ void Z2S_startWebGUI() {
 			}
 #endif
 
-			if (label && strcmp(label, "spiffs") == 0) {
-				auto cfg = Supla::Storage::ConfigInstance();
-				if (cfg) {
-					cfg->saveIfNeeded();
-				}
-			}
-
 			esp_partition_type_t type = pType
 			  ? static_cast<esp_partition_type_t>(pType->value().toInt())
 			  : ESP_PARTITION_TYPE_ANY;
@@ -5711,14 +5817,35 @@ void Z2S_startWebGUI() {
 				return;
 			}
 
+			bool is_spiffs =
+			  (partition->subtype == ESP_PARTITION_SUBTYPE_DATA_SPIFFS) ||
+			  (strcmp(partition->label, "spiffs") == 0);
+
+			// Keep saveIfNeeded() OUTSIDE Z2S_lockFs() so LittleFsConfig::commit()
+			// can acquire saveMutex without self-deadlocking.
+			if (is_spiffs) {
+				auto cfg = Supla::Storage::ConfigInstance();
+				if (cfg) {
+					cfg->saveIfNeeded();
+				}
+			}
+
 			AsyncWebServerResponse *response = request->beginChunkedResponse(
 			  "application/octet-stream",
-			  [partition, raw](uint8_t *buffer, size_t maxLen, size_t index) -> size_t {
+			  [partition, raw, is_spiffs](uint8_t *buffer, size_t maxLen, size_t index) -> size_t {
 				  if (index >= partition->size) return 0;
 				  const size_t len = std::min<size_t>(maxLen, partition->size - index);
+
+				  if (is_spiffs && !Z2S_lockFs()) {
+					  return 0;
+				  }
 				  esp_err_t err = raw
 				    ? esp_partition_read_raw(partition, index, buffer, len)
 				    : esp_partition_read(partition, index, buffer, len);
+				  if (is_spiffs) {
+					  Z2S_unlockFs();
+				  }
+
 				  return (err == ESP_OK) ? len : 0;
 			  });
 
@@ -5769,18 +5896,27 @@ bool Z2S_isGUIBuilt() {
 void onUpdateBegin(const UpdateType type, int &result) {
 
 	rgbLedWrite(RGB_BUILTIN, 255, 0, 255);
-}
 
+	if (type == UpdateType::FILE_SYSTEM) {
+		log_i("Filesystem OTA begin - locking and unmounting LittleFS");
+		disableZ2SNotifications();
+		Z2S_endLittleFs(true);
+	}
+}
 /*****************************************************************************/
 
 void onUpdateEnd(const UpdateType type, int &result) {
-	(void)type;
+
 	rgbLedWrite(RGB_BUILTIN, 0, 0, 0);
 
 	if (result == UpdateResult::UPDATE_OK) {
 		log_i("HTTP OTA finished successfully - scheduling clean soft restart");
-		// Hand off to loopTask so AsyncWebServer flushes HTTP 200 immediately
-		// and STATUS_SOFTWARE_RESET stops Zigbee & LittleFS safely.
+		s_http_ota_restart_pending = true;
+	} 
+	else if (type == UpdateType::FILE_SYSTEM) {
+		// Partition may have been partially erased and LittleFS is unmounted;
+		// reboot so LittleFS remounts cleanly on next boot.
+		log_e("Filesystem OTA failed - scheduling restart");
 		s_http_ota_restart_pending = true;
 	}
 }

@@ -133,9 +133,8 @@ uint8_t Z2S_findFirstFreeChannelsTableSlot(uint8_t start_slot) {
 
   if (free_channel_index < 0)
     return 0xFF;
-  elementsStorage.setPosition(free_channel_index);
-  elementsStorage.saveIndexTable();
-  return free_channel_index;
+
+  return static_cast<uint8_t>(free_channel_index);
 }
 
 /*****************************************************************************/
@@ -924,11 +923,18 @@ Z2S_Device *Z2S_addZbDeviceTableSlot(
           ZBD_USER_DATA_FLAG_BINDING_REQUIRED, false);
       }
 
-      device->saveDeviceData();
-            
+      if (!device->saveDeviceData()) {
+        
+        log_e("Failed to save new ZigBee device slot %u!", zb_device_slot);
+        
+        delete device;
+        return nullptr;
+      }
+      
       return device;
     }
-  } else {
+  } 
+  else {
 
     log_i("ZB device already in ZB devices table");
 
@@ -3881,6 +3887,22 @@ void Z2S_onSonoffCustomClusterReceive(
         return;
       }
       msgZ2SDeviceIASzone(element, readAttr<uint8_t>(attribute));      
+    } break;
+
+    case SONOFF_CUSTOM_CLUSTER_DETACHED_RELAY_EVENT_ID: {
+
+      Supla::Element* element = Z2S_findZ2SElement(
+        short_addr, endpoint, ESP_ZB_ZCL_CLUSTER_ID_ON_OFF, 
+        SUPLA_CHANNELTYPE_RELAY, NO_CUSTOM_CMD_SID);
+
+        if (!element) {
+          
+          no_channel_found_error_func(short_addr);
+          return;
+        }
+        else 
+          msgZ2SDeviceVirtualRelayValue(
+            element, VRV_ACTION_ID, Supla::ON_CLICK_1);
     } break;
 
     case SONOFF_CUSTOM_CLUSTER_AC_CURRENT_ID:
@@ -6969,6 +6991,11 @@ uint8_t Z2S_addZ2SDevice(
         return ADD_Z2S_DEVICE_STATUS_OK;
       default:
         break;
+    }
+
+    if (updateExistingZ2SDeviceActionTriggerV2(device, sub_id)) {
+      
+      return ADD_Z2S_DEVICE_STATUS_OK;
     }
 
     log_i("No channel found for address %s, adding new one!",ieee_addr_str);

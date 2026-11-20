@@ -48,7 +48,7 @@ inline constexpr const char Z2S_ELEMENTS_PREFIX_V2[] PROGMEM =
 
 inline constexpr const char Z2S_ELEMENTS_INDEX_TABLE_V3[] PROGMEM = 
   "elements_index_table_v3.z2s";
-  inline constexpr const char Z2S_ELEMENTS_INDEX_TABLE_BACKUP_V3[] PROGMEM = 
+inline constexpr const char Z2S_ELEMENTS_INDEX_TABLE_BACKUP_V3[] PROGMEM = 
   "elements_index_table_v3.bak";
 
 inline constexpr const char Z2S_ELEMENTS_PREFIX_V3[] PROGMEM = 
@@ -61,7 +61,7 @@ inline constexpr const char Z2S_ELEMENTS_BACKUP_PREFIX_V3[] PROGMEM =
 
 inline constexpr const char Z2S_DEVICES_INDEX_TABLE_V3[] PROGMEM = 
   "devices_index_table_v3.z2s";
-  inline constexpr const char Z2S_DEVICES_INDEX_TABLE_BACKUP_V3[] PROGMEM = 
+inline constexpr const char Z2S_DEVICES_INDEX_TABLE_BACKUP_V3[] PROGMEM = 
   "devices_index_table_v3.bak";
 
 inline constexpr const char Z2S_DEVICES_PREFIX_V3[] PROGMEM = 
@@ -142,6 +142,9 @@ typedef struct z2s_zb_device_params_s {
   };
 } __attribute__((packed)) z2s_zb_device_params_t;  //fields are padded properly anyway
 
+static_assert(sizeof(z2s_zb_device_params_t) == 120,
+  "z2s_zb_device_params_t size changed - breaks existing LittleFS device files");
+
 /*****************************************************************************/
 
 typedef struct z2s_device_params_s {
@@ -189,7 +192,7 @@ union {
     };
     struct {
       int32_t         hvac_fixed_temperature_correction;
-      uint32_t         hvac_reserved; //probably unused
+      uint32_t        hvac_reserved; //probably unused
     };
     struct {
       int32_t         ignore_next_msg_counter;
@@ -218,10 +221,10 @@ union {
       uint32_t        logic_mask;
     } local_action_handler_data;
     struct {
-      uint32_t         reserved_32;
-      uint32_t         button_flags;
-      uint32_t         button_last_seen_ms;
-      int32_t          button_last_value;
+      uint32_t        reserved_32;
+      uint32_t        button_flags;
+      uint32_t        button_last_seen_ms;
+      int32_t         button_last_value;
     } virtual_button_data;
     struct {
       char            mDNS_name[12];
@@ -241,16 +244,16 @@ union {
       uint32_t        pull_up : 1;
     } local_binary_data;
     struct {
-      int8_t         trig_pin;
-      int8_t         echo_pin;
-      int16_t        min_in;
-      int16_t        min_out;
-      int16_t        max_in;
-      int16_t        max_out;
+      int8_t          trig_pin;
+      int8_t          echo_pin;
+      int16_t         min_in;
+      int16_t         min_out;
+      int16_t         max_in;
+      int16_t         max_out;
     } local_hcsr04_data;
     struct {
       uint8_t         gpio_pin;
-      uint8_t        sensor_address[8];
+      uint8_t         sensor_address[8];
     } local_ds18b20_data;
     struct {
       uint8_t         sda_pin;
@@ -271,7 +274,6 @@ union {
       uint8_t         wire_pins_changed : 1;
     } local_bh1750_data;
     struct {
-
       uint8_t         adc_pin;
       uint8_t         adc_attenuation;
     } local_adc_data;
@@ -300,7 +302,6 @@ union {
   uint32_t            timeout_secs;
   uint32_t            timeout_ms;
   uint32_t            postponed_turn_off_ms;
-
 };
 union {
   uint32_t            keep_alive_secs;
@@ -330,7 +331,7 @@ union {
   };
   struct {
     uint32_t          last_temperature_measurement;//TEMP*100
-    };
+  };
   struct {
     double            initial_gpm_value;
   };
@@ -346,6 +347,9 @@ union {
   uint8_t             reserved_8;
   uint8_t             reserved_9;
 } z2s_device_params_t;
+
+static_assert(sizeof(z2s_device_params_t) == 120,
+  "z2s_device_params_t size changed - breaks existing LittleFS element files");
 
 /*****************************************************************************/
 
@@ -373,22 +377,22 @@ typedef struct channel_extended_data_em_s {
 
 typedef struct channel_extended_data_sb_s {
 
-  uint8_t device_id;
+  uint8_t  device_id;
   uint16_t device_flags; //???
-  char  ble_mac_address[13]; 
+  char     ble_mac_address[13]; 
   uint32_t token_size; //not used
-  char token[128];
+  char     token[128];
   uint16_t json_payload_size;
   uint16_t json_payload_2_size;
-  char json_payload[256];
-  char json_payload_2[256];
+  char     json_payload[256];
+  char     json_payload_2[256];
 } __attribute__ ((packed)) channel_extended_data_sb_t;
 
 /*****************************************************************************/
 
 typedef struct channel_extended_data_http_binary_s {
   uint32_t flags;
-  char url[HTTP_BINARY_URL_MAX_SIZE];
+  char     url[HTTP_BINARY_URL_MAX_SIZE];
 } __attribute__ ((packed)) channel_extended_data_http_binary_t;
 
 /*****************************************************************************/
@@ -412,7 +416,7 @@ uint16_t Z2S_getIndexTableEntriesNumber(
 int16_t Z2S_getIndexTablePositionCounter(
   uint8_t *index_table, uint16_t index_position, uint16_t max_index);
 int16_t Z2S_getIndexTableCounterPosition(
-    uint8_t *index_table, uint16_t counter, uint16_t max_index);
+  uint8_t *index_table, uint16_t counter, uint16_t max_index);
 
 int16_t Z2S_findFreeEntryIndex(uint8_t *index_table, uint16_t max_index);
 int16_t Z2S_findNextIndexPosition(
@@ -431,12 +435,14 @@ bool Z2S_loadObject(
   const char *backup_file_name_prefix = nullptr);
 
 bool Z2S_removeObject(uint16_t object_index, const char *file_name_prefix, 
-const char *backup_file_name_prefix = nullptr);
+  const char *backup_file_name_prefix = nullptr);
 
 /*****************************************************************************/
 
 template <typename T, uint16_t MAX_ITEMS>
 class Z2S_StorageManager {
+  static_assert((MAX_ITEMS % 8) == 0, "MAX_ITEMS must be a multiple of 8");
+
 private:
   
   uint8_t index_table[MAX_ITEMS / 8] = {}; 
@@ -444,6 +450,7 @@ private:
   const char* index_backup;
   const char* obj_prefix;
   const char* obj_backup_prefix;
+  bool index_dirty = false;
 
 public:
   
@@ -459,24 +466,42 @@ public:
 
   bool setPosition(uint16_t index) {
     
+    if (index >= MAX_ITEMS) return false;
+    if (!checkPosition(index)) {
+      index_dirty = true;
+    }
     return setIndexTablePosition(index_table, index, MAX_ITEMS);
   }
 
   bool clearPosition(uint16_t index) {
     
+    if (index >= MAX_ITEMS) return false;
+    if (checkPosition(index)) {
+      index_dirty = true;
+    }
     return clearIndexTablePosition(index_table, index, MAX_ITEMS);
   }
 
   bool loadIndexTable(bool use_new_format = true) {
     
-    return Z2S_loadIndexTable(index_table, sizeof(index_table), index_file, 
-    use_new_format, index_backup);
+    bool ok = Z2S_loadIndexTable(
+      index_table, sizeof(index_table), index_file, 
+      use_new_format, index_backup);
+    if (ok) {
+      index_dirty = false;
+    }
+    return ok;
   }
 
   bool saveIndexTable(bool use_new_format = true) {
     
-    return Z2S_saveIndexTable(index_table, sizeof(index_table), index_file, 
-    use_new_format, index_backup);
+    bool ok = Z2S_saveIndexTable(
+      index_table, sizeof(index_table), index_file, 
+      use_new_format, index_backup);
+    if (ok) {
+      index_dirty = false;
+    }
+    return ok;
   }
 
   uint16_t getCount() {
@@ -513,8 +538,11 @@ public:
     
     if (Z2S_saveObject(index, obj_prefix, (uint8_t*)&item, sizeof(T), 
           use_new_format, obj_backup_prefix)) {
-      setPosition(index);
-      return saveIndexTable(use_new_format);
+      if (!checkPosition(index) || index_dirty) {
+        setPosition(index);
+        return saveIndexTable(use_new_format);
+      }
+      return true;
     }
     return false;
   }
@@ -528,10 +556,15 @@ public:
   }
 
   bool remove(uint16_t index) {
+    
     if (index >= MAX_ITEMS) return false;
+    
     if (Z2S_removeObject(index, obj_prefix, obj_backup_prefix)) {
-      clearPosition(index);
-      return saveIndexTable();
+      if (checkPosition(index) || index_dirty) {
+        clearPosition(index);
+        return saveIndexTable();
+      }
+      return true;
     }
     return false;
   }
@@ -559,7 +592,7 @@ inline Z2S_StorageManager<z2s_zb_device_params_t, Z2S_DEVICES_MAX_NUMBER>
 
 /*****************************************************************************/
 
-  inline Z2S_StorageManager<z2s_ir_code_t, Z2S_IR_CODES_MAX_NUMBER> 
+inline Z2S_StorageManager<z2s_ir_code_t, Z2S_IR_CODES_MAX_NUMBER> 
   irCodesStorage(
     Z2S_IR_CODES_INDEX_TABLE_V1, 
     Z2S_IR_CODES_INDEX_TABLE_BACKUP_V1,
