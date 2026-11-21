@@ -7595,6 +7595,7 @@ uint8_t Z2S_addZ2SDevice(
         }
       } break;
 
+/*****************************************************************************/
 
       case Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER: {
 
@@ -7607,6 +7608,35 @@ uint8_t Z2S_addZ2SDevice(
       } break;
 
 /*****************************************************************************/     
+
+case Z2S_DEVICE_DESC_TUYA_3PHASES_V1_ELECTRICITY_METER: {
+
+        switch (sub_id) {
+
+          case TUYA_3PHASES_ELECTRICITY_METER_SID:
+
+            addZ2SDeviceElectricityMeter(
+              &zbGateway, device, false, false, first_free_slot, sub_id, 
+              false);
+          break;
+
+
+          case TUYA_3PHASES_ELECTRICITY_METER_TEMPERATURE_SID:
+
+            addZ2SDeviceTempHumidity(
+              device, first_free_slot, sub_id, name, func, false);
+          break;
+
+
+          default:
+
+            addZ2SDeviceGeneralPurposeMeasurement(
+              device, first_free_slot, sub_id, name, func, unit);
+          break;
+        }
+      } break;
+
+/*****************************************************************************/
 
       case Z2S_DEVICE_DESC_SONOFF_RELAY_ELECTRICITY_METER: {
 
@@ -10864,6 +10894,29 @@ void Z2S_buildSuplaChannels(
       Z2S_addZ2SDevice(
         joined_device, TUYA_3PHASES_ELECTRICITY_METER_POWER_FACTOR_SID, 
         "POWER FACTOR"); 
+
+      Z2S_addZ2SDevice(joined_device, TUYA_3PHASES_ELECTRICITY_METER_SID);
+    } break;
+
+/*****************************************************************************/
+
+case Z2S_DEVICE_DESC_TUYA_3PHASES_V1_ELECTRICITY_METER: {
+
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_3PHASES_ELECTRICITY_METER_ENERGY_SID, "ENERGY",
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "kWh");
+
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_3PHASES_ELECTRICITY_METER_POWER_SID, "POWER",
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "W");
+
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_3PHASES_ELECTRICITY_METER_TEMPERATURE_SID,
+        "TEMPERATURE");
+
+      Z2S_addZ2SDevice(
+        joined_device, TUYA_3PHASES_ELECTRICITY_METER_STATUS_SID, "STATUS",
+        SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT, "");
 
       Z2S_addZ2SDevice(joined_device, TUYA_3PHASES_ELECTRICITY_METER_SID);
     } break;

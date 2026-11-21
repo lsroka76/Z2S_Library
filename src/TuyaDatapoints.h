@@ -376,6 +376,22 @@
 #define TUYA_1PHASE_V1_ELECTRICITY_METER_VCP_RAW_DP                 0x06//[6, null, tuya.valueConverter.phaseVariant3],
 #define TUYA_1PHASE_V1_ELECTRICITY_METER_UPDATE_FREQUENCY_DP        0x66//[102, "update_frequency", tuya.valueConverterBasic.divideBy(1)],
 
+#define TUYA_3PHASES_V1_ELECTRICITY_METER_ENERGY_DP                 0x01 // /100 (kWh)
+#define TUYA_3PHASES_V1_ELECTRICITY_METER_PHASE_A_RAW_DP            0x06 // 8B RAW: V/10, I/1000, P(24b)
+#define TUYA_3PHASES_V1_ELECTRICITY_METER_PHASE_B_RAW_DP            0x07 // 8B RAW: V/10, I/1000, P(24b)
+#define TUYA_3PHASES_V1_ELECTRICITY_METER_PHASE_C_RAW_DP            0x08 // 8B RAW: V/10, I/1000, P(24b)
+#define TUYA_3PHASES_V1_ELECTRICITY_METER_POWER_DP                  0x09 // W (signed / 0x1999999C offset)
+#define TUYA_3PHASES_V1_ELECTRICITY_METER_ENERGY_A_DP               0x65 // 101, /1000 (kWh)
+#define TUYA_3PHASES_V1_ELECTRICITY_METER_POWER_FACTOR_A_DP         0x66 // 102, raw (%)
+#define TUYA_3PHASES_V1_ELECTRICITY_METER_ENERGY_B_DP               0x6F // 111, /1000 (kWh)
+#define TUYA_3PHASES_V1_ELECTRICITY_METER_POWER_FACTOR_B_DP         0x70 // 112, raw (%)
+#define TUYA_3PHASES_V1_ELECTRICITY_METER_ENERGY_C_DP               0x79 // 121, /1000 (kWh)
+#define TUYA_3PHASES_V1_ELECTRICITY_METER_POWER_FACTOR_C_DP         0x7A // 122, raw (%)
+#define TUYA_3PHASES_V1_ELECTRICITY_METER_CURRENT_DP                0x83 // 131, /1000 (A)
+#define TUYA_3PHASES_V1_ELECTRICITY_METER_AC_FREQUENCY_DP           0x84 // 132, raw (Hz)
+#define TUYA_3PHASES_V1_ELECTRICITY_METER_TEMPERATURE_DP            0x85 // 133, signed /10 (°C)
+#define TUYA_3PHASES_V1_ELECTRICITY_METER_STATUS_DP                 0x86 // 134, bitmap
+
 #define MOES_ALARM_BATTERY_PERCENTAGE_DP                            0x0F //15 02 04
 #define MOES_ALARM_MELODY_DP                                        0x15 //21 ENUM
 #define MOES_ALARM_DURATION_DP                                      0x07 //07 02 04

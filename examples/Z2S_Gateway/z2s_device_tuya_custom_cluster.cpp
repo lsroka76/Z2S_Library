@@ -1139,6 +1139,192 @@ void processTuya3PhasesElectricityMeterDataReport(
 
 /*****************************************************************************/
 
+static inline int32_t decodeTuya3PhasesV1PhasePower24(const uint8_t *raw) {
+
+  uint32_t p = ((uint32_t)raw[5] << 16) |
+               ((uint32_t)raw[6] << 8)  |
+               (uint32_t)raw[7];
+
+  if (p >= 0x99999BU) {
+    return (int32_t)p - 0x1000000L;    // 24-bit two's complement
+  }
+  if (p >= 0x800000U) {
+    return (int32_t)p - 0x99999AL;     // buggy unsigned-div-10 offset
+  }
+  return (int32_t)p;
+}
+
+/*****************************************************************************/
+
+static inline int32_t decodeTuya3PhasesV1TotalPower32(uint32_t v) {
+
+  if (v >= 0x80000000U) {
+    return (int32_t)v;                 // 32-bit two's complement
+  }
+  if (v > 0x0FFFFFFFU) {
+    return (int32_t)(v - 0x1999999CU); // buggy unsigned-div-10 offset (matches Z2M)
+  }
+  return (int32_t)v;
+}
+
+/*****************************************************************************/
+
+void processTuya3PhasesV1ElectricityMeterDataReport(
+  uint16_t short_addr, uint8_t endpoint, uint16_t payload_size,
+  uint8_t *payload) {
+
+  if (!payload || payload_size < 7)
+    return;
+
+  uint16_t bytes_remaining = payload_size - 2;
+
+  Supla::Element* element_energy = Z2S_findZ2SElement(
+    short_addr, endpoint, TUYA_CUSTOM_CLUSTER_EF00,
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT,
+    TUYA_3PHASES_ELECTRICITY_METER_ENERGY_SID);
+
+  Supla::Element* element_power = Z2S_findZ2SElement(
+    short_addr, endpoint, TUYA_CUSTOM_CLUSTER_EF00,
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT,
+    TUYA_3PHASES_ELECTRICITY_METER_POWER_SID);
+
+  Supla::Element* element_temp = Z2S_findZ2SElement(
+    short_addr, endpoint, TUYA_CUSTOM_CLUSTER_EF00,
+    SUPLA_CHANNELTYPE_THERMOMETER,
+    TUYA_3PHASES_ELECTRICITY_METER_TEMPERATURE_SID);
+
+  Supla::Element* element_status = Z2S_findZ2SElement(
+    short_addr, endpoint, TUYA_CUSTOM_CLUSTER_EF00,
+    SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT,
+    TUYA_3PHASES_ELECTRICITY_METER_STATUS_SID);
+
+  Supla::Element* element_em = Z2S_findZ2SElement(
+    short_addr, endpoint, TUYA_CUSTOM_CLUSTER_EF00,
+    SUPLA_CHANNELTYPE_ELECTRICITY_METER,
+    TUYA_3PHASES_ELECTRICITY_METER_SID);
+
+  Tuya_read_dp_result_t dp = {};
+
+  static constexpr struct {
+    uint8_t raw_dp;
+    uint8_t energy_dp;
+    uint8_t pf_dp;
+    uint8_t v_sel;
+    uint8_t i_sel;
+    uint8_t p_sel;
+    uint8_t e_sel;
+    uint8_t pf_sel;
+  } phases[3] = {
+    { TUYA_3PHASES_V1_ELECTRICITY_METER_PHASE_A_RAW_DP,
+      TUYA_3PHASES_V1_ELECTRICITY_METER_ENERGY_A_DP,
+      TUYA_3PHASES_V1_ELECTRICITY_METER_POWER_FACTOR_A_DP,
+      Z2S_EM_VOLTAGE_A_SEL, Z2S_EM_CURRENT_A_SEL, Z2S_EM_ACTIVE_POWER_A_SEL,
+      Z2S_EM_ACT_FWD_ENERGY_A_SEL, Z2S_EM_POWER_FACTOR_A_SEL },
+    { TUYA_3PHASES_V1_ELECTRICITY_METER_PHASE_B_RAW_DP,
+      TUYA_3PHASES_V1_ELECTRICITY_METER_ENERGY_B_DP,
+      TUYA_3PHASES_V1_ELECTRICITY_METER_POWER_FACTOR_B_DP,
+      Z2S_EM_VOLTAGE_B_SEL, Z2S_EM_CURRENT_B_SEL, Z2S_EM_ACTIVE_POWER_B_SEL,
+      Z2S_EM_ACT_FWD_ENERGY_B_SEL, Z2S_EM_POWER_FACTOR_B_SEL },
+    { TUYA_3PHASES_V1_ELECTRICITY_METER_PHASE_C_RAW_DP,
+      TUYA_3PHASES_V1_ELECTRICITY_METER_ENERGY_C_DP,
+      TUYA_3PHASES_V1_ELECTRICITY_METER_POWER_FACTOR_C_DP,
+      Z2S_EM_VOLTAGE_C_SEL, Z2S_EM_CURRENT_C_SEL, Z2S_EM_ACTIVE_POWER_C_SEL,
+      Z2S_EM_ACT_FWD_ENERGY_C_SEL, Z2S_EM_POWER_FACTOR_C_SEL },
+  };
+
+  auto consumeBytes = [&bytes_remaining](uint8_t read_len) -> bool {
+    if (bytes_remaining <= read_len)
+      return true;
+    bytes_remaining -= read_len;
+    return false;
+  };
+
+  // Per-phase RAW (V, I, P), Energy, Power Factor
+  for (uint8_t i = 0; i < 3; i++) {
+
+    if (Z2S_readTuyaDPvalue(dp, phases[i].raw_dp, payload_size, payload)) {
+      if (element_em && dp.dp_size >= 8) {
+        uint32_t voltage = ((uint32_t)dp.dp_raw_value_8[0] << 8) |
+                           (uint32_t)dp.dp_raw_value_8[1];
+
+        uint32_t current = ((uint32_t)dp.dp_raw_value_8[2] << 16) |
+                           ((uint32_t)dp.dp_raw_value_8[3] << 8)  |
+                           (uint32_t)dp.dp_raw_value_8[4];
+
+        int32_t power = decodeTuya3PhasesV1PhasePower24(dp.dp_raw_value_8);
+
+        msgZ2SDeviceElectricityMeter(element_em, phases[i].v_sel, voltage);
+        msgZ2SDeviceElectricityMeter(element_em, phases[i].i_sel, current);
+        msgZ2SDeviceElectricityMeter(element_em, phases[i].p_sel, power);
+      }
+      if (consumeBytes(dp.bytes_read)) return;
+    }
+
+    if (Z2S_readTuyaDPvalue(dp, phases[i].energy_dp, payload_size, payload)) {
+      if (element_em)
+        msgZ2SDeviceElectricityMeter(element_em, phases[i].e_sel, dp.dp_value);
+      if (consumeBytes(dp.bytes_read)) return;
+    }
+
+    if (Z2S_readTuyaDPvalue(dp, phases[i].pf_dp, payload_size, payload)) {
+      if (element_em)
+        msgZ2SDeviceElectricityMeter(
+          element_em, phases[i].pf_sel, (int32_t)dp.dp_value);
+      if (consumeBytes(dp.bytes_read)) return;
+    }
+  }
+
+  // Total Energy (DP 0x01, /100 kWh)
+  if (Z2S_readTuyaDPvalue(
+        dp, TUYA_3PHASES_V1_ELECTRICITY_METER_ENERGY_DP, payload_size, payload)) {
+    if (element_energy)
+      msgZ2SDeviceGeneralPurposeMeasurement(
+        element_energy, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE,
+        ((double)dp.dp_value) / 100.0);
+    if (consumeBytes(dp.bytes_read)) return;
+  }
+
+  // Total Active Power (DP 0x09, W)
+  if (Z2S_readTuyaDPvalue(
+        dp, TUYA_3PHASES_V1_ELECTRICITY_METER_POWER_DP, payload_size, payload)) {
+    if (element_power)
+      msgZ2SDeviceGeneralPurposeMeasurement(
+        element_power, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE,
+        decodeTuya3PhasesV1TotalPower32(dp.dp_value));
+    if (consumeBytes(dp.bytes_read)) return;
+  }
+
+  // AC Frequency (DP 0x84, Hz)
+  if (Z2S_readTuyaDPvalue(
+        dp, TUYA_3PHASES_V1_ELECTRICITY_METER_AC_FREQUENCY_DP, payload_size,
+        payload)) {
+    if (element_em)
+      msgZ2SDeviceElectricityMeter(element_em, Z2S_EM_AC_FREQUENCY, dp.dp_value);
+    if (consumeBytes(dp.bytes_read)) return;
+  }
+
+  // Internal Temperature (DP 0x85, signed /10 °C)
+  if (Z2S_readTuyaDPvalue(
+        dp, TUYA_3PHASES_V1_ELECTRICITY_METER_TEMPERATURE_DP, payload_size,
+        payload)) {
+    if (element_temp)
+      msgZ2SDeviceTempHumidityTemp(
+        element_temp, (float)dp.dp_value_signed / 10.0f);
+    if (consumeBytes(dp.bytes_read)) return;
+  }
+
+  // Device Status (DP 0x86, bitmap)
+  if (Z2S_readTuyaDPvalue(
+        dp, TUYA_3PHASES_V1_ELECTRICITY_METER_STATUS_DP, payload_size, payload)) {
+    if (element_status)
+      msgZ2SDeviceGeneralPurposeMeasurement(
+        element_status, ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE,
+        dp.dp_value);
+  }
+}
+
+/*****************************************************************************/
+
 void processTuya1PhaseElectricityMeterDataReport(
   uint16_t short_addr, uint8_t endpoint, uint16_t payload_size,uint8_t *payload, 
   uint32_t model_id) {
@@ -3678,6 +3864,13 @@ void processTuyaDataReport(
 
       processTuya3PhasesElectricityMeterDataReport(
         short_addr, endpoint, payload_size, payload); 
+    break;
+
+
+    case Z2S_DEVICE_DESC_TUYA_3PHASES_V1_ELECTRICITY_METER:
+
+      processTuya3PhasesV1ElectricityMeterDataReport(
+        short_addr, endpoint, payload_size, payload);
     break;
 
 

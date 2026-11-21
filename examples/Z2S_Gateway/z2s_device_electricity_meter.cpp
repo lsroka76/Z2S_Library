@@ -128,6 +128,23 @@ void initZ2SDeviceElectricityMeter(
     } break;
 
 
+    case Z2S_DEVICE_DESC_TUYA_3PHASES_V1_ELECTRICITY_METER: {
+
+      _one_phase = false;
+
+      voltage_multiplier = 1;
+      voltage_divisor    = 10;
+
+      ac_frequency_multiplier = 1;
+      ac_frequency_divisor    = 1;
+
+      energy_multiplier = 1;
+      energy_divisor    = 1000;
+
+      ignore_zigbee_scaling = true;
+    } break;
+
+
     case Z2S_DEVICE_DESC_TUYA_1PHASE_ELECTRICITY_METER:
     case Z2S_DEVICE_DESC_TUYA_1PHASE_V1_ELECTRICITY_METER: {
 

@@ -281,6 +281,7 @@
 #define Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER      0x4550
 #define Z2S_DEVICE_DESC_TUYA_1PHASE_ELECTRICITY_METER       0x4551
 #define Z2S_DEVICE_DESC_TUYA_1PHASE_V1_ELECTRICITY_METER    0x4552
+#define Z2S_DEVICE_DESC_TUYA_3PHASES_V1_ELECTRICITY_METER   0x4553
 
 #define Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1                  0x4600
 #define Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_2                  0x4601
@@ -602,6 +603,8 @@
 #define TUYA_3PHASES_ELECTRICITY_METER_POWER_SID            0x02
 #define TUYA_3PHASES_ELECTRICITY_METER_POWER_FACTOR_SID     0x03
 #define TUYA_3PHASES_ELECTRICITY_METER_SID                  0x04
+#define TUYA_3PHASES_ELECTRICITY_METER_TEMPERATURE_SID      0x05
+#define TUYA_3PHASES_ELECTRICITY_METER_STATUS_SID           0x06
 
 #define CUSTOM_CMD_BUTTON_PRESSED_SID                       0x00
 #define CUSTOM_CMD_BUTTON_DOUBLE_PRESSED_SID                0x01
@@ -3410,6 +3413,11 @@ inline constexpr z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] =
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_1PHASE_V1_ELECTRICITY_METER,
+    .z2s_device_clusters_count = 1,
+    .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
+    .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_3PHASES_V1_ELECTRICITY_METER,
     .z2s_device_clusters_count = 1,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { TUYA_PRIVATE_CLUSTER_EF00 }},
@@ -8289,7 +8297,12 @@ inline constexpr z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   {	.manufacturer_name = "SONOFF", .model_name = "SNZB-06P24",
     .z2s_device_uid = 38700,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_PRESENCE_SENSOR,
-	  .z2s_device_endpoints_count = 1}
+	  .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE200_nslr42tt", .model_name = "TS0601",
+    .z2s_device_uid = 38800, 
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_3PHASES_V1_ELECTRICITY_METER,
+    .z2s_device_endpoints_count = 1},
 //DEVICES_END
 };
 
