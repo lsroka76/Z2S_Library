@@ -2291,6 +2291,7 @@ void Supla::Sensor::CalculatedGPM::resetControllerState() {
   _d_filtered = 0.0f;
   _last_pid_calc_ms = 0;
   _last_pwm_duty = 0xFF;
+  _last_kp_dir = 0;
 }
 
 /*****************************************************************************/
@@ -2306,8 +2307,44 @@ void Supla::Sensor::CalculatedGPM::setControllerEnabled(bool enabled) {
   if (!_controller_enabled) {
     commitPwmOutput(0.0);
   } else {
+    uint8_t fn = getZ2SLocalChannelFunc();
+    if (fn == CALCULATED_GPM_FUNC_PI_CONTROL ||
+        fn == CALCULATED_GPM_FUNC_PID_CONTROL) {
+
+      validateDestinationChannel();
+
+      if (_destination_Supla_element) {
+        Z2S_Core *dst_core = Z2S_Core::getZ2SCoreByChannelNumber(
+          _last_destination_channel);
+
+        if (dst_core &&
+            (dst_core->getZ2SLocalChannelType() ==
+             LOCAL_CHANNEL_TYPE_GPIO_PWM)) {
+
+          auto *pwm = static_cast<Supla::Control::LocalPWM *>(
+            _destination_Supla_element);
+
+          uint8_t current_pwm = pwm->getPWM();
+          _integral = static_cast<float>(current_pwm);
+          _last_pwm_duty = current_pwm;
+        }
+      }
+    }
     _last_refresh_ms = 0;
   }
+}
+
+/*****************************************************************************/
+
+void Supla::Sensor::CalculatedGPM::onParamsUpdated(bool reset_state) {
+
+  if (reset_state) {
+    configureFunctionDefaults();
+    resetControllerState();
+  }
+
+  _last_refresh_ms = 0;
+  CalculatedThermometer::updateLinkedThermometers(getZ2SChannelNumber());
 }
 
 /*****************************************************************************/
@@ -2343,6 +2380,16 @@ double Supla::Sensor::CalculatedGPM::computePID(
   // Kp > 0 => Heating (output rises when temp < setpoint)
   // Kp < 0 => Cooling (output rises when temp > setpoint)
   bool is_cooling = (kp_raw < 0.0f);
+  int8_t cur_dir = (kp_raw < 0.0f) ? -1 : ((kp_raw > 0.0f) ? 1 : 0);
+  if (_last_kp_dir != 0 && cur_dir != 0 && cur_dir != _last_kp_dir) {
+    _integral = 0.0f;
+    _prev_temp = NAN;
+    _d_filtered = 0.0f;
+  }
+  if (cur_dir != 0) {
+    _last_kp_dir = cur_dir;
+  }
+
   float kp = fabsf(kp_raw);
   float ki = fabsf(ki_raw);
   float kd = fabsf(kd_raw);

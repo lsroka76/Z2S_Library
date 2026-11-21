@@ -9968,12 +9968,17 @@ void editChannelMain(uint32_t update_channel_flag) {
 									case 2:
 										z2s_core->setCalculatedGpmParam2(cgpm_params[1]);
 										[[fallthrough]];
-									case 1:
+									case 1: {
 										z2s_core->setCalculatedGpmParam1(cgpm_params[0]);
 										z2s_core->saveChannelData();
-										z2s_core->updateCalculatedGpmParams();
+
+										auto *cgpm = static_cast<Supla::Sensor::CalculatedGPM *>(
+											z2s_core->getZ2SElementPtr());
+										if (cgpm)
+											cgpm->onParamsUpdated(false);
 										updateChannelInfoLabel(channel_slot, false);
-									break;
+									} break;
+									
 									default:
 									break;
 								}
@@ -10124,7 +10129,7 @@ void editChannelMain(uint32_t update_channel_flag) {
 
 								int32_t fs_val = ESPUI.getControl(
 									param_2_text)->getValueInt();
-								
+
 								if (fs_val < -1) fs_val = -1;
 								if (fs_val > 100) fs_val = 100;
 
@@ -10133,7 +10138,11 @@ void editChannelMain(uint32_t update_channel_flag) {
 								ESPUI.updateNumber(
 									param_2_text,
 									z2s_core->getCalculatedGpmFailsafeDuty());
-									z2s_core->updateCalculatedGpmParams();
+
+								auto *cgpm = static_cast<Supla::Sensor::CalculatedGPM *>(
+									z2s_core->getZ2SElementPtr());
+								if (cgpm)
+									cgpm->onParamsUpdated(false);
 							} break;
 						} //LCHT_SW
 					} break; //LCHT

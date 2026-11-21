@@ -629,6 +629,8 @@ class CalculatedGPM : public VirtualGeneralPurposeMeasurement,
     void iterateAlways() override;
     void handleAction(int event, int action) override;
 
+    void onParamsUpdated(bool reset_state = false);
+
   protected:
 
     void validateSourceChannel();
@@ -653,6 +655,7 @@ class CalculatedGPM : public VirtualGeneralPurposeMeasurement,
     float _d_filtered = 0.0f;
     uint8_t _last_pwm_duty = 0xFF;
     bool _controller_enabled = true;
+    int8_t _last_kp_dir = 0;
 };
 
 /*****************************************************************************/
