@@ -10194,12 +10194,19 @@ void editChannelMain(uint32_t update_channel_flag) {
 
 								saveSourceChannelData(channel_slot);
 								if (z2s_core->getZ2SLocalChannelType() ==
-								    LOCAL_CHANNEL_TYPE_CALC_THERMOMETER) {
-									auto *ct =
-									  static_cast<Supla::Sensor::CalculatedThermometer *>(
-									    z2s_core->getZ2SElementPtr());
+										LOCAL_CHANNEL_TYPE_CALC_THERMOMETER) {
+									auto *ct = static_cast<Supla::Sensor::CalculatedThermometer *>(
+										z2s_core->getZ2SElementPtr());
 									if (ct) {
 										ct->readSourceParameterValue();
+									}
+								} 
+								else if (z2s_core->getZ2SLocalChannelType() ==
+													LOCAL_CHANNEL_TYPE_CALC_GPM) {
+									auto *cgpm = static_cast<Supla::Sensor::CalculatedGPM *>(
+										z2s_core->getZ2SElementPtr());
+									if (cgpm) {
+										cgpm->onParamsUpdated(false);
 									}
 								}
 							break;

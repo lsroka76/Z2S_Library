@@ -155,6 +155,7 @@ inline constexpr const char * const calculated_thermomether_functions_names[] = 
 #define CALCULATED_GPM_FUNC_LINEAR_MAP                                  0x0006
 #define CALCULATED_GPM_FUNC_PI_CONTROL                                  0x0007
 #define CALCULATED_GPM_FUNC_PID_CONTROL                                 0x0008
+#define CALCULATED_GPM_FUNC_READ_BATTERY_LEVEL                          0x0009
 
 inline constexpr const char * const calculated_gpm_functions_names[] = {
   "VPD (VAPOR PRESSURE DEFICIT) [kPa]",
@@ -164,7 +165,8 @@ inline constexpr const char * const calculated_gpm_functions_names[] = {
   "EQUILIBRIUM MOISTURE CONTENT (EMC) [%]",
   "PWM LINEAR MAP (TEMP -> 0-100%) [%]",
   "PWM PI CONTROLLER (TEMP -> 0-100%) [%]",
-  "PWM PID CONTROLLER (TEMP -> 0-100%) [%]"
+  "PWM PID CONTROLLER (TEMP -> 0-100%) [%]",
+  "READ CHANNEL BATTERY LEVEL [%]"
 };
 
 /*****************************************************************************/

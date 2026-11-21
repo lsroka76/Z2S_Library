@@ -1333,14 +1333,12 @@ bool Z2S_Core::updateCalculatedGpmParams() {
       _z2s_element) {
 
     auto *cgpm = static_cast<Supla::Sensor::CalculatedGPM *>(_z2s_element);
-    cgpm->configureFunctionDefaults();
-    cgpm->resetControllerState();
-    Supla::Sensor::CalculatedThermometer::updateLinkedThermometers(
-      getZ2SChannelNumber());
+    cgpm->onParamsUpdated(true);
     return true;
   }
   return false;
 }
+
 /*****************************************************************************/
 
 bool Z2S_Core::updateLocalVirtualRelayParams() {

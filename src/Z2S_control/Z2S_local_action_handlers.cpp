@@ -2165,22 +2165,22 @@ void Supla::Sensor::CalculatedGPM::configureFunctionDefaults() {
     case CALCULATED_GPM_FUNC_VPD:
       setDefaultUnitAfterValue(" kPa");
       setDefaultValuePrecision(2);
-      break;
+    break;
 
     case CALCULATED_GPM_FUNC_ABSOLUTE_HUMIDITY:
       setDefaultUnitAfterValue(" g/m³");
       setDefaultValuePrecision(2);
-      break;
+    break;
 
     case CALCULATED_GPM_FUNC_SPECIFIC_ENTHALPY:
       setDefaultUnitAfterValue(" kJ/kg");
       setDefaultValuePrecision(1);
-      break;
+    break;
 
     case CALCULATED_GPM_FUNC_DEW_POINT_SPREAD:
       setDefaultUnitAfterValue(" K");
       setDefaultValuePrecision(1);
-      break;
+    break;
 
     case CALCULATED_GPM_FUNC_WOOD_EMC:
     case CALCULATED_GPM_FUNC_LINEAR_MAP:
@@ -2188,7 +2188,12 @@ void Supla::Sensor::CalculatedGPM::configureFunctionDefaults() {
     case CALCULATED_GPM_FUNC_PID_CONTROL:
       setDefaultUnitAfterValue(" %");
       setDefaultValuePrecision(1);
-      break;
+    break;
+
+    case CALCULATED_GPM_FUNC_READ_BATTERY_LEVEL:
+      setDefaultUnitAfterValue(" %");
+      setDefaultValuePrecision(0);
+    break;
   }
 }
 
@@ -2550,6 +2555,20 @@ void Supla::Sensor::CalculatedGPM::validateSourceChannel() {
           _last_channel_func = getZ2SLocalChannelFunc();
         }
       } break;
+
+      case CALCULATED_GPM_FUNC_READ_BATTERY_LEVEL: {
+
+        uint8_t src_ch_num = getSourceChannel();
+        if (src_ch_num < Z2S_CHANNELS_MAX_NUMBER) {
+          _source_Supla_element =
+            Z2S_Core::getSuplaElementByChannelNumber(src_ch_num);
+
+          if (_source_Supla_element) {
+            _last_source_channel = src_ch_num;
+            _last_channel_func = getZ2SLocalChannelFunc();
+          }
+        }
+      } break;
     }
   }
 }
@@ -2560,14 +2579,22 @@ void Supla::Sensor::CalculatedGPM::iterateAlways() {
 
   Supla::Sensor::VirtualGeneralPurposeMeasurement::iterateAlways();
 
+  uint8_t fn = getZ2SLocalChannelFunc();
   uint32_t interval_ms = getRefreshMs();
-  if (interval_ms == 0 && isControlAlgorithmFunc()) {
-    interval_ms = 5000;
+  if (interval_ms == 0) {
+    if (isControlAlgorithmFunc()) {
+      interval_ms = 5000;
+    } else if (fn == CALCULATED_GPM_FUNC_READ_BATTERY_LEVEL) {
+      interval_ms = 60000;
+    }
   }
 
-  if (interval_ms && ((millis() - _last_refresh_ms) > interval_ms)) {
+  uint32_t now_ms = millis();
+  if (now_ms == 0) now_ms = 1;
 
-    uint32_t now_ms = millis();
+  if (interval_ms &&
+      ((_last_refresh_ms == 0) || ((now_ms - _last_refresh_ms) > interval_ms))) {
+
     float dt = (_last_pid_calc_ms > 0)
                  ? ((now_ms - _last_pid_calc_ms) * 0.001f)
                  : (interval_ms * 0.001f);
@@ -2630,6 +2657,25 @@ void Supla::Sensor::CalculatedGPM::iterateAlways() {
 
       commitPwmOutput(out_pct);
       return;
+    } //isControlAlgorithmFunc
+
+    if (fn == CALCULATED_GPM_FUNC_READ_BATTERY_LEVEL) {
+
+      uint8_t battery = 0xFF;
+
+      Z2S_Core *src_core =
+        Z2S_Core::getZ2SCoreByChannelNumber(getSourceChannel());
+      if (src_core) {
+        battery = src_core->getZbDeviceLastBatteryLevelPercentage();
+      }
+
+      if (battery > 100 && _source_Supla_element &&
+          _source_Supla_element->getChannel()) {
+        battery = _source_Supla_element->getChannel()->getBatteryLevel();
+      }
+
+      setValue((battery <= 100) ? static_cast<double>(battery) : NAN);
+      return;
     }
 
     if (_source_Supla_element) {
@@ -2646,23 +2692,23 @@ void Supla::Sensor::CalculatedGPM::iterateAlways() {
 
           case CALCULATED_GPM_FUNC_VPD:
             setValue(calculateVPD(temp, humi));
-            break;
+          break;
 
           case CALCULATED_GPM_FUNC_ABSOLUTE_HUMIDITY:
             setValue(calculateAbsoluteHumidity(temp, humi));
-            break;
+          break;
 
           case CALCULATED_GPM_FUNC_SPECIFIC_ENTHALPY:
             setValue(calculateSpecificEnthalpy(temp, humi));
-            break;
+          break;
 
           case CALCULATED_GPM_FUNC_DEW_POINT_SPREAD:
             setValue(calculateDewPointSpread(temp, humi));
-            break;
+          break;
 
           case CALCULATED_GPM_FUNC_WOOD_EMC:
             setValue(calculateWoodEMC(temp, humi));
-            break;
+          break;
         }
       }
     }       
