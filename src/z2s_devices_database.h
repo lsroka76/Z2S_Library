@@ -176,6 +176,7 @@
 #define Z2S_DEVICE_DESC_TUYA_PRESENCE_SENSOR_SZLR08T        0x2350
 
 #define Z2S_DEVICE_DESC_SONOFF_PRESENCE_SENSOR              0x2400
+#define Z2S_DEVICE_DESC_SONOFF_PRESENCE_SENSOR_1            0x2401
 
 #define Z2S_DEVICE_DESC_ADEO_SMART_PIRTH_SENSOR             0x2500
 #define Z2S_DEVICE_DESC_ADEO_CONTACT_VIBRATION_SENSOR       0x2501
@@ -2079,6 +2080,12 @@ inline constexpr z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] =
     .z2s_device_config_flags = 0x0,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_OCCUPANCY_SENSING,
                              ESP_ZB_ZCL_CLUSTER_ID_ILLUMINANCE_MEASUREMENT }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_PRESENCE_SENSOR_1,
+    .z2s_device_clusters_count = 2,
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_OCCUPANCY_SENSING,
+                             SONOFF_CUSTOM_CLUSTER }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_OCCUPANCY_SENSOR,
     .z2s_device_clusters_count = 1,
@@ -4935,7 +4942,7 @@ inline constexpr z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "SONOFF", .model_name = "SNZB-06P",
     .z2s_device_uid = 10005,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_PIR_SENSOR,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_PRESENCE_SENSOR_1,
 	  .z2s_device_endpoints_count = 1},
 
   {	.manufacturer_name = "DIY_ZZRR", .model_name = "POSTIN_W2P",

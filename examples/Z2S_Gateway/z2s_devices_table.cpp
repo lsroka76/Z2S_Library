@@ -2361,6 +2361,7 @@ void Z2S_onOccupancyReceive(
 
 
     case Z2S_DEVICE_DESC_SONOFF_PIR_SENSOR:
+    case Z2S_DEVICE_DESC_SONOFF_PRESENCE_SENSOR_1:
 
       sub_id = SONOFF_PIR_SENSOR_OCCUPANCY_SID;
     break;
@@ -8648,6 +8649,7 @@ case Z2S_DEVICE_DESC_LUMI_W500: {
 /******************************************************************************/     
 
       case Z2S_DEVICE_DESC_SONOFF_PIR_SENSOR:
+      case Z2S_DEVICE_DESC_SONOFF_PRESENCE_SENSOR_1:
       case Z2S_DEVICE_DESC_DIY_MAIL_SENSOR: {
         
         addZ2SDeviceIASzone(device, first_free_slot, sub_id, name, func); 
@@ -11306,7 +11308,8 @@ case Z2S_DEVICE_DESC_TUYA_3PHASES_V1_ELECTRICITY_METER: {
 
 /*****************************************************************************/
 
-    case Z2S_DEVICE_DESC_SONOFF_PIR_SENSOR: {
+    case Z2S_DEVICE_DESC_SONOFF_PIR_SENSOR:
+    case Z2S_DEVICE_DESC_SONOFF_PRESENCE_SENSOR_1: {
       
       Z2S_addZ2SDevice(
         joined_device, SONOFF_PIR_SENSOR_OCCUPANCY_SID, "OCCUPANCY", 
