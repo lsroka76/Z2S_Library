@@ -55,10 +55,15 @@ enum class OtaTaskState : uint8_t {
 static volatile OtaTaskState otaTaskState = OtaTaskState::IDLE;
 static volatile size_t otaCurrentBytes = 0;
 static volatile size_t otaTotalBytes = 0;
-static otaProgressCallback s_pendingOtaProgressCb = nullptr;
+static otaProgressCallback s_guiOtaProgressCb = nullptr;
+static volatile bool s_guiOtaRequested = false;
 
 void setGitHubOtaProgressCallback(otaProgressCallback progressCb) {
-  s_pendingOtaProgressCb = progressCb;
+  s_guiOtaProgressCb = progressCb;
+}
+
+void markGuiGitHubOtaRequest(bool requested) {
+  s_guiOtaRequested = requested;
 }
 
 /*****************************************************************************/
@@ -242,7 +247,7 @@ void performBackgroundGitHubOta(void *pvParameters) {
   otaProgressCallback activeOtaProgressCb =
     reinterpret_cast<otaProgressCallback>(pvParameters);
 
-  size_t lastLoggedPct = 0xFF;
+  int16_t lastLoggedPct = -10;
 
   httpUpdate.onProgress(
     [activeOtaProgressCb, lastLoggedPct](size_t current, size_t total) mutable {
@@ -252,12 +257,15 @@ void performBackgroundGitHubOta(void *pvParameters) {
       if (activeOtaProgressCb) {
         activeOtaProgressCb(current, total);
       } else if (total > 0) {
-        size_t currentOtaProgress = (current * 100) / total;
-        if ((currentOtaProgress % 10 == 0) &&
-            (currentOtaProgress != lastLoggedPct)) {
+        int16_t currentOtaProgress =
+          static_cast<int16_t>((current * 100) / total);
+        if (currentOtaProgress > 100) {
+          currentOtaProgress = 100;
+        }
+        if (currentOtaProgress >= (lastLoggedPct + 10) ||
+            (currentOtaProgress == 100 && lastLoggedPct != 100)) {
           lastLoggedPct = currentOtaProgress;
-          log_i("OTA Progress: %02u %%",
-                static_cast<unsigned>(currentOtaProgress));
+          log_i("OTA Progress: %02d %%", currentOtaProgress);
         }
       }
     });
@@ -447,7 +455,6 @@ class Z2sGitHubSwUpdate : public Supla::Device::SwUpdate {
       return;
     }
 
-    // Enforce manual-only updates even if auto-update policy is changed remotely
     if (mode == Supla::SwUpdateMode::PeriodicCheckAndUpdate) {
       finished = true;
       abort = true;
@@ -460,6 +467,17 @@ class Z2sGitHubSwUpdate : public Supla::Device::SwUpdate {
       if (!_enable_cloud_ota) {
         if (sdc) {
           sdc->addLastStateLog("SW update: Cloud OTA disabled in Web GUI");
+        }
+        notifyFinished(Supla::Device::SwUpdateResult::UP_TO_DATE);
+        finished = true;
+        abort = true;
+        retryAllowed = false;
+        return;
+      }
+
+      if (!isHardwareCapableOfOta()) {
+        if (sdc) {
+          sdc->addLastStateLog("SW update: hardware not capable of OTA");
         }
         notifyFinished(Supla::Device::SwUpdateResult::UP_TO_DATE);
         finished = true;
@@ -505,12 +523,10 @@ class Z2sGitHubSwUpdate : public Supla::Device::SwUpdate {
     // 2. Supla Cloud or GUI "Start firmware update"
     if (mode == Supla::SwUpdateMode::CheckAndUpdate) {
       if (!taskStarted) {
-        guiProgressCb = s_pendingOtaProgressCb;
-        s_pendingOtaProgressCb = nullptr;
+        bool fromGui = s_guiOtaRequested;
+        s_guiOtaRequested = false;
 
-        // Block Cloud-initiated updates when switcher is OFF;
-        // Web GUI GitHub OTA still runs because guiProgressCb != nullptr.
-        if (!_enable_cloud_ota && guiProgressCb == nullptr) {
+        if (!_enable_cloud_ota && !fromGui) {
           if (sdc) {
             sdc->addLastStateLog("SW update: Cloud OTA disabled in Web GUI");
           }
@@ -521,26 +537,42 @@ class Z2sGitHubSwUpdate : public Supla::Device::SwUpdate {
           return;
         }
 
-        char latestTag[32] = {};
-        if (!checkGitHubForUpdate(nullptr, 0, latestTag, sizeof(latestTag))) {
+        if (!isHardwareCapableOfOta()) {
           if (sdc) {
-            sdc->addLastStateLog("SW update: firmware is already up to date");
+            sdc->addLastStateLog("SW update: hardware not capable of OTA");
           }
-          if (guiProgressCb) guiProgressCb(2, 0);
-          notifyFinished(Supla::Device::SwUpdateResult::UP_TO_DATE);
+          if (s_guiOtaProgressCb) s_guiOtaProgressCb(2, 0);
+          notifyFinished(false, "Hardware not capable of OTA");
           finished = true;
           abort = true;
           retryAllowed = false;
           return;
         }
 
-        // Pass nullptr to task so guiProgressCb runs strictly on loopTask
+        if (s_guiOtaProgressCb) s_guiOtaProgressCb(1, 0);
+
+        // Cloud clicks check version first; GUI already checked via Check button
+        if (!fromGui) {
+          char latestTag[32] = {};
+          if (!checkGitHubForUpdate(nullptr, 0, latestTag, sizeof(latestTag))) {
+            if (sdc) {
+              sdc->addLastStateLog("SW update: firmware is already up to date");
+            }
+            if (s_guiOtaProgressCb) s_guiOtaProgressCb(2, 0);
+            notifyFinished(Supla::Device::SwUpdateResult::UP_TO_DATE);
+            finished = true;
+            abort = true;
+            retryAllowed = false;
+            return;
+          }
+        }
+
         startBackgroundGitHubOtaTask(nullptr);
         if (otaTaskState != OtaTaskState::RUNNING) {
           if (sdc) {
             sdc->addLastStateLog("SW update: failed to start GitHub OTA task");
           }
-          if (guiProgressCb) guiProgressCb(2, 0);
+          if (s_guiOtaProgressCb) s_guiOtaProgressCb(2, 0);
           notifyFinished(false, "Failed to start OTA task");
           finished = true;
           abort = true;
@@ -549,8 +581,7 @@ class Z2sGitHubSwUpdate : public Supla::Device::SwUpdate {
         }
 
         taskStarted = true;
-        lastReportedBytes = 0;
-        if (guiProgressCb) guiProgressCb(1, 0);
+        lastReportedBytes = SIZE_MAX;
         notifyProgress(0, 0);
         return;
       }
@@ -559,8 +590,8 @@ class Z2sGitHubSwUpdate : public Supla::Device::SwUpdate {
       size_t total = otaTotalBytes;
       if (cur != lastReportedBytes) {
         lastReportedBytes = cur;
-        if (guiProgressCb && total > 0) {
-          guiProgressCb(cur, total);
+        if (s_guiOtaProgressCb && total > 0) {
+          s_guiOtaProgressCb(cur, total);
         }
         notifyProgress(static_cast<uint32_t>(cur),
                        static_cast<uint32_t>(total));
@@ -574,12 +605,12 @@ class Z2sGitHubSwUpdate : public Supla::Device::SwUpdate {
       otaTaskState = OtaTaskState::IDLE;
 
       if (state == OtaTaskState::SUCCESS) {
-        if (guiProgressCb) guiProgressCb(0, 0);
+        if (s_guiOtaProgressCb) s_guiOtaProgressCb(0, 0);
         notifyProgress(static_cast<uint32_t>(total),
                        static_cast<uint32_t>(total));
         notifyFinished(true);
         finished = true;
-        abort = false;  // SuplaDevice will delete swUpdate and soft-restart
+        abort = false;
       } else {
         const char *reason = (state == OtaTaskState::NO_UPDATES)
                                  ? "SW update: no updates found"
@@ -587,11 +618,11 @@ class Z2sGitHubSwUpdate : public Supla::Device::SwUpdate {
         if (sdc) {
           sdc->addLastStateLog(reason);
         }
-        if (guiProgressCb) guiProgressCb(2, 0);
+        if (s_guiOtaProgressCb) s_guiOtaProgressCb(2, 0);
         notifyFinished(false, reason);
         finished = true;
         abort = true;
-        retryAllowed = false;  // Return to normal mode and reconnect to Cloud
+        retryAllowed = false;
       }
       return;
     }
@@ -600,7 +631,6 @@ class Z2sGitHubSwUpdate : public Supla::Device::SwUpdate {
  private:
   bool taskStarted = false;
   size_t lastReportedBytes = 0;
-  otaProgressCallback guiProgressCb = nullptr;
 };
 
 Supla::Device::SwUpdate *Supla::Device::SwUpdate::Create(

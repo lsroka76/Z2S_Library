@@ -796,6 +796,8 @@ void enablePushoverTable(bool enable);
 void updatePushoverMessageButtons();
 void sendPushoverMessageRowEdit(uint16_t ui_label_id, int target_row_index);
 
+void guiGitHubOtaProgress(size_t current, size_t total);
+
 /*****************************************************************************/
 
 bool new_connect = false;
@@ -5604,6 +5606,7 @@ void Z2S_startWebGUI() {
 
 	ESPUI.begin("ZIGBEE <=> SUPLA CONTROL PANEL");
 	GUIstarted = true;
+	setGitHubOtaProgressCallback(guiGitHubOtaProgress);
 	handleGatewayEvent(Z2S_SUPLA_EVENT_ON_GUI_STARTED);
 
 	static bool custom_routes_registered = false;
@@ -5875,6 +5878,7 @@ void Z2S_stopWebGUI() {
 		ESPUI.WebServer()->end();
 	GUIstarted = false;
 	current_Tuya_payload_label = 0;
+	setGitHubOtaProgressCallback(nullptr);
 }
 
 /*****************************************************************************/
@@ -5990,14 +5994,17 @@ void guiGitHubOtaProgress(size_t current, size_t total) {
 		switch (current) {
 			case 0:
 				rgbLedWrite(RGB_BUILTIN, 0, 0, 0);
-				ESPUI.updateLabel(github_ota_info_label, "OTA Successful. Rebooting...");
+				ESPUI.updateLabel(
+					github_ota_info_label, "OTA Successful. Rebooting...");
 				ESPUI.flush(false);
 				break;
 
 			case 1:
 				previousOtaProgress = -1;
 				rgbLedWrite(RGB_BUILTIN, 255, 0, 255);
-				ESPUI.updateLabel(github_ota_info_label, "Starting OTA from GitHub...");
+				ESPUI.updateLabel(
+					github_ota_info_label, "Starting OTA from GitHub...");
+				ESPUI.flush(false);
 				break;
 
 			case 2:
@@ -6005,22 +6012,31 @@ void guiGitHubOtaProgress(size_t current, size_t total) {
 				ESPUI.updateLabel(
 				  github_ota_info_label,
 				  "GitHub OTA failed - check logs for error code!");
+				ESPUI.flush(false);
 				break;
 		}
 		return;
 	}
 
-	size_t currentOtaProgress = (current * 100) / total;
-	if ((currentOtaProgress % 5 == 0) &&
-	    (static_cast<int16_t>(currentOtaProgress) != previousOtaProgress)) {
-		previousOtaProgress = static_cast<int16_t>(currentOtaProgress);
+	int16_t currentOtaProgress = static_cast<int16_t>(
+		(current * 100) / total);
+	if (currentOtaProgress > 100) {
+		currentOtaProgress = 100;
+	}
+
+	if (previousOtaProgress < 0 ||
+	    currentOtaProgress >= (previousOtaProgress + 5) ||
+	    (currentOtaProgress == 100 && previousOtaProgress != 100)) {
+		previousOtaProgress = currentOtaProgress;
 		char ota_info_buffer[64];
 		snprintf(ota_info_buffer, sizeof(ota_info_buffer),
 		         "GitHub OTA progress: %02u%%",
 		         static_cast<unsigned>(currentOtaProgress));
 		ESPUI.updateLabel(github_ota_info_label, ota_info_buffer);
+		ESPUI.flush(false);
 	}
 }
+
 /*****************************************************************************/
 
 void Z2S_loopWebGUI() {
@@ -6075,12 +6091,10 @@ void Z2S_loopWebGUI() {
 
 				if (_github_ota_enabled &&
 				    SuplaDevice.getDeviceMode() == Supla::DEVICE_MODE_NORMAL) {
-
-					setGitHubOtaProgressCallback(guiGitHubOtaProgress);
+					markGuiGitHubOtaRequest(true);
 					SuplaDevice.handleAction(0, Supla::CHECK_SW_UPDATE);
 					if (SuplaDevice.getDeviceMode() != Supla::DEVICE_MODE_SW_UPDATE) {
-						
-						setGitHubOtaProgressCallback(nullptr);
+						markGuiGitHubOtaRequest(false);
 					}
 				}
 			} break;
