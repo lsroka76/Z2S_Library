@@ -198,6 +198,10 @@ union {
       int32_t         ignore_next_msg_counter;
     };
     struct {
+      int32_t         ignore_next_msg_counter;
+      uint16_t        post_cmd_ping_delay_s;
+    } roller_shutter_data;
+    struct {
       uint32_t        value : 24;
       uint32_t        program : 8;
       uint32_t        pause_time : 24;

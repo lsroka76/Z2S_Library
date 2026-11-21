@@ -56,14 +56,14 @@ static volatile OtaTaskState otaTaskState = OtaTaskState::IDLE;
 static volatile size_t otaCurrentBytes = 0;
 static volatile size_t otaTotalBytes = 0;
 static otaProgressCallback s_guiOtaProgressCb = nullptr;
-static volatile bool s_guiOtaRequested = false;
+static volatile uint32_t s_guiOtaRequestMs = 0;
 
 void setGitHubOtaProgressCallback(otaProgressCallback progressCb) {
   s_guiOtaProgressCb = progressCb;
 }
 
 void markGuiGitHubOtaRequest(bool requested) {
-  s_guiOtaRequested = requested;
+  s_guiOtaRequestMs = requested ? (millis() | 1UL) : 0;
 }
 
 /*****************************************************************************/
@@ -523,8 +523,9 @@ class Z2sGitHubSwUpdate : public Supla::Device::SwUpdate {
     // 2. Supla Cloud or GUI "Start firmware update"
     if (mode == Supla::SwUpdateMode::CheckAndUpdate) {
       if (!taskStarted) {
-        bool fromGui = s_guiOtaRequested;
-        s_guiOtaRequested = false;
+        uint32_t reqMs = s_guiOtaRequestMs;
+        s_guiOtaRequestMs = 0;
+        bool fromGui = (reqMs != 0) && ((uint32_t)(millis() - reqMs) < 5000);
 
         if (!_enable_cloud_ota && !fromGui) {
           if (sdc) {

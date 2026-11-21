@@ -56,6 +56,8 @@ public:
   Z2S_RemoteThermometer(bool rwns_flag = false) 
   : _rwns_flag(rwns_flag) {
 
+    memset(_connected_thermometers, 0, sizeof(_connected_thermometers));
+
     for(uint8_t connected_thermometers_counter = 0; 
         connected_thermometers_counter < MAX_CONNECTED_THERMOMETERS;
         connected_thermometers_counter++) 
@@ -82,75 +84,70 @@ public:
 
   
   void setConnectedThermometerTemperature(
-    uint32_t connected_thermometer_ip_address,
-    uint32_t connected_thermometer_channel, 
-    int32_t  connected_thermometer_temperature) {
+  uint32_t connected_thermometer_ip_address,
+  uint32_t connected_thermometer_channel,
+  int32_t  connected_thermometer_temperature) {
+
+    constexpr int32_t INVALID_TEMP_X100 =
+      static_cast<int32_t>(TEMPERATURE_NOT_AVAILABLE * 100);
+    const bool is_invalid_temp =
+      (connected_thermometer_temperature <= INVALID_TEMP_X100);
 
     uint8_t connected_thermometers_free_slot = 0xFF;
 
-    for(uint8_t connected_thermometers_counter = 0; 
-        connected_thermometers_counter < MAX_CONNECTED_THERMOMETERS;
-        connected_thermometers_counter++) {
+    for (uint8_t i = 0; i < MAX_CONNECTED_THERMOMETERS; i++) {
+      auto& slot = _connected_thermometers[i];
 
-      auto& _connected_thermometer = _connected_thermometers[
-        connected_thermometers_counter];
+      if ((slot.connected_thermometer_ip_address ==
+          connected_thermometer_ip_address) &&
+          (slot.connected_thermometer_channel ==
+          connected_thermometer_channel)) {
 
-      if ((_connected_thermometer.connected_thermometer_ip_address == 
-           connected_thermometer_ip_address) &&
-           (_connected_thermometer.connected_thermometer_channel == 
-           connected_thermometer_channel)) {
+        if (is_invalid_temp) {
+          slot.connected_thermometer_temperature = INT32_MIN;
+          slot.connected_thermometer_channel = 0xFF;
+          log_i(
+            "connected thermometer #%u reported unavailable - unregistered",
+            i);
+          return;
+        }
 
-        _connected_thermometer.connected_thermometer_temperature = 
+        slot.connected_thermometer_temperature =
           connected_thermometer_temperature;
-
-        _connected_thermometer.connected_thermometer_last_seen_ms = millis();
-
-        IPAddress ip(
-            _connected_thermometer.connected_thermometer_ip_address);
-
-        log_i(
-          "connected thermometer #%u updated\n\rIP %u.%u.%u.%u, channel %u"
-          "\n\rtemperature %ld\n\r", connected_thermometers_counter, ip[0], 
-          ip[1], ip[2], ip[3], 
-          _connected_thermometer.connected_thermometer_channel,
-          _connected_thermometer.connected_thermometer_temperature);
-
+        slot.connected_thermometer_last_seen_ms = millis();
         return;
       }
-      if ((_connected_thermometer.connected_thermometer_channel == 0xFF) &&
-          (connected_thermometers_free_slot == 0xFF))
-        connected_thermometers_free_slot = connected_thermometers_counter;
+      if ((slot.connected_thermometer_channel == 0xFF) &&
+          (connected_thermometers_free_slot == 0xFF)) {
+        connected_thermometers_free_slot = i;
+      }
     }
-    if (connected_thermometers_free_slot < 0xFF) {
 
-      auto& _connected_thermometer = _connected_thermometers[
-        connected_thermometers_free_slot];
-
-      _connected_thermometer.connected_thermometer_ip_address = 
-        connected_thermometer_ip_address;
-
-      _connected_thermometer.connected_thermometer_channel = 
-        connected_thermometer_channel;
-
-      _connected_thermometer.connected_thermometer_temperature = 
-        connected_thermometer_temperature;
-
-      _connected_thermometer.connected_thermometer_last_seen_ms = millis();
-
-      IPAddress ip(
-            _connected_thermometer.connected_thermometer_ip_address);
-
+    if (is_invalid_temp) {
       log_i(
-        "new connected thermometer registered at%u\n\rIP %u.%u.%u.%u, channel"
-        " %u\n\rtemperature %ld\n\r", connected_thermometers_free_slot,
-        ip[0], ip[1], ip[2], ip[3],
-        _connected_thermometer.connected_thermometer_channel,
-        _connected_thermometer.connected_thermometer_temperature);
-    } else
+        "ignoring unavailable temperature (%ld) from channel %lu",
+        (long)connected_thermometer_temperature,
+        (unsigned long)connected_thermometer_channel);
+      return;
+    }
+
+    if (connected_thermometers_free_slot < 0xFF) {
+      
+      auto& slot = _connected_thermometers[connected_thermometers_free_slot];
+      slot.connected_thermometer_ip_address = connected_thermometer_ip_address;
+      slot.connected_thermometer_channel  = connected_thermometer_channel;
+      slot.connected_thermometer_temperature  = 
+        connected_thermometer_temperature;
+      slot.connected_thermometer_last_seen_ms = millis();
+    } 
+    else {
+      
       log_e("maximum number of connected thermometers - skipping new data");
+    }
   }
   
-  
+/*****************************************************************************/  
+
   void Refresh() {
     
     _last_timeout_ms = millis();
@@ -198,7 +195,7 @@ public:
             _connected_thermometer.connected_thermometer_ip_address);
 
           log_i(
-            "unregistering connected thermometer from IP %u.%u%.%u.%u, "
+            "unregistering connected thermometer from IP %u.%u.%u.%u, "
             "channel %u", ip[0], ip[1], ip[2], ip[3],
             connected_thermometer_channel);
 

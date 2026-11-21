@@ -6093,9 +6093,6 @@ void Z2S_loopWebGUI() {
 				    SuplaDevice.getDeviceMode() == Supla::DEVICE_MODE_NORMAL) {
 					markGuiGitHubOtaRequest(true);
 					SuplaDevice.handleAction(0, Supla::CHECK_SW_UPDATE);
-					if (SuplaDevice.getDeviceMode() != Supla::DEVICE_MODE_SW_UPDATE) {
-						markGuiGitHubOtaRequest(false);
-					}
 				}
 			} break;
 
@@ -8327,6 +8324,20 @@ void updateChannelInfoLabel(
 					ESPUI.updateNumber(refresh_number, z2s_core->getRefreshValue());
 
 					enableChannelFlags(16);
+
+					auto *el = z2s_core->getZ2SElementPtr();
+					if (z2s_channel.Supla_channel_type == SUPLA_CHANNELTYPE_RELAY &&
+					    el && el->getChannel() &&
+					    el->getChannel()->isRollerShutterRelayType()) {
+
+						enableChannelParams(4); // PARAM(3)
+						ESPUI.updateControlLabel(
+						  param_3_number,
+						  "Enter post-command ping delay (s) [0 = disabled]");
+						ESPUI.updateNumber(
+						  param_3_number,
+						  z2s_core->getRollerShutterPostCmdPingDelayS());
+					}
 				}
 			}
 			break;
@@ -10229,6 +10240,27 @@ void editChannelMain(uint32_t update_channel_flag) {
 							} break;
 						}
 					}break;
+
+
+					case SUPLA_CHANNELTYPE_RELAY: {
+
+						auto *el = z2s_core->getZ2SElementPtr();
+						if (z2s_core->getZ2SLocalChannelType() == 0 &&
+						    el && el->getChannel() &&
+						    el->getChannel()->isRollerShutterRelayType()) {
+
+							int32_t delay_s = ESPUI.getControl(param_3_number)->getValueInt();
+							if (delay_s < 0) delay_s = 0;
+							if (delay_s > 65535) delay_s = 65535;
+
+							z2s_core->setRollerShutterPostCmdPingDelayS(
+							  static_cast<uint16_t>(delay_s), true);
+							ESPUI.updateNumber(
+							  param_3_number,
+							  z2s_core->getRollerShutterPostCmdPingDelayS());
+							updateChannelInfoLabel(channel_slot, false);
+						}
+					} break;
 				}
 			} break;
 

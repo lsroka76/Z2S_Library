@@ -1918,6 +1918,29 @@ public:
 
 /*****************************************************************************/
 
+uint16_t getRollerShutterPostCmdPingDelayS() {
+
+    return _z2s_channel.roller_shutter_data.post_cmd_ping_delay_s;
+  }
+
+  uint32_t getRollerShutterPostCmdPingDelayMs() {
+
+    return static_cast<uint32_t>(
+      _z2s_channel.roller_shutter_data.post_cmd_ping_delay_s) * 1000UL;
+  }
+
+  bool setRollerShutterPostCmdPingDelayS(
+    uint16_t delay_s, bool save = true) {
+
+    _z2s_channel.roller_shutter_data.post_cmd_ping_delay_s = delay_s;
+    if (save)
+      return saveChannelData();
+    else
+      return true;
+  }
+
+/*****************************************************************************/
+
   uint8_t getSmartValveProgram() {
 
     return _z2s_channel.smart_valve_data.program;

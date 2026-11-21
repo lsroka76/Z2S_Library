@@ -53,6 +53,20 @@ void Supla::Control::Z2S_RollerShutter::onInit() {
 
 /*****************************************************************************/
 
+void Supla::Control::Z2S_RollerShutter::schedulePostCmdPing() {
+
+  _rs_post_cmd_ping_accept_ms = 0;
+
+  if (getRollerShutterPostCmdPingDelayS() > 0) {
+    uint32_t now = millis();
+    _rs_post_cmd_ping_ms = now ? now : 1;
+  } else {
+    _rs_post_cmd_ping_ms = 0;
+  }
+}
+
+/*****************************************************************************/
+
 void Supla::Control::Z2S_RollerShutter::rsOpen() {
 
   if (Zigbee.started()) {   
@@ -116,6 +130,7 @@ void Supla::Control::Z2S_RollerShutter::rsOpen() {
           ESP_ZB_ZCL_ATTR_TYPE_SINGLE, 4, &lift_cmd, false, 0, 0);
       } break;
     }
+    schedulePostCmdPing();
   }
 }
 
@@ -183,6 +198,7 @@ void Supla::Control::Z2S_RollerShutter::rsClose() {
           ESP_ZB_ZCL_ATTR_TYPE_SINGLE, 4, &lift_cmd, false, 0, 0);
       } break;
     }
+    schedulePostCmdPing();
   }
 }
 
@@ -233,7 +249,7 @@ void Supla::Control::Z2S_RollerShutter::rsStop() {
 
       case Z2S_ROLLER_SHUTTER_FNC_LUMI_ANALOG_MULTISTATE: {
 
-        uint8_t lift_cmd = 2;
+        uint16_t lift_cmd = 2;
 
         zbGateway.sendAttributeWrite(
           _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_MULTI_OUTPUT, 0x55, 
@@ -242,6 +258,7 @@ void Supla::Control::Z2S_RollerShutter::rsStop() {
           _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_ANALOG_OUTPUT, 0x55);
       } break;
     }
+    schedulePostCmdPing();
   }
 }
 
@@ -263,6 +280,7 @@ void Supla::Control::Z2S_RollerShutter::rsMoveToLiftPercentage(
         zbGateway.sendWindowCoveringCmd(
           _short_addr, _endpoint, ESP_ZB_ZCL_CMD_WINDOW_COVERING_GO_TO_LIFT_PERCENTAGE, 
           &lift_percentage);
+      break;
 
 
       case Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER_ALT: {
@@ -321,6 +339,7 @@ void Supla::Control::Z2S_RollerShutter::rsMoveToLiftPercentage(
           ESP_ZB_ZCL_ATTR_TYPE_SINGLE, 4, &lift_float, false, 0, 0);
       } break;
     }
+    schedulePostCmdPing();
   }
 }
 
@@ -474,27 +493,60 @@ void Supla::Control::Z2S_RollerShutter::iterateAlways() {
     _rs_action_timeout_ms = 0;
     stop();
   }
+
+  uint32_t armed_ms = _rs_post_cmd_ping_ms;
+  if (armed_ms) {
+    uint32_t delay_ms = getRollerShutterPostCmdPingDelayMs();
+    uint32_t now_ms   = millis();
+    if (delay_ms == 0) {
+      _rs_post_cmd_ping_ms = 0;
+    } else if ((uint32_t)(now_ms - armed_ms) >= delay_ms) {
+      _rs_post_cmd_ping_ms        = 0;
+      _rs_post_cmd_ping_accept_ms = now_ms ? now_ms : 1;
+      ping();
+      _last_ping_ms = now_ms;
+    }
+  }
+
+  uint32_t accept_ms = _rs_post_cmd_ping_accept_ms;
+  if (accept_ms && ((uint32_t)(millis() - accept_ms) >= 5000UL)) {
+    _rs_post_cmd_ping_accept_ms = 0;
+  }
 }
 
 /*****************************************************************************/
 
 void Supla::Control::Z2S_RollerShutter::setRSCurrentPosition(
   uint8_t rs_current_position) {
- 
-  if ((_rs_moving_direction != 1) || _rs_ignore_moving_direction) {
-  _rs_current_position = rs_current_position;
+
+  uint32_t accept_ms = _rs_post_cmd_ping_accept_ms;
+  bool accept_ping_reply =
+    (accept_ms != 0) && ((uint32_t)(millis() - accept_ms) < 5000UL);
+
+  if ((_rs_moving_direction != 1) || _rs_ignore_moving_direction ||
+      accept_ping_reply) {
+
+    _rs_post_cmd_ping_ms        = 0;
+    _rs_post_cmd_ping_accept_ms = 0;
+    _rs_current_position        = rs_current_position;
 
     if (_z2s_function == Z2S_ROLLER_SHUTTER_FNC_CURRYSMARTER_COVER)
       _rs_current_position = 100 - _rs_current_position;
 
     if (rsConfig.buttonsUpsideDown == 2)
       _rs_current_position = 100 - _rs_current_position;
-  
+
     setCurrentPosition(_rs_current_position);
- } else
-  log_i("No RS movement detected - ignoring setRSCurrentPosition new value %u", 
-        rs_current_position);
+  } 
+  else {
+    
+    log_i(
+      "No RS movement detected - ignoring setRSCurrentPosition new value %u",
+      rs_current_position);
+  }
 }
+
+/*****************************************************************************/
 
 void Supla::Control::Z2S_RollerShutter::setRSIgnoreMovingDirection(
   bool rs_ignore_moving_direction) {

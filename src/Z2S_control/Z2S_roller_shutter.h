@@ -75,6 +75,8 @@ class Z2S_RollerShutter : public RollerShutterInterface, public Z2S_Core {
   void rsStop();
   void rsMoveToLiftPercentage(uint8_t lift_percentage);
 
+  void schedulePostCmdPing();
+
   bool state = false;
   
   uint8_t _z2s_function = 
@@ -92,6 +94,8 @@ class Z2S_RollerShutter : public RollerShutterInterface, public Z2S_Core {
   uint32_t _last_seen_ms  = 0;
   uint32_t _rs_action_timeout_ms = 0;
  
+  volatile uint32_t _rs_post_cmd_ping_ms        = 0;
+  volatile uint32_t _rs_post_cmd_ping_accept_ms = 0;
 };
 
 };  // namespace Control
