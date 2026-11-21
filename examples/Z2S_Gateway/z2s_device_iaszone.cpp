@@ -52,9 +52,6 @@ void addZ2SDeviceIASzone(
   if (name == nullptr)
     name = (char*)default_vb_name;
 
-  if (func == 0)
-    func == SUPLA_CHANNELFNC_BINARY_SENSOR;
-
   Supla_Z2S_VirtualBinary->setInitialCaption(name);
   
   if (func == 0)
@@ -112,7 +109,7 @@ void msgZ2SDeviceIASzone(
     Supla_Z2S_VirtualBinary->extSet();
               
   if (state_changed && sendIASNotifications && 
-      (~(Supla_Z2S_VirtualBinary->getChannelUserDataFlags() & 
+      (!(Supla_Z2S_VirtualBinary->getChannelUserDataFlags() & 
       USER_DATA_FLAG_DISABLE_NOTIFICATIONS))) {
 
     Supla::Notification::SendF(
