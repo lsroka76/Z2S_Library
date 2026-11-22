@@ -38,7 +38,6 @@
 #define Z2S_ROLLER_SHUTTER_FNC_CURRYSMARTER_COVER          0x12
 #define Z2S_ROLLER_SHUTTER_FNC_TUYA_MB60L_COVER            0x13
 
-
 #define Z2S_ROLLER_SHUTTER_FNC_LUMI_ANALOG_MULTISTATE      0x20
 
 /*****************************************************************************/
@@ -51,15 +50,14 @@ class Z2S_RollerShutter : public RollerShutterInterface, public Z2S_Core {
     uint8_t z2s_function = Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER);
 
   void onInit() override;
-  void onTimer() override;
   void iterateAlways() override;
   void handleAction(int event, int action) override;
 
   void ping();
 
   void setRSCurrentPosition(uint8_t rs_current_position);
-  
-  void  setZ2SFunction(uint8_t z2s_function);
+
+  void    setZ2SFunction(uint8_t z2s_function);
   uint8_t getZ2SFunction();
 
   void setRSIgnoreMovingDirection(bool rs_ignore_moving_direction);
@@ -69,6 +67,7 @@ class Z2S_RollerShutter : public RollerShutterInterface, public Z2S_Core {
   void Refresh();
 
  protected:
+  void processTargetPosition();
 
   void rsOpen();
   void rsClose();
@@ -77,9 +76,12 @@ class Z2S_RollerShutter : public RollerShutterInterface, public Z2S_Core {
 
   void schedulePostCmdPing();
 
+  static constexpr uint32_t Z2S_RS_MIN_CMD_GAP_MS    = 250;
+  static constexpr uint32_t Z2S_RS_LUMI_STOP_READ_MS = 1500;
+
   bool state = false;
-  
-  uint8_t _z2s_function = 
+
+  uint8_t _z2s_function =
     Z2S_ROLLER_SHUTTER_FNC_WINDOW_COVERING_CLUSTER;
 
   uint8_t _rs_moving_direction = 1;
@@ -90,10 +92,12 @@ class Z2S_RollerShutter : public RollerShutterInterface, public Z2S_Core {
 
   bool _fresh_start = true;
 
-  uint32_t _last_ping_ms  = 0;
-  uint32_t _last_seen_ms  = 0;
+  uint32_t _last_ping_ms         = 0;
+  uint32_t _last_seen_ms         = 0;
+  uint32_t _last_cmd_ms          = 0;
   uint32_t _rs_action_timeout_ms = 0;
- 
+  uint32_t _rs_lumi_stop_read_ms = 0;
+
   volatile uint32_t _rs_post_cmd_ping_ms        = 0;
   volatile uint32_t _rs_post_cmd_ping_accept_ms = 0;
 };
