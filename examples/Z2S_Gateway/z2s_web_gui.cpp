@@ -10165,8 +10165,7 @@ void editChannelMain(uint32_t update_channel_flag) {
 
 								if (lah) {
 									
-									int32_t requested_pins =
-										getParam2Int();
+									int32_t requested_pins = getParam2Int();
 
 									uint8_t clamped_pins =
 										(requested_pins < 0) ? 0 :
@@ -10191,8 +10190,7 @@ void editChannelMain(uint32_t update_channel_flag) {
 
 							case LOCAL_CHANNEL_TYPE_GPIO_RELAY: {
 
-								z2s_core->setLocalRelayHighIsOn(
-									getParam2Int(), true);
+								z2s_core->setLocalRelayHighIsOn(getParam2Int(), true);
 
 								z2s_core->updateLocalRelayParams();
 							} break;
@@ -10200,8 +10198,7 @@ void editChannelMain(uint32_t update_channel_flag) {
 
 							case LOCAL_CHANNEL_TYPE_GPIO_HVAC: {
 
-								z2s_core->setLocalHvacHighIsOn(
-									getParam2Int(), true);
+								z2s_core->setLocalHvacHighIsOn(getParam2Int(), true);
 
 								z2s_core->updateLocalHvacParams();
 							} break;
@@ -10209,8 +10206,7 @@ void editChannelMain(uint32_t update_channel_flag) {
 
 							case LOCAL_CHANNEL_TYPE_GPIO_BINARY: {
 
-								z2s_core->setLocalBinaryInvertLogic(
-									getParam2Int(), true);
+								z2s_core->setLocalBinaryInvertLogic(getParam2Int(), true);
 
 								z2s_core->updateLocalBinaryParams();
 							} break;
@@ -10218,8 +10214,7 @@ void editChannelMain(uint32_t update_channel_flag) {
 
 							case LOCAL_CHANNEL_TYPE_GPIO_DS18B20: {
 
-								z2s_core->setLocalDS18B20GpioPin(
-									getParam2Int(), true);
+								z2s_core->setLocalDS18B20GpioPin(getParam2Int(), true);
 
 								z2s_core->updateLocalDs18b20Params();
 							} break;
@@ -10227,16 +10222,14 @@ void editChannelMain(uint32_t update_channel_flag) {
 
 							case LOCAL_CHANNEL_TYPE_GPIO_SHT3X: {
 
-								z2s_core->setLocalSHT3xAddress(
-									getParam2Int(), true);
+								z2s_core->setLocalSHT3xAddress(getParam2Int(), true);
 								z2s_core->updateLocalSHT3xParams();
 							} break;
 
 
 							case LOCAL_CHANNEL_TYPE_GPIO_BH1750: {
 
-								z2s_core->setLocalBH1750Address(
-									getParam2Int(), true);
+								z2s_core->setLocalBH1750Address(getParam2Int(), true);
 								z2s_core->updateLocalBH1750Params();
 							} break;
 
@@ -10250,16 +10243,14 @@ void editChannelMain(uint32_t update_channel_flag) {
 
 							case LOCAL_CHANNEL_TYPE_GPIO_ADC: {
 
-								z2s_core->setLocalAdcAttenuation(
-									getParam2Int(), true);
+								z2s_core->setLocalAdcAttenuation(getParam2Int(), true);
 								z2s_core->updateLocalAdcParams();
 							} break;
 
 
 							case LOCAL_CHANNEL_TYPE_GPIO_PWM: {
 
-								z2s_core->setLocalPwmInvertLogic(
-									getParam2Int() != 0, true);
+								z2s_core->setLocalPwmInvertLogic(getParam2Int() != 0, true);
 							 z2s_core->updateLocalPwmParams();
 							} break;
 
@@ -10296,8 +10287,7 @@ void editChannelMain(uint32_t update_channel_flag) {
 
 					default: {
 
-						z2s_core->setChannelUserData1(
-							getParam2Int());
+						z2s_core->setChannelUserData2(getParam2Int());
 					} break;
 				}
 			} break;//PARAM_2
