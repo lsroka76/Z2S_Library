@@ -1,6 +1,9 @@
 #ifndef SRC_Z2S_COMMON_H_
 #define SRC_Z2S_COMMON_H_
 
+#include <freertos/FreeRTOS.h>
+#include <freertos/semphr.h>
+
 #include "Z2S_StorageManager.h"
 
 /*****************************************************************************/
@@ -189,6 +192,36 @@ extern Z2S_RtcDeviceTable z2s_rtc_dev_table;
 
 bool Z2S_syncRtcDeviceTable(uint32_t c6_boot_id);
 void Z2S_clearRtcDeviceSlot(int16_t device_index);
+
+/*****************************************************************************/
+
+class Z2S_DevicesLock {
+ public:
+  explicit Z2S_DevicesLock(TickType_t timeout_ticks = portMAX_DELAY)
+    : _locked(lock(timeout_ticks)) {}
+
+  ~Z2S_DevicesLock() {
+    if (_locked) {
+      unlock();
+    }
+  }
+
+  Z2S_DevicesLock(const Z2S_DevicesLock &) = delete;
+  Z2S_DevicesLock &operator=(const Z2S_DevicesLock &) = delete;
+
+  bool isLocked() const { return _locked; }
+
+  static bool lock(TickType_t timeout_ticks = portMAX_DELAY);
+  static void unlock();
+
+ private:
+  static SemaphoreHandle_t getMutex();
+
+  static StaticSemaphore_t _mutex_buf;
+  static SemaphoreHandle_t _mutex;
+
+  bool _locked;
+};
 
 /*****************************************************************************/
 

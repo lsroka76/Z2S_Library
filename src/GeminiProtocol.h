@@ -466,6 +466,9 @@ public:
   static uint32_t getC6BootId();
   static bool     didNcpResetSinceLastHostBoot();
 
+  static void lockJoinedDevices();
+  static void unlockJoinedDevices();
+
 private:
   static void rxTask(void *arg);
   static void handleFrame(const GeminiFrameHeader &hdr, const uint8_t *payload);
@@ -479,6 +482,9 @@ private:
   static void             *_sync_rsp_dest;
   static uint16_t          _sync_rsp_max_len;
   static volatile bool     _sync_rsp_ok;
+
+  static SemaphoreHandle_t _joined_mutex;
+  static StaticSemaphore_t _joined_mutex_buf;
 };
 #endif
 

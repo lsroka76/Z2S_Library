@@ -709,29 +709,47 @@ bool Z2S_saveChannelsTable() {
 
 bool Z2S_removeZbDevice(uint8_t device_index) {
 
-  Z2S_Device *device = Z2S_Device::getZ2SDeviceByDeviceIndex(device_index);
+  esp_zb_ieee_addr_t ieee_addr = {};
+  uint16_t short_addr          = 0;
+  bool found                   = false;
+  bool removed                 = false;
 
-  if (device != nullptr && device->getRecordId() > 0) {
+  {
+    Z2S_DevicesLock lock;
 
-    if (Zigbee.started()) {
-      
-      zbGateway.sendDeviceLeaveRequest(
-        device->getDeviceIeeeAddress(), 
-        device->getDeviceShortAddress(), false, false);
+    Z2S_Device *device = Z2S_Device::getZ2SDeviceByDeviceIndex(device_index);
+
+    if (device != nullptr && device->getRecordId() > 0) {
+      memcpy(
+        ieee_addr, device->getDeviceIeeeAddress(), sizeof(esp_zb_ieee_addr_t));
+      short_addr = device->getDeviceShortAddress();
+      found      = true;
+
+      delete device;
+      Z2S_clearRtcDeviceSlot(device_index);
+
+      removed = devicesStorage.remove(device_index);
+      if (!removed) {
+        log_e(
+          "devicesStorage.remove(%u) failed - forcing index clear!", 
+          device_index);
+        devicesStorage.clearPosition(device_index);
+        removed = devicesStorage.saveIndexTable();
+      }
     }
+  }
+
+  if (!found) {
     
-    devicesStorage.remove(device_index);
-    Z2S_clearRtcDeviceSlot(device_index);
-
-    delete device;
-
-    return true;
-  } 
-  else {
-
     log_e("Invalid device index!");
     return false;
   }
+
+  if (Zigbee.started()) {
+    zbGateway.sendDeviceLeaveRequest(ieee_addr, short_addr, false, false);
+  }
+
+  return removed;
 }
 
 /*****************************************************************************/
@@ -791,14 +809,15 @@ bool Z2S_removeAllZbDeviceWithAllChannels() {
 
 void Z2S_initZbDevices(uint32_t init_ms) {
 
-
   log_i("Z2S_initZbDevices");
+
+  Z2S_DevicesLock lock;
 
   Z2S_Devices.reserve(Z2S_DEVICES_MAX_NUMBER);
 
   z2s_zb_device_params_t z2s_device_params = {};
 
-  for (uint16_t devices_counter = 0; 
+  for (uint16_t devices_counter = 0;
        devices_counter < Z2S_DEVICES_MAX_NUMBER; devices_counter++) {
 
     if (devicesStorage.checkPosition(devices_counter)) {
@@ -806,7 +825,7 @@ void Z2S_initZbDevices(uint32_t init_ms) {
       if (!devicesStorage.load(devices_counter, z2s_device_params)) {
 
         log_e(
-          "device datafile not found - clearing index position at %u", 
+          "device datafile not found - clearing index position at %u",
           devices_counter);
         devicesStorage.clearPosition(devices_counter);
         devicesStorage.saveIndexTable();
@@ -816,23 +835,62 @@ void Z2S_initZbDevices(uint32_t init_ms) {
       if (z2s_device_params.record_id < 3) {
 
         log_e(
-          "unexpected record id (%u) - clearing index position at %u", 
+          "unexpected record id (%u) - clearing index position at %u",
           z2s_device_params.record_id, devices_counter);
         devicesStorage.clearPosition(devices_counter);
         devicesStorage.saveIndexTable();
         continue;
       }
 
-      if (z2s_device_params.user_data_flags & 
+      if (z2s_device_params.user_data_flags &
           ZBD_USER_DATA_FLAG_FULL_UPDATE_REQUIRED) {
 
         log_e(
-          "join artefact found - clearing index position at %u", 
+          "join artefact found - clearing index position at %u",
           devices_counter);
-        
+
         devicesStorage.clearPosition(devices_counter);
         devicesStorage.saveIndexTable();
         continue;
+      }
+
+      Z2S_Device *existing = Z2S_Device::getZ2SDeviceByIeeeAddress(
+        z2s_device_params.ieee_addr);
+
+      if (existing != nullptr) {
+        bool existing_stale = existing->checkDeviceUserDataFlags(
+          ZBD_USER_DATA_FLAG_BINDING_REQUIRED);
+        bool current_stale = (z2s_device_params.user_data_flags &
+          ZBD_USER_DATA_FLAG_BINDING_REQUIRED) != 0;
+
+        if (existing_stale && !current_stale) {
+          
+          int16_t stale_idx = existing->getDeviceIndex();
+          
+          log_w(
+            "Duplicate IEEE detected: removing stale slot %d, keeping slot %u",
+            stale_idx, devices_counter);
+
+          delete existing;
+          Z2S_clearRtcDeviceSlot(stale_idx);
+          if (!devicesStorage.remove(stale_idx)) {
+            devicesStorage.clearPosition(stale_idx);
+            devicesStorage.saveIndexTable();
+          }
+        } 
+        else {
+          
+          log_w(
+            "Duplicate IEEE detected: keeping slot %d, removing duplicate slot"
+            " %u", existing->getDeviceIndex(), devices_counter);
+
+          Z2S_clearRtcDeviceSlot(devices_counter);
+          if (!devicesStorage.remove(devices_counter)) {
+            devicesStorage.clearPosition(devices_counter);
+            devicesStorage.saveIndexTable();
+          }
+          continue;
+        }
       }
 
       Z2S_Device *z2s_device = new Z2S_Device();
@@ -840,43 +898,38 @@ void Z2S_initZbDevices(uint32_t init_ms) {
 
       if (!z2s_device->updateDeviceUidIdx(nullptr, nullptr)) {
 
-          log_e("Critical error - couldn't get devices list idx!");
+        log_e("Critical error - couldn't get devices list idx!");
 
-          continue;
-        }
-
-      //z2s_device->setLastSeenMs(0, false); 
-      //z2s_device->setRssi(0, false);
-      //z2s_device->setBatteryPercentage(0xFF, false);
-    }   
+        continue;
+      }
+    }
   }
-
-
 }
 
 /*****************************************************************************/
 
 Z2S_Device *Z2S_addZbDeviceTableSlot(
-  esp_zb_ieee_addr_t  ieee_addr, uint16_t short_addr, 
-  const char *manufacturer_name, const char *model_name, 
-  uint8_t endpoints_count, uint32_t desc_id, uint8_t power_source, 
+  esp_zb_ieee_addr_t ieee_addr, uint16_t short_addr,
+  const char *manufacturer_name, const char *model_name,
+  uint8_t endpoints_count, uint32_t desc_id, uint8_t power_source,
   bool join_init) {
+
+  Z2S_DevicesLock lock;
 
   Z2S_Device *device = Z2S_Device::getZ2SDeviceByIeeeAddress(ieee_addr);
 
   if (!device) {
 
     log_i("New ZigBee device - adding to the ZigBee devices table!");
-    
+
     int16_t free_slot = devicesStorage.findFreeIndex();
-    
+
     if (free_slot < 0 || free_slot >= 0xFF) {
 
       log_e("ZigBee devices table is full - can't add new one!");
 
       return nullptr;
-    } 
-    else {
+    } else {
 
       uint8_t zb_device_slot = (uint8_t)free_slot;
 
@@ -890,28 +943,31 @@ Z2S_Device *Z2S_addZbDeviceTableSlot(
 
         device->setDeviceUserDataFlags(
           ZBD_USER_DATA_FLAG_FULL_UPDATE_REQUIRED, false);
-      }
-      else {
-    
+      } else {
+
         if (!device->updateDeviceUidIdx(manufacturer_name, model_name)) {
 
           log_e(
-            "Unsupported device (Mfr: %s, Model: %s) - rejecting!", 
+            "Unsupported device (Mfr: %s, Model: %s) - rejecting!",
             manufacturer_name ? manufacturer_name : "none",
             model_name ? model_name : "none");
-          
-          devicesStorage.remove(zb_device_slot); 
-          delete device;                       
+
+          delete device;
+          Z2S_clearRtcDeviceSlot(zb_device_slot);
+          if (!devicesStorage.remove(zb_device_slot)) {
+            devicesStorage.clearPosition(zb_device_slot);
+            devicesStorage.saveIndexTable();
+          }
           return nullptr;
         }
       }
-      
+
       device->setDeviceUserDataFlags(ZBD_USER_DATA_FLAG_VERSION_2_0, false);
 
       char device_name[36];
       snprintf(
         device_name, sizeof(device_name), "Device #%02u", zb_device_slot);
-      
+
       device->setDeviceLocalName(device_name, false);
       device->setDeviceShortAddress(short_addr, false);
       device->setEndpointsCount(endpoints_count, false);
@@ -924,17 +980,16 @@ Z2S_Device *Z2S_addZbDeviceTableSlot(
       }
 
       if (!device->saveDeviceData()) {
-        
+
         log_e("Failed to save new ZigBee device slot %u!", zb_device_slot);
-        
+
         delete device;
         return nullptr;
       }
-      
+
       return device;
     }
-  } 
-  else {
+  } else {
 
     log_i("ZB device already in ZB devices table");
 
@@ -946,26 +1001,36 @@ Z2S_Device *Z2S_addZbDeviceTableSlot(
         if (!device->updateDeviceUidIdx(manufacturer_name, model_name)) {
 
           log_e("Interviewed device is unsupported - deleting slot!");
-          
-          devicesStorage.remove(device->getDeviceIndex()); 
-          delete device; 
+
+          int16_t idx = device->getDeviceIndex();
+          delete device;
+          Z2S_clearRtcDeviceSlot(idx);
+          if (!devicesStorage.remove(idx)) {
+            devicesStorage.clearPosition(idx);
+            devicesStorage.saveIndexTable();
+          }
           return nullptr;
         }
-        
+
         device->clearDeviceUserDataFlags(
           ZBD_USER_DATA_FLAG_FULL_UPDATE_REQUIRED, false);
-      }
-      else {
-        
+      } else {
+
         if (!device->updateDeviceUidIdx(nullptr, nullptr)) {
 
           log_e("Critical error - couldn't get device uid!");
-          devicesStorage.remove(device->getDeviceIndex()); 
+
+          int16_t idx = device->getDeviceIndex();
           delete device;
+          Z2S_clearRtcDeviceSlot(idx);
+          if (!devicesStorage.remove(idx)) {
+            devicesStorage.clearPosition(idx);
+            devicesStorage.saveIndexTable();
+          }
           return nullptr;
         }
-      }  
-      
+      }
+
       device->setEndpointsCount(endpoints_count, false);
       device->setDeviceDescId(desc_id, false);
       device->setPowerSource(power_source, false);
@@ -982,12 +1047,12 @@ Z2S_Device *Z2S_addZbDeviceTableSlot(
     }
 
     if (device->getDeviceShortAddress() != short_addr) {
-      
+
       uint16_t prev_short_addr = device->getDeviceShortAddress();
-      
+
       if (device->setDeviceShortAddress(short_addr, true))
         log_i(
-          "ZigBee device short adress updated: 0x%04X => 0x%04X", 
+          "ZigBee device short adress updated: 0x%04X => 0x%04X",
           prev_short_addr, short_addr);
     }
     return device;
@@ -1344,29 +1409,35 @@ void Z2S_initSuplaChannels() {
 
 uint32_t Z2S_iterateSuplaChannels(uint32_t last_iterate_ms) {
 
+  Z2S_DevicesLock lock;
+
   uint32_t millis_ms = z2s_millis();
-  
+
   for (Z2S_Device *device : Z2S_Devices) {
-    
-    int32_t seen_ms = device->getLastSeenMs();
+
+    uint32_t seen_ms = device->getLastSeenMs();
     if ((device->getRecordId() > 0) && (seen_ms != 0) &&
         ((last_iterate_ms == 0) ||
-         ((uint32_t)(millis_ms - seen_ms) <= 
+         ((uint32_t)(millis_ms - seen_ms) <=
           (uint32_t)(millis_ms - last_iterate_ms)))) {
-      
-      uint8_t rssi_percentage = map(
-            device->getRssi(), -100, -30, 0, 100);
-            
+
+      int8_t raw_rssi         = device->getRssi();
+      uint8_t rssi_percentage = 0xFF;
+      if (raw_rssi < 0) {
+        int8_t clamped = (raw_rssi < -100) ? 
+          -100 : ((raw_rssi > -30) ? -30 : raw_rssi);
+        rssi_percentage = (uint8_t)map(clamped, -100, -30, 0, 100);
+      }
+
       uint8_t battery_level = device->getBatteryPercentage();
 
       Z2S_Core::updateZ2SChannelsByZbDeviceId(
         device->getDeviceIndex(), rssi_percentage, battery_level);
     }
   }
-  
+
   return millis_ms;
 }
-
 /*****************************************************************************/
 
 bool checkActionsIndexTablePosition(uint16_t index_position) {
@@ -6703,17 +6774,19 @@ void Z2S_onUpdateDeviceLastRssi(uint16_t short_addr, int8_t rssi) {
 
   log_i("short addr 0x%04X, rssi %i", short_addr, rssi);
 
+  Z2S_DevicesLock lock;
+
   Z2S_Device *z2s_device = Z2S_Device::getZ2SDeviceByShortAddress(short_addr);
 
-  if (z2s_device != nullptr)  {
+  if (z2s_device != nullptr) {
 
     uint32_t millis_ms = z2s_millis();
     if (millis_ms == 0) millis_ms = 1;
 
     if (rssi < 0) {
-      z2s_device->setRssi(rssi, false); 
+      z2s_device->setRssi(rssi, false);
     }
-      
+
     z2s_device->setLastSeenMs(millis_ms, false);
   }
 }
@@ -6723,14 +6796,16 @@ void Z2S_onUpdateDeviceLastRssi(uint16_t short_addr, int8_t rssi) {
 void Z2S_onDeviceLeave(
   uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr, uint8_t rejoin) {
 
+  Z2S_DevicesLock lock;
+
   Z2S_Device *z2s_device = Z2S_Device::getZ2SDeviceByIeeeAddress(ieee_addr);
 
-  if ((rejoin == 0) && (z2s_device != nullptr))  {
+  if ((rejoin == 0) && (z2s_device != nullptr)) {
 
     log_i(
       "Device(0x%04X) has left network - marked for binding on next join!",
       short_addr);
-    
+
     z2s_device->setDeviceUserDataFlags(ZBD_USER_DATA_FLAG_BINDING_REQUIRED);
   }
 }
@@ -6740,36 +6815,33 @@ void Z2S_onDeviceLeave(
 void Z2S_onDeviceUpdate(
   uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr, uint8_t status) {
 
+  Z2S_DevicesLock lock;
+
   Z2S_Device *z2s_device = Z2S_Device::getZ2SDeviceByIeeeAddress(ieee_addr);
 
   if (z2s_device == nullptr) {
 
     switch (status) {
 
-
       case ESP_ZB_ZDO_STANDARD_DEV_UNSECURED_JOIN: {
-        
+
         log_i("Unknown ZigBee device joined network!");
-        
+
         Z2S_addZbDeviceTableSlot(
           ieee_addr, short_addr, nullptr, nullptr, 0, 0, 0, true);
       } break;
-
 
       case ESP_ZB_ZDO_STANDARD_DEV_SECURED_REJOIN: {
 
         log_i("Unknown device performed secured rejoin update!");
       } break;
 
-
       case ESP_ZB_ZDO_STANDARD_DEV_LEFT:
       break;
     }
-  }
-  else {
+  } else {
 
     switch (status) {
-
 
       case ESP_ZB_ZDO_STANDARD_DEV_UNSECURED_JOIN:
 
@@ -6795,40 +6867,39 @@ void Z2S_onDeviceUpdate(
 
 uint8_t Z2S_onDeviceAnnce(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {
 
-  Z2S_Device *z2s_device = Z2S_Device::getZ2SDeviceByIeeeAddress(ieee_addr);
+  uint8_t result = DEVICE_ANNCE_RESULT_REJOIN;
 
-  if (z2s_device == nullptr) {
+  {
+    Z2S_DevicesLock lock;
 
-    log_i("No ZigBee device found - forcing device to leave gateway");
-    
+    Z2S_Device *z2s_device = Z2S_Device::getZ2SDeviceByIeeeAddress(ieee_addr);
+
+    if (z2s_device == nullptr) {
+
+      log_i("No ZigBee device found - forcing device to leave gateway");
+      result = DEVICE_ANNCE_RESULT_LEAVE;
+    } else if (z2s_device->checkDeviceUserDataFlags(
+                 ZBD_USER_DATA_FLAG_FULL_UPDATE_REQUIRED)) {
+
+      log_i("ZBD_USER_DATA_FLAG_FULL_UPDATE_REQUIRED");
+      result = DEVICE_ANNCE_RESULT_JOIN;
+    } else if (z2s_device->checkDeviceUserDataFlags(
+                 ZBD_USER_DATA_FLAG_BINDING_REQUIRED)) {
+
+      log_i("ZBD_USER_DATA_FLAG_BINDING_REQUIRED SET");
+      result = DEVICE_ANNCE_RESULT_JOIN;
+    } else if (z2s_device->getDeviceShortAddress() != short_addr) {
+
+      log_i("Device has new short address - reconfiguring");
+      result = DEVICE_ANNCE_RESULT_JOIN;
+    }
+  }
+
+  if (result == DEVICE_ANNCE_RESULT_LEAVE) {
     zbGateway.sendDeviceLeaveRequest(ieee_addr, short_addr, false, false);
-    return DEVICE_ANNCE_RESULT_LEAVE;
   }
 
-  if (z2s_device->checkDeviceUserDataFlags(
-    ZBD_USER_DATA_FLAG_FULL_UPDATE_REQUIRED)) {
-
-    log_i("ZBD_USER_DATA_FLAG_FULL_UPDATE_REQUIRED");
-    
-    return DEVICE_ANNCE_RESULT_JOIN;
-  }
-
-  if (z2s_device->checkDeviceUserDataFlags(
-    ZBD_USER_DATA_FLAG_BINDING_REQUIRED)) {
-
-    log_i("ZBD_USER_DATA_FLAG_BINDING_REQUIRED SET");
-    
-    return DEVICE_ANNCE_RESULT_JOIN;
-  }
-
-  if (z2s_device->getDeviceShortAddress() != short_addr) {
-
-    log_i("Device has new short address - reconfiguring");
-    
-    return DEVICE_ANNCE_RESULT_JOIN;
-  }
-  
-  return DEVICE_ANNCE_RESULT_REJOIN;
+  return result;
 }
 
 /*****************************************************************************/
@@ -9787,6 +9858,8 @@ bool Z2S_add_action(
 
 void updateSuplaBatteryLevel(
   uint16_t short_addr, uint8_t msg_id, uint32_t msg_value, bool restore) {
+
+  Z2S_DevicesLock lock;
 
   uint8_t battery_level = 0xFF;  
 

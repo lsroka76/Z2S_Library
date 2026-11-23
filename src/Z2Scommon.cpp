@@ -47,6 +47,9 @@ void Z2S_clearRtcDeviceSlot(int16_t device_index) {
 }
 
 bool Z2S_syncRtcDeviceTable(uint32_t c6_boot_id) {
+  
+  Z2S_DevicesLock lock;
+
 #if defined(USE_GEMINI_PROTOCOL_HOST)
   constexpr uint32_t RTC_MAGIC = 0x5A325352UL; // "Z2SR"
 
@@ -54,14 +57,17 @@ bool Z2S_syncRtcDeviceTable(uint32_t c6_boot_id) {
       c6_boot_id != 0 &&
       z2s_rtc_dev_table.c6_boot_id == c6_boot_id) {
     // C6 did NOT reset across S3 reboot -> restore cached state into loaded Z2S_Devices
-    log_i("C6 boot_id (0x%08lX) unchanged -> restoring device last_seen_ms & RSSI from RTC RAM",
-          (unsigned long)c6_boot_id);
+    log_i(
+      "C6 boot_id (0x%08lX) unchanged -> restoring device last_seen_ms & RSSI"
+      " from RTC RAM", (unsigned long)c6_boot_id);
 
     for (Z2S_Device *device : Z2S_Devices) {
       int16_t idx = device ? device->getDeviceIndex() : -1;
       if (idx >= 0 && idx < Z2S_DEVICES_MAX_NUMBER) {
         const auto &slot = z2s_rtc_dev_table.slots[idx];
-        if (slot.short_addr == device->getDeviceShortAddress() && slot.c6_last_seen_ms > 0) {
+        if (slot.short_addr == device->getDeviceShortAddress() &&
+            slot.c6_last_seen_ms > 0) {
+
           device->setLastSeenMs(slot.c6_last_seen_ms, false);
           device->setRssi(slot.rssi, false);
           device->setBatteryPercentage(slot.battery_percentage, false);
@@ -72,8 +78,9 @@ bool Z2S_syncRtcDeviceTable(uint32_t c6_boot_id) {
   }
 
   // C6 reset (or cold boot) -> clear RTC table and zero out all Z2S_Devices
-  log_i("C6 reset or cold boot detected (new boot_id=0x%08lX) -> resetting last_seen_ms to 0",
-        (unsigned long)c6_boot_id);
+  log_i(
+    "C6 reset or cold boot detected (new boot_id=0x%08lX) -> resetting "
+    "last_seen_ms to 0", (unsigned long)c6_boot_id);
 
   memset(&z2s_rtc_dev_table, 0, sizeof(z2s_rtc_dev_table));
   for (uint16_t i = 0; i < Z2S_DEVICES_MAX_NUMBER; i++) {
@@ -101,6 +108,34 @@ bool Z2S_syncRtcDeviceTable(uint32_t c6_boot_id) {
   }
   return true;
 #endif
+}
+
+/*****************************************************************************/
+
+StaticSemaphore_t Z2S_DevicesLock::_mutex_buf = {};
+SemaphoreHandle_t Z2S_DevicesLock::_mutex     = nullptr;
+
+SemaphoreHandle_t Z2S_DevicesLock::getMutex() {
+  if (_mutex == nullptr) {
+    taskENTER_CRITICAL(&Z2S_globalMutex);
+    if (_mutex == nullptr) {
+      _mutex = xSemaphoreCreateRecursiveMutexStatic(&_mutex_buf);
+    }
+    taskEXIT_CRITICAL(&Z2S_globalMutex);
+  }
+  return _mutex;
+}
+
+bool Z2S_DevicesLock::lock(TickType_t timeout_ticks) {
+  SemaphoreHandle_t mtx = getMutex();
+  return (mtx != nullptr) &&
+         (xSemaphoreTakeRecursive(mtx, timeout_ticks) == pdTRUE);
+}
+
+void Z2S_DevicesLock::unlock() {
+  if (_mutex != nullptr) {
+    xSemaphoreGiveRecursive(_mutex);
+  }
 }
 
 /*****************************************************************************/

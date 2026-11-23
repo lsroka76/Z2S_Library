@@ -1295,31 +1295,30 @@ void loop() {
     }
     refresh_time = millis();
   }
+  
+  if (zbGateway.isNewDeviceJoined()) {
 
-  //bool _basic_cluster_query_success = false;
+    auto popNextJoinedDevice = []() -> zbg_device_params_t * {
+      zbg_device_params_t *dev = nullptr;
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+      GeminiBridge::lockJoinedDevices();
+#endif
+      if (!zbGateway.getJoinedDevices().empty()) {
+        dev = zbGateway.getLastJoinedDevice();
+      }
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+      GeminiBridge::unlockJoinedDevices();
+#endif
+      return dev;
+    };
 
-  /*if (once_test) {
-
-    once_test = false;
-    goto test_label;
-  }*/
-
-  if ((!zbGateway.getJoinedDevices().empty()) && 
-      (zbGateway.isNewDeviceJoined())) {
-
-    //disableZ2SNotifications();
-    
-    zbGateway.printJoinedDevices();
-
-    while (!zbGateway.getJoinedDevices().empty()) {
-
-      joined_device = zbGateway.getLastJoinedDevice();
+    while ((joined_device = popNextJoinedDevice()) != nullptr) {
 
       rgbLedWrite(RGB_BUILTIN, 0, 0, 255);  // Blue
 
       if (zpm->getState() == 2)
         zpm->notifySrpcAboutParingEnd(
-        SUPLA_CALCFG_PAIRINGRESULT_ONGOING, nullptr);
+          SUPLA_CALCFG_PAIRINGRESULT_ONGOING, nullptr);
 
       bool _basic_cluster_query_success = false;
 
@@ -1327,16 +1326,17 @@ void loop() {
             zbGateway.getQueryBasicClusterData()->zcl_model_name) == 0) ||
           (strlen(
             zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name) == 0)) {
-      
+
         for (uint8_t query_idx = 0; query_idx < 5; query_idx++) {
 
-          _basic_cluster_query_success =  
+          _basic_cluster_query_success =
             zbGateway.zbQueryDeviceBasicCluster(joined_device);
           if (_basic_cluster_query_success)
-            break; 
+            break;
         }
+      } else {
+        _basic_cluster_query_success = true;
       }
-      else _basic_cluster_query_success = true;
 
       if (!_basic_cluster_query_success) {
 
@@ -1346,11 +1346,10 @@ void loop() {
 
         free(joined_device);
         joined_device = nullptr;
-        zbGateway.clearNewDeviceJoined();
-        //SuplaDevice.scheduleSoftRestart(1000);
-        break;
+        zbGateway.clearQueryBasicClusterData();
+        continue;
       }
-     
+
       log_i("sizeof(Z2S_DEVICES_LIST) = %u", sizeof(Z2S_DEVICES_LIST));
 
       bool device_recognized = false;
@@ -1475,7 +1474,9 @@ void loop() {
               free(joined_device);
               joined_device = nullptr;
             }
+            zbGateway.clearQueryBasicClusterData();
             SuplaDevice.scheduleSoftRestart(10000);
+            break;
           } else {
             if (Zigbee.isNetworkOpen())
               rgbLedWrite(RGB_BUILTIN, 0, 255, 0);
@@ -1483,7 +1484,6 @@ void loop() {
               rgbLedWrite(RGB_BUILTIN, 0, 0, 0);
 
             zbGateway.clearQueryBasicClusterData();
-            zbGateway.clearNewDeviceJoined();
 
             if (joined_device != nullptr) {
               free(joined_device);
@@ -1498,45 +1498,49 @@ void loop() {
           }
         }
       }
+
       if (!device_recognized) {
 
         log_d(
-          "Unknown model %s::%s, no binding is possible", 
+          "Unknown model %s::%s, no binding is possible",
           zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name,
           zbGateway.getQueryBasicClusterData()->zcl_model_name);
-        
+
         Z2S_printZbDevicesTableSlots();
 
-        Z2S_Device *z2s_device = Z2S_Device::getZ2SDeviceByIeeeAddress(
-          joined_device->ieee_addr);
-
-        if (z2s_device) {
-          
-          log_i(
-            "Removing incomplete ZigBee device#%u", 
-            z2s_device->getDeviceIndex());
-
-          Z2S_removeZbDevice(z2s_device->getDeviceIndex());
-        
-          Z2S_printZbDevicesTableSlots();
+        int16_t incomplete_idx = -1;
+        {
+          Z2S_DevicesLock lock;
+          Z2S_Device *z2s_device = Z2S_Device::getZ2SDeviceByIeeeAddress(
+            joined_device->ieee_addr);
+          if (z2s_device) {
+            incomplete_idx = z2s_device->getDeviceIndex();
+          }
         }
 
-        if (Zigbee.started())
+        if (incomplete_idx >= 0) {
+
+          log_i("Removing incomplete ZigBee device#%u", (unsigned)incomplete_idx);
+
+          Z2S_removeZbDevice((uint8_t)incomplete_idx);
+
+          Z2S_printZbDevicesTableSlots();
+        } else if (Zigbee.started()) {
           zbGateway.sendDeviceLeaveRequest(
             joined_device->ieee_addr, joined_device->short_addr, false, false);
+        }
 
         rgbLedWrite(RGB_BUILTIN, 255, 0, 0);  // Red
         delay(1000);
-        //enableZ2SNotifications();
-                
+
         GUI_onLastBindingFailure(true);
 
         if (zpm->getState() == 2) {
 
           char unknown_device_name[128];
 
-          sprintf(
-            unknown_device_name,"%s::%s", 
+          snprintf(
+            unknown_device_name, sizeof(unknown_device_name), "%s::%s",
             zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name,
             zbGateway.getQueryBasicClusterData()->zcl_model_name);
 
@@ -1545,7 +1549,6 @@ void loop() {
             unknown_device_name);
         }
         zbGateway.clearQueryBasicClusterData();
-        zbGateway.clearNewDeviceJoined();
 
         if (joined_device != nullptr) {
           free(joined_device);
@@ -1553,5 +1556,25 @@ void loop() {
         }
       }
     }
+
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+    GeminiBridge::lockJoinedDevices();
+#endif
+    if (zbGateway.getJoinedDevices().empty()) {
+      zbGateway.clearNewDeviceJoined();
+    }
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+    GeminiBridge::unlockJoinedDevices();
+#endif
   }
+
+  //bool _basic_cluster_query_success = false;
+
+  /*if (once_test) {
+
+    once_test = false;
+    goto test_label;
+  }*/
+
+  
 }
