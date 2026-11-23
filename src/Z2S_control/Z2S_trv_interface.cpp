@@ -1098,6 +1098,11 @@ void Supla::Control::Z2S_TRVInterface::sendTRVChildLock(
     if (_trv_commands_set == SALUS_IT600_CMD_SET) {
       if (send_value) {
         sendSalusIt600ChildLock(_short_addr, _endpoint, trv_child_lock);
+      } 
+      else {
+        zbGateway.sendAttributeRead(
+          _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_BASIC,
+          ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID);
       }
     }
     

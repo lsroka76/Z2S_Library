@@ -43,6 +43,10 @@ inline uint8_t salusIt600NextHandle() {
   return g_salus_it600_handle;
 }
 
+inline bool salusIt600IsValidBcd(uint8_t b) {
+  return ((b >> 4) <= 9) && ((b & 0x0F) <= 9);
+}
+
 inline int32_t salusIt600BcdByte(uint8_t b) {
   return ((b >> 4) * 10) + (b & 0x0F);
 }

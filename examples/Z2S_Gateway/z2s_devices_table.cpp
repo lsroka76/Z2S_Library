@@ -6704,9 +6704,15 @@ void Z2S_onCmdCustomClusterReceive(
      // 0xFC00 (shared with SALUS_IT600_CUSTOM_CLUSTER) 
      case PHILIPS_CUSTOM_CLUSTER: { 
 
-      Z2S_Device *z2s_device = Z2S_Device::getZ2SDeviceByShortAddress(
-        short_addr);
-      uint32_t dev_desc_id = z2s_device ? z2s_device->getDeviceDescId() : 0;
+      uint32_t dev_desc_id = 0;
+      {
+        Z2S_DevicesLock lock;
+        Z2S_Device *z2s_device = Z2S_Device::getZ2SDeviceByShortAddress(
+          short_addr);
+        if (z2s_device) {
+          dev_desc_id = z2s_device->getDeviceDescId();
+        }
+      }
 
       bool is_salus_it600 =
         (dev_desc_id == Z2S_DEVICE_DESC_SALUS_SQ610NH) ||

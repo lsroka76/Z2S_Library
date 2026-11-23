@@ -2422,6 +2422,7 @@ bool ZigbeeGateway::zbRawCmdHandler(
 
   // 1b. Salus / Computime (OUI 00:1E:5E) coordinator Basic identity spoof (modelId="SAU2AG1")
   if (is_common_command &&
+      !is_manuf_specific &&
       (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_BASIC) &&
       (cmd_id == 0x00) &&
       (buffer_size >= 2) &&
@@ -2503,7 +2504,8 @@ bool ZigbeeGateway::zbRawCmdHandler(
   if (is_common_command) {
     #if defined(USE_GEMINI_PROTOCOL_NCP)
       // Update RSSI for standard reports/responses not carrying RSSI in their ZBOSS struct
-      if (cmd_id == 0x0A) {
+      if ((cmd_id == 0x0A) ||
+          ((cmd_id == 0x01) && (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_BASIC))) {
         uint8_t rssi_pkt[3];
         memcpy(rssi_pkt, &source.u.short_addr, 2);
         rssi_pkt[2] = (uint8_t)rssi;

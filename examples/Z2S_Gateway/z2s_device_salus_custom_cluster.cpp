@@ -64,14 +64,27 @@ void processSalusIt600CustomCluster(
       uint8_t system_mode   = payload[15];
       uint8_t running_state = (payload[17] == 1) ? 1 : 0;
       uint8_t child_lock    = (payload[23] == 1) ? 1 : 0;
-      uint8_t humidity      = (uint8_t)salusIt600BcdByte(payload[24]);
       uint8_t battery_idx   = payload[49];
 
       bool is_temp_placeholder = (payload[4] == 0x12 && payload[5] == 0x34);
-      int32_t local_temp_x100  = is_temp_placeholder
-                                   ? INT32_MIN
-                                   : salusIt600BcdTempX100(payload[4], payload[5]);
-      int32_t setpoint_x100    = salusIt600BcdTempX100(payload[9], payload[10]);
+      bool valid_local_temp =
+        !is_temp_placeholder &&
+        salusIt600IsValidBcd(payload[4]) &&
+        salusIt600IsValidBcd(payload[5]);
+      bool valid_setpoint =
+        salusIt600IsValidBcd(payload[9]) &&
+        salusIt600IsValidBcd(payload[10]);
+      bool valid_humidity = salusIt600IsValidBcd(payload[24]);
+
+      int32_t local_temp_x100 = valid_local_temp
+                                  ? salusIt600BcdTempX100(payload[4], payload[5])
+                                  : INT32_MIN;
+      int32_t setpoint_x100   = valid_setpoint
+                                  ? salusIt600BcdTempX100(payload[9], payload[10])
+                                  : INT32_MIN;
+      uint8_t humidity        = valid_humidity
+                                  ? (uint8_t)salusIt600BcdByte(payload[24])
+                                  : 0xFF;
 
       log_i(
         "Salus 0x71: hold=%u mode=%u run=%u lock=%u hum=%u%% temp=%ld sp=%ld bat_idx=%u",
@@ -79,16 +92,16 @@ void processSalusIt600CustomCluster(
         (long)local_temp_x100, (long)setpoint_x100, battery_idx);
 
       if (th_element) {
-        if (!is_temp_placeholder) {
+        if (valid_local_temp) {
           msgZ2SDeviceTempHumidityTemp(th_element, (float)local_temp_x100 / 100.0f);
         }
-        if (humidity <= 100) {
+        if (valid_humidity && humidity <= 100) {
           msgZ2SDeviceTempHumidityHumi(th_element, (float)humidity);
         }
       }
 
       if (hvac_element) {
-        // 1. Apply mode before setpoint so standby frost setpoint doesn't overwrite Supla setpoint
+        // 1. Apply mode before setpoint
         if (hold_type == SALUS_IT600_HOLD_STANDBY) {
           msgZ2SDeviceHvac(hvac_element, TRV_SYSTEM_MODE_MSG, 0);
         } else if ((hold_type == SALUS_IT600_HOLD_SCHEDULE) ||
@@ -98,8 +111,12 @@ void processSalusIt600CustomCluster(
           msgZ2SDeviceHvac(hvac_element, TRV_SYSTEM_MODE_MSG, 1);
         }
 
-        // 2. Active setpoint (only meaningful in heat mode for v1)
-        if (system_mode != SALUS_IT600_MODE_COOL) {
+        // 2. Active setpoint (only in manual/away heat mode; skip standby & schedule transitions)
+        if (valid_setpoint &&
+            (system_mode != SALUS_IT600_MODE_COOL) &&
+            (hold_type != SALUS_IT600_HOLD_STANDBY) &&
+            (hold_type != SALUS_IT600_HOLD_SCHEDULE) &&
+            (hold_type != SALUS_IT600_HOLD_TEMPORARY)) {
           msgZ2SDeviceHvac(hvac_element, TRV_HEATING_SETPOINT_MSG, setpoint_x100);
         }
 
@@ -107,16 +124,22 @@ void processSalusIt600CustomCluster(
         msgZ2SDeviceHvac(hvac_element, TRV_RUNNING_STATE_MSG, running_state);
         msgZ2SDeviceHvac(hvac_element, TRV_CHILD_LOCK_MSG, child_lock);
 
-        if (!is_temp_placeholder) {
+        if (valid_local_temp) {
           msgZ2SDeviceHvac(hvac_element, TRV_LOCAL_TEMPERATURE_MSG, local_temp_x100);
         }
       }
 
       // Battery percentage (SQ610RFNH only; SQ610NH is mains-powered)
-      Z2S_Device *z2s_device = Z2S_Device::getZ2SDeviceByShortAddress(short_addr);
-      if (z2s_device &&
-          (z2s_device->getDeviceDescId() == Z2S_DEVICE_DESC_SALUS_SQ610RFNH) &&
-          (battery_idx < 6)) {
+      // Scoped lock released before updateSuplaBatteryLevel() acquires Z2S_DevicesLock itself
+      bool is_rf_battery_model = false;
+      {
+        Z2S_DevicesLock lock;
+        Z2S_Device *z2s_device = Z2S_Device::getZ2SDeviceByShortAddress(short_addr);
+        is_rf_battery_model =
+          (z2s_device != nullptr) &&
+          (z2s_device->getDeviceDescId() == Z2S_DEVICE_DESC_SALUS_SQ610RFNH);
+      }
+      if (is_rf_battery_model && (battery_idx < 6)) {
         updateSuplaBatteryLevel(
           short_addr, ZBD_BATTERY_LEVEL_MSG,
           SALUS_IT600_BATTERY_STEPS[battery_idx], false);

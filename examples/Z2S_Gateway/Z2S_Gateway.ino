@@ -1247,8 +1247,9 @@ void loop() {
     }
 
     static uint32_t s_salus_clock_sync_ms = 0;
-    if ((s_salus_clock_sync_ms == 0) ||
-        ((millis() - s_salus_clock_sync_ms) > (6UL * 3600UL * 1000UL))) {
+    if ((time(nullptr) > (time_t)SALUS_IT600_SECONDS_1970_TO_2000) &&
+        ((s_salus_clock_sync_ms == 0) ||
+         ((millis() - s_salus_clock_sync_ms) > (6UL * 3600UL * 1000UL)))) {
 
       s_salus_clock_sync_ms = millis();
 
