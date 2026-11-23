@@ -255,6 +255,10 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureSetpoint(
         false, 1, EUROTRONIC_MANUFACTURER_CODE);
     }
 
+    if (_trv_commands_set == SALUS_IT600_CMD_SET) {
+      sendSalusIt600Setpoint(_short_addr, _endpoint, temperature_setpoint);
+    }
+
     if (_last_cmd_sent_ms == 0)
       _last_cmd_sent_ms = millis();
   }
@@ -826,6 +830,10 @@ void Supla::Control::Z2S_TRVInterface::sendTRVSystemMode(
         false, 1, LUMI_MANUFACTURER_CODE);
     }
 
+    if (_trv_commands_set == SALUS_IT600_CMD_SET) {
+      sendSalusIt600SystemMode(_short_addr, _endpoint, trv_system_mode);
+    }
+
     if (_last_cmd_sent_ms == 0)
       _last_cmd_sent_ms = millis();
   }
@@ -955,6 +963,10 @@ void Supla::Control::Z2S_TRVInterface::sendTRVScheduleMode(
         &trv_schedule_mode,false, 1, LUMI_MANUFACTURER_CODE);
     }
 
+    if (_trv_commands_set == SALUS_IT600_CMD_SET) {
+      sendSalusIt600ScheduleMode(_short_addr, _endpoint, trv_schedule_mode);
+    }
+
     if (_last_cmd_sent_ms == 0)
       _last_cmd_sent_ms = millis();
   }
@@ -1082,6 +1094,12 @@ void Supla::Control::Z2S_TRVInterface::sendTRVChildLock(
         false);
       
     }
+
+    if (_trv_commands_set == SALUS_IT600_CMD_SET) {
+      if (send_value) {
+        sendSalusIt600ChildLock(_short_addr, _endpoint, trv_child_lock);
+      }
+    }
     
     if (_last_cmd_sent_ms == 0)
       _last_cmd_sent_ms = millis();
@@ -1181,6 +1199,12 @@ void Supla::Control::Z2S_TRVInterface::sendTRVPing() {
 
     zbGateway.sendAttributesRead(
       _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT, 5, &attributes[0]);
+    }
+
+    if (_trv_commands_set == SALUS_IT600_CMD_SET) {
+      zbGateway.sendAttributeRead(
+        _short_addr, _endpoint, ESP_ZB_ZCL_CLUSTER_ID_BASIC,
+        ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID);
     }
 
     bool _trv_state_updated = _trv_system_mode_updated && 

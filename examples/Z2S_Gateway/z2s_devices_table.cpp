@@ -25,6 +25,7 @@
 #include "z2s_device_temphumidity.h"
 #include "z2s_device_pressure.h"
 #include "z2s_device_tuya_custom_cluster.h"
+#include "z2s_device_salus_custom_cluster.h"
 #include "z2s_device_general_purpose_measurement.h"
 #include "z2s_device_action_trigger.h"
 #include "z2s_device_virtual_valve.h"
@@ -6700,16 +6701,33 @@ void Z2S_onCmdCustomClusterReceive(
         short_addr, endpoint, cluster, command_id, payload_size, payload);
      } break;
 
+     // 0xFC00 (shared with SALUS_IT600_CUSTOM_CLUSTER) 
+     case PHILIPS_CUSTOM_CLUSTER: { 
 
-     case PHILIPS_CUSTOM_CLUSTER: {
-      
-      log_i(
-        "Philips custom cluster(0x%x) on endpoint(0x%x), command(0x%x)", 
-        cluster, endpoint, command_id);
+      Z2S_Device *z2s_device = Z2S_Device::getZ2SDeviceByShortAddress(
+        short_addr);
+      uint32_t dev_desc_id = z2s_device ? z2s_device->getDeviceDescId() : 0;
 
-      processPhilipsCommands(
-        short_addr, endpoint, cluster, command_id, payload_size, payload);
-     } break;
+      bool is_salus_it600 =
+        (dev_desc_id == Z2S_DEVICE_DESC_SALUS_SQ610NH) ||
+        (dev_desc_id == Z2S_DEVICE_DESC_SALUS_SQ610RFNH) ||
+        ((ieee_addr[7] == 0x00) && (ieee_addr[6] == 0x1E) && 
+         (ieee_addr[5] == 0x5E));
+
+      if (is_salus_it600) {
+        processSalusIt600CustomCluster(
+          tsn, ieee_addr, short_addr, endpoint, command_id, payload_size, 
+          payload);
+      } 
+      else {
+        log_i(
+          "Philips custom cluster(0x%x) on endpoint(0x%x), command(0x%x)",
+          cluster, endpoint, command_id);
+
+        processPhilipsCommands(
+          short_addr, endpoint, cluster, command_id, payload_size, payload);
+      }
+    } break;
 
     
     default: 
@@ -7035,6 +7053,12 @@ void Z2S_onDeviceRejoin(uint16_t short_addr, esp_zb_ieee_addr_t ieee_addr) {
     zbGateway.sendAttributeRead(
       &device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_LINKAGE_ALARM_ID, 
       false, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 1, LUMI_MANUFACTURER_CODE); 
+  }
+
+  if ((device.model_id == Z2S_DEVICE_DESC_SALUS_SQ610NH) ||
+      (device.model_id == Z2S_DEVICE_DESC_SALUS_SQ610RFNH)) {
+
+    sendSalusIt600SyncResponse(short_addr, SALUS_IT600_THERMOSTAT_ENDPOINT);
   }
 }
 
@@ -7834,7 +7858,9 @@ case Z2S_DEVICE_DESC_TUYA_3PHASES_V1_ELECTRICITY_METER: {
      
       case Z2S_DEVICE_DESC_TS0601_EONE_BATB:
       case Z2S_DEVICE_DESC_TS0601_EONE_BATW:
-      case Z2S_DEVICE_DESC_TS0601_EONE_230W: {
+      case Z2S_DEVICE_DESC_TS0601_EONE_230W:
+      case Z2S_DEVICE_DESC_SALUS_SQ610NH:
+      case Z2S_DEVICE_DESC_SALUS_SQ610RFNH: {
       
         addZ2SDeviceTempHumidity(
           device, first_free_slot, NO_CUSTOM_CMD_SID, "HVAC T/H", 0, true);

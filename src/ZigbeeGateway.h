@@ -163,6 +163,17 @@ typedef struct esp_zb_ota_image_header_s {
 #define PHILIPS_CUSTOM_CLUSTER                                0xFC00
 #define PHILIPS_MANUFACTURER_CODE                             0x100B
 
+#define SALUS_IT600_CUSTOM_CLUSTER                            0xFC00
+#define SALUS_IT600_MANUFACTURER_CODE                         0x1078
+#define SALUS_IT600_THERMOSTAT_ENDPOINT                       0x09
+#define SALUS_IT600_THERMOSTAT_DEVICE_NUM                     0x20
+
+#define SALUS_IT600_CMD_SYNC_REQUEST                          0x10
+#define SALUS_IT600_CMD_RECORD                                0x31
+#define SALUS_IT600_CMD_WRITE                                 0x32
+#define SALUS_IT600_CMD_ECHO                                  0x33
+#define SALUS_IT600_CMD_SYNC_RESPONSE                         0x81
+
 #define LUMI_CUSTOM_CLUSTER                                   0xFCC0
 #define LUMI_MANUFACTURER_CODE                                0x115F
 

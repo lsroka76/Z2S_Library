@@ -389,8 +389,8 @@
 #define Z2S_DEVICE_DESC_LUMI_TRV                            0x6008
 #define Z2S_DEVICE_DESC_DANFOSS_ETRV0103                    0x6009
 #define Z2S_DEVICE_DESC_LUMI_W500                           0x600A
-                                                            //0x600B
-                                                            //0x600C
+#define Z2S_DEVICE_DESC_SALUS_SQ610NH                       0x600B
+#define Z2S_DEVICE_DESC_SALUS_SQ610RFNH                     0x600C
                                                             //0x600D
                                                             //0x600E
                                                             //0x600F
@@ -2557,6 +2557,14 @@ inline constexpr z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] =
       ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT,
       LUMI_CUSTOM_CLUSTER,
       ESP_ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT }},
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_SALUS_SQ610NH,
+    .z2s_device_clusters_count = 0,
+    .z2s_device_config_flags = 0x0 },
+
+  { .z2s_device_desc_id = Z2S_DEVICE_DESC_SALUS_SQ610RFNH,
+    .z2s_device_clusters_count = 0,
+    .z2s_device_config_flags = 0x0 },
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_REPEATER,
     .z2s_device_clusters_count = 1,
@@ -8320,6 +8328,30 @@ inline constexpr z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_uid = 38800, 
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_3PHASES_V1_ELECTRICITY_METER,
     .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "SALUS", .model_name = "SQ610NH",
+    .z2s_device_uid = 38900,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_SALUS_SQ610NH,
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = {{ SALUS_IT600_THERMOSTAT_ENDPOINT, 0, 0, Z2S_DEVICE_DESC_SALUS_SQ610NH }}},
+
+  { .manufacturer_name = "Computime", .model_name = "SQ610NH",
+    .z2s_device_uid = 38905,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_SALUS_SQ610NH,
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = {{ SALUS_IT600_THERMOSTAT_ENDPOINT, 0, 0, Z2S_DEVICE_DESC_SALUS_SQ610NH }}},
+
+  { .manufacturer_name = "SALUS", .model_name = "SQ610RFNH",
+    .z2s_device_uid = 38910,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_SALUS_SQ610RFNH,
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = {{ SALUS_IT600_THERMOSTAT_ENDPOINT, 0, 0, Z2S_DEVICE_DESC_SALUS_SQ610RFNH }}},
+
+  { .manufacturer_name = "Computime", .model_name = "SQ610RFNH",
+    .z2s_device_uid = 38915,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_SALUS_SQ610RFNH,
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = {{ SALUS_IT600_THERMOSTAT_ENDPOINT, 0, 0, Z2S_DEVICE_DESC_SALUS_SQ610RFNH }}},
 //DEVICES_END
 };
 

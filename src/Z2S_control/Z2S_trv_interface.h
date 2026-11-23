@@ -21,6 +21,7 @@
 
 #include "ZigbeeGateway.h"
 #include "TuyaDatapoints.h"
+#include "SalusIt600.h"
 
 #include "hvac_base_ee.h"
 #include "Z2S_common.h"
@@ -98,6 +99,13 @@
 
 #define LUMI_W500_CMD_SET_HEATSETPOINT_MIN    0x01F4 //500
 #define LUMI_W500_CMD_SET_HEATSETPOINT_MAX    0x0BB8 //3000
+
+/*****************************************************************************/
+
+#define SALUS_IT600_CMD_SET 0x46
+
+#define SALUS_IT600_CMD_SET_HEATSETPOINT_MIN    0x01F4 // 500
+#define SALUS_IT600_CMD_SET_HEATSETPOINT_MAX    0x0DAC // 3500 
 
 /*****************************************************************************/
 

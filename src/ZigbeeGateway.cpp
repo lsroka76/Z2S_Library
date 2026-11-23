@@ -161,6 +161,7 @@ ZigbeeGateway::ZigbeeGateway(uint8_t endpoint) : ZigbeeEP(endpoint) {
   esp_zb_cluster_list_add_custom_cluster(_cluster_list, esp_zb_zcl_attr_list_create(0xFC80), ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
   esp_zb_cluster_list_add_custom_cluster(_cluster_list, esp_zb_zcl_attr_list_create(0xFC80), ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
   esp_zb_cluster_list_add_custom_cluster(_cluster_list, esp_zb_zcl_attr_list_create(PHILIPS_CUSTOM_CLUSTER), ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
+  esp_zb_cluster_list_add_custom_cluster(_cluster_list, esp_zb_zcl_attr_list_create(SALUS_IT600_CUSTOM_CLUSTER), ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
   esp_zb_cluster_list_add_custom_cluster(_cluster_list, esp_zb_zcl_attr_list_create(0xFC7F), ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
   esp_zb_cluster_list_add_custom_cluster(_cluster_list, esp_zb_zcl_attr_list_create(0xFC7F), ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
   esp_zb_cluster_list_add_custom_cluster(_cluster_list, esp_zb_zcl_attr_list_create(IKEA_CUSTOM_CLUSTER_FC7E), ESP_ZB_ZCL_CLUSTER_CLIENT_ROLE);
@@ -2419,6 +2420,85 @@ bool ZigbeeGateway::zbRawCmdHandler(
     }
   }
 
+  // 1b. Salus / Computime (OUI 00:1E:5E) coordinator Basic identity spoof (modelId="SAU2AG1")
+  if (is_common_command &&
+      (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_BASIC) &&
+      (cmd_id == 0x00) &&
+      (buffer_size >= 2) &&
+      ((buffer_size & 0x01) == 0)) {
+
+    esp_zb_ieee_addr_t ieee_addr = {};
+    if ((esp_zb_ieee_address_by_short(source.u.short_addr, ieee_addr) == ESP_OK) &&
+        (ieee_addr[7] == 0x00) && (ieee_addr[6] == 0x1E) && (ieee_addr[5] == 0x5E)) {
+
+      bool has_identity_attr = false;
+      for (uint8_t i = 0; i < buffer_size; i += 2) {
+        uint16_t attr_id = (uint16_t)buffer[i] | ((uint16_t)buffer[i + 1] << 8);
+        if ((attr_id == ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID) ||
+            (attr_id == ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID)) {
+          has_identity_attr = true;
+          break;
+        }
+      }
+
+      if (has_identity_attr) {
+        uint8_t zcl_frame[96];
+        uint8_t *p = zcl_frame;
+        uint8_t *end = zcl_frame + sizeof(zcl_frame);
+
+        *p++ = (0x00) | (0 << 2) | (1 << 3) | (1 << 4); // 0x18: Global, S->C, Disable Default Resp
+        *p++ = seq_number;
+        *p++ = 0x01; // Read Attributes Response
+
+        for (uint8_t i = 0; i < buffer_size; i += 2) {
+          uint16_t attr_id = (uint16_t)buffer[i] | ((uint16_t)buffer[i + 1] << 8);
+
+          if ((attr_id == ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID) && ((p + 12) <= end)) {
+            static constexpr uint8_t model_str[7] = {'S','A','U','2','A','G','1'};
+            *p++ = (uint8_t)(attr_id & 0xFF);
+            *p++ = (uint8_t)(attr_id >> 8);
+            *p++ = ESP_ZB_ZCL_STATUS_SUCCESS;
+            *p++ = ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING;
+            *p++ = sizeof(model_str);
+            memcpy(p, model_str, sizeof(model_str));
+            p += sizeof(model_str);
+          } else if ((attr_id == ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID) && ((p + 14) <= end)) {
+            static constexpr uint8_t mfg_str[9] = {'C','o','m','p','u','t','i','m','e'};
+            *p++ = (uint8_t)(attr_id & 0xFF);
+            *p++ = (uint8_t)(attr_id >> 8);
+            *p++ = ESP_ZB_ZCL_STATUS_SUCCESS;
+            *p++ = ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING;
+            *p++ = sizeof(mfg_str);
+            memcpy(p, mfg_str, sizeof(mfg_str));
+            p += sizeof(mfg_str);
+          } else if ((p + 3) <= end) {
+            *p++ = (uint8_t)(attr_id & 0xFF);
+            *p++ = (uint8_t)(attr_id >> 8);
+            *p++ = ESP_ZB_ZCL_STATUS_UNSUP_ATTRIB;
+          }
+        }
+
+        esp_zb_apsde_data_req_t aps_req = {};
+        aps_req.dst_addr_mode       = ESP_ZB_APS_ADDR_MODE_16_ENDP_PRESENT;
+        aps_req.dst_addr.addr_short = source.u.short_addr;
+        aps_req.dst_endpoint        = src_endpoint;
+        aps_req.profile_id          = ESP_ZB_AF_HA_PROFILE_ID;
+        aps_req.cluster_id          = ESP_ZB_ZCL_CLUSTER_ID_BASIC;
+        aps_req.src_endpoint        = dst_endpoint;
+        aps_req.asdu_length         = (uint8_t)(p - zcl_frame);
+        aps_req.asdu                = zcl_frame;
+        aps_req.tx_options          = ESP_ZB_APSDE_TX_OPT_ACK_TX;
+        aps_req.use_alias           = false;
+        aps_req.radius              = 30;
+
+        esp_zb_lock_acquire(portMAX_DELAY);
+        esp_zb_aps_data_request(&aps_req);
+        esp_zb_lock_release();
+        return true;
+      }
+    }
+  }
+
   // 2. FAST EXIT for standard ZCL Foundation commands (Report/ReadRsp/WriteRsp/etc.)
   if (is_common_command) {
     #if defined(USE_GEMINI_PROTOCOL_NCP)
@@ -2560,6 +2640,44 @@ bool ZigbeeGateway::zbRawCmdHandler(
       if (_on_cmd_custom_cluster_receive)
         _on_cmd_custom_cluster_receive(
           seq_number, ieee_addr, source.u.short_addr, src_endpoint, 
+          cluster_id, cmd_id, buffer_size, buffer);
+    #endif
+    return true;
+  }
+
+  // 5b. Salus / Computime iT600 Custom Cluster 0xFC00 (manufacturer 0x1078)
+  if ((cluster_id == SALUS_IT600_CUSTOM_CLUSTER) &&
+      is_manuf_specific &&
+      (manuf_specific == SALUS_IT600_MANUFACTURER_CODE)) {
+
+    esp_zb_ieee_addr_t ieee_addr = {};
+    esp_zb_ieee_address_by_short(source.u.short_addr, ieee_addr);
+
+    #if defined(USE_GEMINI_PROTOCOL_NCP)
+      uint8_t rssi_pkt[3];
+      memcpy(rssi_pkt, &source.u.short_addr, 2);
+      rssi_pkt[2] = (uint8_t)rssi;
+      GeminiBridge::sendFrame(G_EVT_UPDATE_RSSI, rssi_pkt, sizeof(rssi_pkt));
+
+      uint8_t pkt_buf[sizeof(G_PktEvtCustomClusterCmd) + 255];
+      auto *pkt = reinterpret_cast<G_PktEvtCustomClusterCmd *>(pkt_buf);
+      pkt->tsn          = seq_number;
+      memcpy(pkt->ieee_addr, ieee_addr, 8);
+      pkt->short_addr   = source.u.short_addr;
+      pkt->endpoint_id  = src_endpoint;
+      pkt->cluster_id   = cluster_id;
+      pkt->command_id   = cmd_id;
+      pkt->payload_size = buffer_size;
+      if (buffer_size > 0 && buffer) {
+        memcpy(pkt->payload, buffer, buffer_size);
+      }
+      GeminiBridge::sendFrame(
+        G_EVT_CUSTOM_CLUSTER_CMD, pkt_buf,
+        sizeof(G_PktEvtCustomClusterCmd) + buffer_size);
+    #else
+      if (_on_cmd_custom_cluster_receive)
+        _on_cmd_custom_cluster_receive(
+          seq_number, ieee_addr, source.u.short_addr, src_endpoint,
           cluster_id, cmd_id, buffer_size, buffer);
     #endif
     return true;

@@ -1,6 +1,7 @@
 #include <cstring>
 #include <Arduino.h>
 #include "Z2S_configure.h"
+#include "SalusIt600.h"
 
 /*****************************************************************************/
 
@@ -488,6 +489,13 @@ void Z2S_configureDeviceSpecificReporting(
         device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_LINKAGE_ALARM_ID,
         ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &write_mask, true, 1,
         LUMI_MANUFACTURER_CODE);
+    } break;
+
+
+    case Z2S_DEVICE_DESC_SALUS_SQ610NH:
+    case Z2S_DEVICE_DESC_SALUS_SQ610RFNH: {
+
+      sendSalusIt600SyncResponse(device->short_addr, device->endpoint);
     } break;
 
     default:

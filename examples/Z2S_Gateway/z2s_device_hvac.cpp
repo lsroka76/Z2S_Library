@@ -186,6 +186,13 @@ uint8_t getZ2SDeviceHvacCmdSet(uint32_t model_id, uint8_t Zb_device_id) {
     } break;
 
 
+    case Z2S_DEVICE_DESC_SALUS_SQ610NH:
+    case Z2S_DEVICE_DESC_SALUS_SQ610RFNH: {
+
+      return SALUS_IT600_CMD_SET;
+    } break;
+
+
     default:
       return 0xFF; break;
   }  
@@ -295,6 +302,15 @@ void initZ2SDeviceHvacExt(
         hvac_room_temperature_min = DANFOSS_CMD_SET_HEATSETPOINT_MIN;
         hvac_room_temperature_max = DANFOSS_CMD_SET_HEATSETPOINT_MAX;
         onOffOnly = false;
+      } break;
+
+
+      case SALUS_IT600_CMD_SET: {
+
+        trv_external_sensor_mode = EXTERNAL_TEMPERATURE_SENSOR_IGNORE;
+        hvac_room_temperature_min = SALUS_IT600_CMD_SET_HEATSETPOINT_MIN;
+        hvac_room_temperature_max = SALUS_IT600_CMD_SET_HEATSETPOINT_MAX;
+        onOffOnly = true;
       } break;
     }
   }

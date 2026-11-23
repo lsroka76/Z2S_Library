@@ -16,10 +16,6 @@
 
 #include <esp_littlefs.h>
 
-//#include <lua.h>
-//#include <lualib.h>
-//#include <lauxlib.h>
-
 #include <ZigbeeGateway.h>
 
 #include <SuplaDevice.h>
@@ -67,6 +63,7 @@
 #include "web_gui_templates.h"
 #include "z2s_little_fs.h"
 #include "z2s_device_tuya_custom_cluster.h"
+#include "SalusIt600.h"
 #include "task_info.h"
 
 #ifdef USE_TELNET_CONSOLE
@@ -1249,6 +1246,23 @@ void loop() {
       }
     }
 
+    static uint32_t s_salus_clock_sync_ms = 0;
+    if ((s_salus_clock_sync_ms == 0) ||
+        ((millis() - s_salus_clock_sync_ms) > (6UL * 3600UL * 1000UL))) {
+
+      s_salus_clock_sync_ms = millis();
+
+      for (Z2S_Device *device : Z2S_Devices) {
+        if (device &&
+            ((device->getDeviceDescId() == Z2S_DEVICE_DESC_SALUS_SQ610NH) ||
+             (device->getDeviceDescId() == Z2S_DEVICE_DESC_SALUS_SQ610RFNH))) {
+
+          sendSalusIt600SyncResponse(
+            device->getDeviceShortAddress(), SALUS_IT600_THERMOSTAT_ENDPOINT);
+        }
+      }
+    }
+    
     if (Z2S_isGUIStarted())
       Z2S_updateWebGUI();
 
