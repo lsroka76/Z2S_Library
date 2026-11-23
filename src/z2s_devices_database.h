@@ -5314,6 +5314,15 @@ inline constexpr z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
       Z2S_REPORTING_SET_DESC_ELECTRICAL_MEASUREMENT_1, 
       Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1}},
 
+  {	.manufacturer_name = "_TZ3008_reatplte", .model_name = "TS011F",
+    .z2s_device_uid = 11825,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1,
+	  .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = { 
+      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
+      Z2S_REPORTING_SET_DESC_ELECTRICAL_MEASUREMENT_1, 
+      Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1}},
+
   {	.manufacturer_name = "_TZ3000_5f43h46b", .model_name = "TS011F",
     .z2s_device_uid = 11900,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2,
