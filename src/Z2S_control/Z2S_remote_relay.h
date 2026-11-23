@@ -28,15 +28,20 @@
 #include "Z2S_common.h"
 #include "Z2S_custom_actions_events.h"
 
+/*****************************************************************************/
+
 #define REMOTE_CMD_TURN_OFF       0x00
 #define REMOTE_CMD_TURN_ON        0x01
 
 #define REMOTE_RELAY_PORT         1234 //0x0800
 
 
+/*****************************************************************************/
+
 extern NetworkClient Z2S_NetworkClient;
 extern IPAddress     Z2S_IPAddress;
 
+/*****************************************************************************/
 
 namespace Supla {
 namespace Control {
@@ -62,24 +67,24 @@ class Z2S_RemoteRelay : public Relay, public Z2S_Core {
  protected:
 
   bool state = false;
-  //uint32_t _remote_gateway_ip = 0;
-  //char *_remote_gateway_mDNS_name = nullptr;
-  //uint8_t _remote_Supla_channel = 0xFF;
-
-
+  
   uint8_t _retries_number = 3;
   uint8_t _current_retry = 0;
   bool _pending_state = false;
+  bool _in_retry = false;
   
   uint32_t _retry_pause_ms = 30000;
   uint32_t  _retry_time_ms = 0;
 
   bool connectRemoteGateway();
+  bool sendRemoteCmd(uint8_t cmd, int32_t value);
   void postponeTurnOnOff(bool pending_state);
  
 };
 
 };  // namespace Control
 };  // namespace Supla
+
+/*****************************************************************************/
 
 #endif //SRC_SUPLA_CONTROL_Z2S_REMOTE_RELAY_H_

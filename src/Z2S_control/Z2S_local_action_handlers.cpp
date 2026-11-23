@@ -2626,8 +2626,10 @@ void Supla::Sensor::CalculatedGPM::iterateTpiOutput(uint32_t now_ms) {
 
   // Min ON/OFF time from Timeout (s), default 60 s, clamped to period / 2
   uint32_t min_switch_ms = getTimeoutMs();
-  if (min_switch_ms == 0)
-    min_switch_ms = 60000UL;
+  if (min_switch_ms == 0) {
+    uint32_t default_min = period_ms / 10UL;
+    min_switch_ms = (default_min > 60000UL) ? 60000UL : default_min;
+  }
   if (min_switch_ms > (period_ms / 2UL))
     min_switch_ms = period_ms / 2UL;
 

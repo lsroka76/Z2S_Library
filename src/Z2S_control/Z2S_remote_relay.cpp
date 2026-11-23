@@ -24,16 +24,22 @@
 
 #include <supla/time.h>
 
+/*****************************************************************************/
+
 Supla::Control::Z2S_RemoteRelay::Z2S_RemoteRelay(
   NetworkClient *remote_gateway, uint8_t remote_Supla_channel) 
   : Relay(-1, true, 0xFF ^ SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER), 
     Z2S_Core(this) {
 }
 
+/*****************************************************************************/
+
 void Supla::Control::Z2S_RemoteRelay::onInit() {
   
   runtimeFlags.initDone = true;
 }
+
+/*****************************************************************************/
 
 bool Supla::Control::Z2S_RemoteRelay::connectRemoteGateway() {
 
@@ -76,47 +82,64 @@ bool Supla::Control::Z2S_RemoteRelay::connectRemoteGateway() {
   return false;
 }
 
+/*****************************************************************************/
+
+bool Supla::Control::Z2S_RemoteRelay::sendRemoteCmd(
+  uint8_t cmd, int32_t value) {
+
+  if (!connectRemoteGateway()) {
+    return false;
+  }
+
+  Z2S_NetworkClient.printf(
+    "Z2SCMD%02u%03u%08ld\n", cmd, getSuplaRemoteChannel(),
+    static_cast<long>(value));
+
+  char response[8];
+  size_t len = Z2S_NetworkClient.readBytesUntil(
+    '\n', response, sizeof(response) - 1);
+  response[len] = '\0';
+
+  Z2S_NetworkClient.stop();
+
+  return (strcmp(response, "OK") == 0);
+}
+
+/*****************************************************************************/
+
 void Supla::Control::Z2S_RemoteRelay::postponeTurnOnOff(bool pending_state) {
 
-  if ((_retries_number > 0) &&
-      (_current_retry == 0)) {
+  _pending_state = pending_state;
 
+  if (!_in_retry && (_retries_number > 0)) {
     _current_retry = _retries_number;
     _retry_time_ms = millis();
-    _pending_state = pending_state;
   }
 }
+
+/*****************************************************************************/
 
 void Supla::Control::Z2S_RemoteRelay::turnOn(_supla_int_t duration) {
   
   SUPLA_LOG_INFO(
-      "Relay[%d] turn ON (duration %d ms)",channel.getChannelNumber(),
+      "Relay[%d] turn ON (duration %d ms)", channel.getChannelNumber(),
       duration);
 
   applyDuration(duration, true);
 
-  if (connectRemoteGateway()) {
-
-    Z2S_NetworkClient.printf(
-      "Z2SCMD%02u%03u%08ld\n", REMOTE_CMD_TURN_ON, getSuplaRemoteChannel(),
-      -12567);
-    
-    String response = Z2S_NetworkClient.readStringUntil('\n');
-    if (response == "OK") {
-
-      _current_retry = 0;
-      state = true;
-      channel.setNewValue(state);
-      // Schedule save in 5 s after state change
-      Supla::Storage::ScheduleSave(5000);
-
-      Z2S_NetworkClient.stop();
-      return;
-    } 
-    Z2S_NetworkClient.stop();
+  if (sendRemoteCmd(REMOTE_CMD_TURN_ON, -12567)) {
+    _current_retry = 0;
+    state = true;
+    channel.setNewValue(state);
+    // Schedule save in 5 s after state change
+    Supla::Storage::ScheduleSave(5000);
+    return;
   }
+
   postponeTurnOnOff(true); 
 }
+
+/*****************************************************************************/
 
 void Supla::Control::Z2S_RemoteRelay::turnOff(_supla_int_t duration) {
   
@@ -126,35 +149,25 @@ void Supla::Control::Z2S_RemoteRelay::turnOff(_supla_int_t duration) {
   
   applyDuration(duration, false);
 
-  if (connectRemoteGateway()) {
-
-    Z2S_NetworkClient.printf(
-      "Z2SCMD%02u%03u%08ld\n", REMOTE_CMD_TURN_OFF, getSuplaRemoteChannel(),
-      0xAB);
-    
-    String response = Z2S_NetworkClient.readStringUntil('\n');
-    
-    if (response == "OK") {
-
-      _current_retry = 0;
-      state = false;
-      channel.setNewValue(state);
-      // Schedule save in 5 s after state change
-      Supla::Storage::ScheduleSave(5000);
-
-      Z2S_NetworkClient.stop();
-      return;
-    }
-    Z2S_NetworkClient.stop();
+  if (sendRemoteCmd(REMOTE_CMD_TURN_OFF, 0xAB)) {
+    _current_retry = 0;
+    state = false;
+    channel.setNewValue(state);
+    // Schedule save in 5 s after state change
+    Supla::Storage::ScheduleSave(5000);
+    return;
   }
 
   postponeTurnOnOff(false);
 }
 
-void Supla::Control::Z2S_RemoteRelay::ping() {
+/*****************************************************************************/
 
-  
+void Supla::Control::Z2S_RemoteRelay::ping() {
+ 
 }
+
+/*****************************************************************************/
 
 void Supla::Control::Z2S_RemoteRelay::iterateAlways() {
 
@@ -163,20 +176,24 @@ void Supla::Control::Z2S_RemoteRelay::iterateAlways() {
   uint32_t millis_ms = millis();
 
   if ((_current_retry > 0) &&
-      (millis_ms - _retry_time_ms > _retry_pause_ms)) {
+      ((millis_ms - _retry_time_ms) > _retry_pause_ms)) {
 
     log_i("_current_retry %u, _retry_time_ms %lu, millis_ms %lu",
           _current_retry, _retry_time_ms, millis_ms);
 
     _retry_time_ms = millis_ms;
     _current_retry--;
-    
+
+    _in_retry = true;
     if (_pending_state)
       turnOn();
     else 
       turnOff();
-    }
+    _in_retry = false;
+  }
 }
+
+/*****************************************************************************/
 
 void Supla::Control::Z2S_RemoteRelay::handleAction(int event, int action)  {
 
@@ -231,6 +248,8 @@ bool Supla::Control::Z2S_RemoteRelay::isOn() {
    return state;
 }
 
+/*****************************************************************************/
+
 void Supla::Control::Z2S_RemoteRelay::Z2S_setOnOff(bool on_off_state) {
   
   log_i("durationMs = %lu, "
@@ -275,5 +294,6 @@ void Supla::Control::Z2S_RemoteRelay::Z2S_setOnOff(bool on_off_state) {
   Supla::Storage::ScheduleSave(5000);
 }
 
+/*****************************************************************************/
 
 //#endif
