@@ -651,6 +651,8 @@ static constexpr char *dest_thermometer_channel_desc =
   "Enter destination thermometer channel #";
 static constexpr char *src_thermometer_channel_desc =
   "Enter source local channel #";
+static constexpr char *src_thermometer_or_hvac_channel_desc =
+  "Enter source local thermometer or HVAC channel #";
 static constexpr char *dst_local_pwm_channel_desc =
   "Enter destination LocalPWM channel # (or -1 to disable)";
 
@@ -7815,7 +7817,8 @@ void updateChannelInfoLabel(
 							
 							param1_label =
 							  "Enter PI parameters - format: Setpoint,Kp,Ki "
-							  "(Kp > 0 heating, Kp < 0 cooling), e.g. 21.5,10.0,0.05";
+							  "(Setpoint unused if PARAM(3) is HVAC; Kp > 0 heat, Kp < 0 cool), "
+							  "e.g. 21.5,10.0,0.05";
 							
 							snprintf(
 							  general_purpose_gui_buffer, sizeof(general_purpose_gui_buffer),
@@ -7828,7 +7831,9 @@ void updateChannelInfoLabel(
 							
 							param1_label =
 							  "Enter PID parameters - format: Setpoint,Kp,Ki,Kd "
-							  "(Kp > 0 heating, Kp < 0 cooling), e.g. 21.5,10.0,0.05,1.0";
+							  "(Setpoint unused if PARAM(3) is HVAC; Kp > 0 heat, Kp < 0 cool), "
+							  "e.g. 21.5,10.0,0.05,1.0";
+
 							snprintf(
 							  general_purpose_gui_buffer, sizeof(general_purpose_gui_buffer),
 							  "%.2f,%.3f,%.4f,%.3f",
@@ -7849,7 +7854,7 @@ void updateChannelInfoLabel(
 						  param_2_text, z2s_core->getCalculatedGpmFailsafeDuty());
 
 						ESPUI.updateControlLabel(
-						  param_3_number, src_thermometer_channel_desc);
+						  param_3_number, src_thermometer_or_hvac_channel_desc);
 						ESPUI.updateNumber(param_3_number, z2s_core->getSourceChannel());
 
 						ESPUI.updateControlLabel(

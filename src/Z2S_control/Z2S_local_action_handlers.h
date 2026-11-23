@@ -626,6 +626,8 @@ class CalculatedGPM : public VirtualGeneralPurposeMeasurement,
     void setControllerEnabled(bool enabled);
     bool isControllerEnabled() const { return _controller_enabled; }
     bool isControlAlgorithmFunc();
+    bool isHvacSource();
+    float getEffectiveSetpoint();
     const char *getFunctionName();
 
     void iterateAlways() override;
@@ -637,8 +639,12 @@ class CalculatedGPM : public VirtualGeneralPurposeMeasurement,
 
     void validateSourceChannel();
     void validateDestinationChannel();
+    bool resolveHvacSetpointAndDirection(
+      Supla::Control::HvacBase *hvac, float &setpoint, bool &is_cooling);
     double computeLinearMap(double temp);
-    double computePID(double temp, float dt, bool use_derivative);
+    double computePID(
+      double temp, float setpoint, bool is_cooling,
+      float dt, bool use_derivative);
     void commitPwmOutput(double out_pct);
 
   private:
@@ -657,7 +663,9 @@ class CalculatedGPM : public VirtualGeneralPurposeMeasurement,
     float _d_filtered = 0.0f;
     uint8_t _last_pwm_duty = 0xFF;
     bool _controller_enabled = true;
+    bool _hvac_halted = false;
     int8_t _last_kp_dir = 0;
+    float _last_effective_setpoint = NAN;
 };
 
 /*****************************************************************************/

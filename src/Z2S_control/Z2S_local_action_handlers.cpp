@@ -2058,11 +2058,16 @@ bool Supla::Sensor::CalculatedThermometer::readSourceParameterValue() {
       setValue(temperature_setpoint_heat / 100.0);
     } break;
 
-    case CALCULATED_THERMOMETER_FUNC_READ_CGPM_TMIN:
-    case CALCULATED_THERMOMETER_FUNC_READ_CGPM_SETPOINT: {
+    case CALCULATED_THERMOMETER_FUNC_READ_CGPM_TMIN: {
       auto *_source_cgpm =
         static_cast<Supla::Sensor::CalculatedGPM *>(_source_Supla_element);
       setValue(_source_cgpm->getCalculatedGpmParam1());
+    } break;
+
+    case CALCULATED_THERMOMETER_FUNC_READ_CGPM_SETPOINT: {
+      auto *_source_cgpm =
+        static_cast<Supla::Sensor::CalculatedGPM *>(_source_Supla_element);
+      setValue(_source_cgpm->getEffectiveSetpoint());
     } break;
 
     case CALCULATED_THERMOMETER_FUNC_READ_CGPM_TMAX: {
@@ -2289,6 +2294,38 @@ double calculateWoodEMC(double temperature, double humidity) {
 
 /*****************************************************************************/
 
+static bool readThermometerChannelTemp(int16_t ch_no, double &out_temp) {
+
+  if (ch_no < 0)
+    return false;
+
+  Supla::Element *el = Supla::Element::getElementByChannelNumber(ch_no);
+  if (!el || !el->getChannel())
+    return false;
+
+  auto *ch = el->getChannel();
+  if (!ch->isStateOnline())
+    return false;
+
+  double t = NAN;
+  if (ch->getChannelType() == SUPLA_CHANNELTYPE_THERMOMETER) {
+    t = ch->getValueDouble();
+  } else if (ch->getChannelType() ==
+             SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR) {
+    t = ch->getValueDoubleFirst();
+  } else {
+    return false;
+  }
+
+  if (isnan(t) || (t <= -272.0))
+    return false;
+
+  out_temp = t;
+  return true;
+}
+
+/*****************************************************************************/
+
 void Supla::Sensor::CalculatedGPM::resetControllerState() {
 
   _integral = 0.0f;
@@ -2297,6 +2334,100 @@ void Supla::Sensor::CalculatedGPM::resetControllerState() {
   _last_pid_calc_ms = 0;
   _last_pwm_duty = 0xFF;
   _last_kp_dir = 0;
+  _hvac_halted = false;
+  _last_effective_setpoint = NAN;
+}
+
+/*****************************************************************************/
+
+bool Supla::Sensor::CalculatedGPM::isHvacSource() {
+
+  if (!isControlAlgorithmFunc())
+    return false;
+
+  validateSourceChannel();
+
+  return (_source_Supla_element && _source_Supla_element->getChannel() &&
+          (_source_Supla_element->getChannel()->getChannelType() ==
+           SUPLA_CHANNELTYPE_HVAC));
+}
+
+/*****************************************************************************/
+
+bool Supla::Sensor::CalculatedGPM::resolveHvacSetpointAndDirection(
+    Supla::Control::HvacBase *hvac, float &setpoint, bool &is_cooling) {
+
+  if (!hvac)
+    return false;
+
+  int hvac_mode = hvac->getMode();
+
+  if (hvac_mode == SUPLA_HVAC_MODE_HEAT) {
+    is_cooling = false;
+    int sp_raw = hvac->getTemperatureSetpointHeat();
+    if (sp_raw > INT16_MIN) {
+      setpoint = sp_raw * 0.01f;
+      return true;
+    }
+    return false;
+  }
+
+  if (hvac_mode == SUPLA_HVAC_MODE_COOL) {
+    is_cooling = true;
+    int sp_raw = hvac->getTemperatureSetpointCool();
+    if (sp_raw > INT16_MIN) {
+      setpoint = sp_raw * 0.01f;
+      return true;
+    }
+    return false;
+  }
+
+  if (hvac_mode == SUPLA_HVAC_MODE_HEAT_COOL) {
+    is_cooling = (getCalculatedGpmParam2() < 0.0f);
+    int sp_raw = is_cooling ? hvac->getTemperatureSetpointCool()
+                            : hvac->getTemperatureSetpointHeat();
+    if (sp_raw > INT16_MIN) {
+      setpoint = sp_raw * 0.01f;
+      return true;
+    }
+    return false;
+  }
+
+  return false;
+}
+
+/*****************************************************************************/
+
+float Supla::Sensor::CalculatedGPM::getEffectiveSetpoint() {
+
+  uint8_t fn = getZ2SLocalChannelFunc();
+  if ((fn == CALCULATED_GPM_FUNC_PI_CONTROL ||
+       fn == CALCULATED_GPM_FUNC_PID_CONTROL) && isHvacSource()) {
+
+    auto *hvac =
+      static_cast<Supla::Control::HvacBase *>(_source_Supla_element);
+
+    float sp = NAN;
+    bool is_cooling = false;
+    if (resolveHvacSetpointAndDirection(hvac, sp, is_cooling)) {
+      return sp;
+    }
+
+    // Thermostat is OFF: still expose its configured setpoint for display
+    int sp_raw = hvac->isCoolingSubfunction()
+                   ? hvac->getTemperatureSetpointCool()
+                   : hvac->getTemperatureSetpointHeat();
+    if (sp_raw == INT16_MIN) {
+      sp_raw = hvac->isCoolingSubfunction()
+                 ? hvac->getTemperatureSetpointHeat()
+                 : hvac->getTemperatureSetpointCool();
+    }
+    if (sp_raw > INT16_MIN) {
+      return sp_raw * 0.01f;
+    }
+  }
+
+  return getCalculatedGpmParam1();
 }
 
 /*****************************************************************************/
@@ -2375,25 +2506,20 @@ double Supla::Sensor::CalculatedGPM::computeLinearMap(double temp) {
 /*****************************************************************************/
 
 double Supla::Sensor::CalculatedGPM::computePID(
-    double temp, float dt, bool use_derivative) {
+    double temp, float setpoint, bool is_cooling,
+    float dt, bool use_derivative) {
 
-  float setpoint = getCalculatedGpmParam1();
-  float kp_raw   = getCalculatedGpmParam2();
-  float ki_raw   = getCalculatedGpmParam3();
-  float kd_raw   = use_derivative ? getCalculatedGpmParam4() : 0.0f;
+  float kp_raw = getCalculatedGpmParam2();
+  float ki_raw = getCalculatedGpmParam3();
+  float kd_raw = use_derivative ? getCalculatedGpmParam4() : 0.0f;
 
-  // Kp > 0 => Heating (output rises when temp < setpoint)
-  // Kp < 0 => Cooling (output rises when temp > setpoint)
-  bool is_cooling = (kp_raw < 0.0f);
-  int8_t cur_dir = (kp_raw < 0.0f) ? -1 : ((kp_raw > 0.0f) ? 1 : 0);
-  if (_last_kp_dir != 0 && cur_dir != 0 && cur_dir != _last_kp_dir) {
+  int8_t cur_dir = is_cooling ? -1 : 1;
+  if (_last_kp_dir != 0 && cur_dir != _last_kp_dir) {
     _integral = 0.0f;
     _prev_temp = NAN;
     _d_filtered = 0.0f;
   }
-  if (cur_dir != 0) {
-    _last_kp_dir = cur_dir;
-  }
+  _last_kp_dir = cur_dir;
 
   float kp = fabsf(kp_raw);
   float ki = fabsf(ki_raw);
@@ -2513,9 +2639,7 @@ void Supla::Sensor::CalculatedGPM::validateSourceChannel() {
        (_last_channel_func != getZ2SLocalChannelFunc()))) {
 
     _source_Supla_element = nullptr;
-    if (_last_channel_func != getZ2SLocalChannelFunc()) {
-      resetControllerState();
-    }
+    resetControllerState();
   }
 
   if (_source_Supla_element == nullptr) {
@@ -2548,6 +2672,12 @@ void Supla::Sensor::CalculatedGPM::validateSourceChannel() {
           _source_Supla_element =
             Z2S_Core::getSuplaElementByChannelNumberAndType(
               getSourceChannel(), SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR);
+        }
+
+        if (!_source_Supla_element) {
+          _source_Supla_element =
+            Z2S_Core::getSuplaElementByChannelNumberAndType(
+              getSourceChannel(), SUPLA_CHANNELTYPE_HVAC);
         }
 
         if (_source_Supla_element) {
@@ -2614,10 +2744,70 @@ void Supla::Sensor::CalculatedGPM::iterateAlways() {
 
       double temp = NAN;
       bool sensor_valid = false;
+      float setpoint = getCalculatedGpmParam1();
+      bool is_cooling = (getCalculatedGpmParam2() < 0.0f);
+      bool setpoint_valid = true;
 
       if (_source_Supla_element && _source_Supla_element->getChannel()) {
         auto *src_ch = _source_Supla_element->getChannel();
-        if (src_ch->isStateOnline()) {
+
+        if (src_ch->getChannelType() == SUPLA_CHANNELTYPE_HVAC) {
+          auto *hvac =
+            static_cast<Supla::Control::HvacBase *>(_source_Supla_element);
+
+          if (src_ch->isStateOnline()) {
+            if (hvac->isThermostatDisabled() ||
+                hvac->isHvacFlagForcedOffBySensor()) {
+              if (!_hvac_halted) {
+                resetControllerState();
+                _hvac_halted = true;
+                commitPwmOutput(0.0);
+              }
+              return;
+            }
+
+            if (fn == CALCULATED_GPM_FUNC_PI_CONTROL ||
+                fn == CALCULATED_GPM_FUNC_PID_CONTROL) {
+              setpoint_valid =
+                resolveHvacSetpointAndDirection(hvac, setpoint, is_cooling);
+
+              if (!setpoint_valid) {
+                int hvac_mode = hvac->getMode();
+                if (hvac_mode != SUPLA_HVAC_MODE_HEAT &&
+                    hvac_mode != SUPLA_HVAC_MODE_COOL &&
+                    hvac_mode != SUPLA_HVAC_MODE_HEAT_COOL) {
+                  if (!_hvac_halted) {
+                    resetControllerState();
+                    _hvac_halted = true;
+                    commitPwmOutput(0.0);
+                  }
+                  return;
+                }
+              }
+            }
+
+            _hvac_halted = false;
+
+            if (hvac->getChannelFunction() ==
+                SUPLA_CHANNELFNC_HVAC_THERMOSTAT_DIFFERENTIAL) {
+              double t_main = NAN;
+              double t_aux = NAN;
+              if (readThermometerChannelTemp(
+                    hvac->getMainThermometerChannelNo(), t_main) &&
+                  readThermometerChannelTemp(
+                    hvac->getAuxThermometerChannelNo(), t_aux)) {
+                temp = t_main - t_aux;
+                sensor_valid = true;
+              }
+            } else {
+              int16_t therm_ch = hvac->isTemperatureControlTypeAux()
+                                   ? hvac->getAuxThermometerChannelNo()
+                                   : hvac->getMainThermometerChannelNo();
+              sensor_valid = readThermometerChannelTemp(therm_ch, temp);
+            }
+          }
+        } else if (src_ch->isStateOnline()) {
+          _hvac_halted = false;
           if (src_ch->getChannelType() == SUPLA_CHANNELTYPE_THERMOMETER) {
             temp = src_ch->getValueDouble();
           } else if (src_ch->getChannelType() ==
@@ -2630,7 +2820,16 @@ void Supla::Sensor::CalculatedGPM::iterateAlways() {
         }
       }
 
-      if (!sensor_valid) {
+      if ((fn == CALCULATED_GPM_FUNC_PI_CONTROL ||
+           fn == CALCULATED_GPM_FUNC_PID_CONTROL) && setpoint_valid) {
+        if (isnan(_last_effective_setpoint) ||
+            fabsf(setpoint - _last_effective_setpoint) >= 0.005f) {
+          _last_effective_setpoint = setpoint;
+          CalculatedThermometer::updateLinkedThermometers(getZ2SChannelNumber());
+        }
+      }
+
+      if (!sensor_valid || !setpoint_valid) {
         _prev_temp = NAN;
         int8_t failsafe = getCalculatedGpmFailsafeDuty();
         if (failsafe >= 0 && failsafe <= 100) {
@@ -2640,18 +2839,18 @@ void Supla::Sensor::CalculatedGPM::iterateAlways() {
       }
 
       double out_pct = 0.0;
-      switch (getZ2SLocalChannelFunc()) {
+      switch (fn) {
 
         case CALCULATED_GPM_FUNC_LINEAR_MAP:
           out_pct = computeLinearMap(temp);
           break;
 
         case CALCULATED_GPM_FUNC_PI_CONTROL:
-          out_pct = computePID(temp, dt, false);
+          out_pct = computePID(temp, setpoint, is_cooling, dt, false);
           break;
 
         case CALCULATED_GPM_FUNC_PID_CONTROL:
-          out_pct = computePID(temp, dt, true);
+          out_pct = computePID(temp, setpoint, is_cooling, dt, true);
           break;
       }
 
@@ -2811,19 +3010,19 @@ void Supla::Sensor::CalculatedGPM::handleAction(int event, int action) {
       break;
 
     case Z2S_SUPLA_ACTION_INC_SETPOINT_VALUE_1:
-      if (is_pi_or_pid) adjustParam1(0.1f);
+      if (is_pi_or_pid && !isHvacSource()) adjustParam1(0.1f);
       break;
 
     case Z2S_SUPLA_ACTION_DEC_SETPOINT_VALUE_1:
-      if (is_pi_or_pid) adjustParam1(-0.1f);
+      if (is_pi_or_pid && !isHvacSource()) adjustParam1(-0.1f);
       break;
 
     case Z2S_SUPLA_ACTION_INC_SETPOINT_VALUE_5:
-      if (is_pi_or_pid) adjustParam1(0.5f);
+      if (is_pi_or_pid && !isHvacSource()) adjustParam1(0.5f);
       break;
 
     case Z2S_SUPLA_ACTION_DEC_SETPOINT_VALUE_5:
-      if (is_pi_or_pid) adjustParam1(-0.5f);
+      if (is_pi_or_pid && !isHvacSource()) adjustParam1(-0.5f);
       break;
 
     case Z2S_SUPLA_ACTION_INC_DUTY_MIN_VALUE_1:
