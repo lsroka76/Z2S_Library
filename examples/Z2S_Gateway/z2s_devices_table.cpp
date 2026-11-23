@@ -2142,73 +2142,78 @@ void Z2S_onPressureReceive(
   uint16_t short_addr, uint16_t endpoint, uint16_t cluster,
   const esp_zb_zcl_attribute_t *attribute) {
 
+  if (!attribute || !attribute->data.value) {
+    return;
+  }
+
   switch (attribute->id) {
 
-
-    //ESP_ZB_ZCL_ATTR_TYPE_S16
     case ESP_ZB_ZCL_ATTR_PRESSURE_MEASUREMENT_VALUE_ID:
     case 0x0004: {
 
-  
-      float pressure = readAttr<int16_t>(attribute);
+      float pressure = 0.0f;
 
-      if (attribute->id == 0x0004)
-        pressure = readAttr<int32_t>(attribute);
-  
+      if (attribute->id == 0x0004) {
+        pressure = static_cast<float>(readAttr<int32_t>(attribute));
+      } else {
+        int16_t raw = readAttr<int16_t>(attribute);
+
+        if (raw == INT16_MIN || raw <= 500 || raw >= 2000) {
+          log_w(
+            "0x%04X, endpoint 0x%x, ignoring invalid pressure raw=%d (0x%04X)",
+            short_addr, endpoint, raw, static_cast<uint16_t>(raw));
+          return;
+        }
+        pressure = static_cast<float>(raw);
+      }
+
       log_i(
         "0x%04X, endpoint 0x%x, pressure %f", short_addr, endpoint, pressure);
 
       Supla::Element* element = Z2S_findZ2SElement(
         short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_PRESSURESENSOR,
         NO_CUSTOM_CMD_SID);
-  
+
       if (element) {
-        
         msgZ2SDevicePressure(element, pressure);
         return;
       }
 
       Z2S_Core *z2s_core = Z2S_findZ2SCore(
-        short_addr, endpoint, cluster, 
+        short_addr, endpoint, cluster,
         SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, NO_CUSTOM_CMD_SID);
 
       if (!z2s_core) {
-
-        no_channel_found_error_func(short_addr);  
+        no_channel_found_error_func(short_addr);
         return;
       }
 
       int8_t sub_id = NO_CUSTOM_CMD_SID;
 
       switch (z2s_core->getChannelModelId()) {
-
-
         case Z2S_DEVICE_DESC_SHELLY_WS90_WEATHER_STATION:
-
           sub_id = SHELLY_WS90_WEATHER_STATION_PRESSURE_SID;
-        break;
-
+          break;
 
         case Z2S_DEVICE_DESC_SONOFF_TEMPHUMIPRESSURE_SENSOR:
-
           if (attribute->id == ESP_ZB_ZCL_ATTR_PRESSURE_MEASUREMENT_VALUE_ID)
-            return; //only use 0x0004 attribute
+            return; // only use 0x0004 attribute
           sub_id = SONOFF_THP_SENSOR_PRESSURE_SID;
-        break;
+          break;
       }
 
       if (z2s_core->getChannelSubId() != sub_id)
         z2s_core = Z2S_findZ2SCore(
-          short_addr, endpoint, cluster, 
+          short_addr, endpoint, cluster,
           SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT, sub_id);
 
       if (z2s_core) {
-    
         msgZ2SDeviceGeneralPurposeMeasurement(
-          z2s_core->getZ2SElementPtr(), 
-          ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, pressure); 
-      } else
+          z2s_core->getZ2SElementPtr(),
+          ZS2_DEVICE_GENERAL_PURPOSE_MEASUREMENT_FNC_NONE, pressure);
+      } else {
         no_channel_found_error_func(short_addr);
+      }
     } break;
   }
 }
