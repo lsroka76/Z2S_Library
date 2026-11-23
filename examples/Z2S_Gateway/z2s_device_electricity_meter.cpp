@@ -24,6 +24,9 @@ void initZ2SDeviceElectricityMeter(
   uint16_t ac_frequency_multiplier = 0;
   uint16_t ac_frequency_divisor = 0;
 
+  uint16_t power_factor_multiplier = 0;
+  uint16_t power_factor_divisor    = 0;
+
   uint32_t  energy_multiplier = 0;
   uint32_t  energy_divisor = 0;
 
@@ -137,6 +140,9 @@ void initZ2SDeviceElectricityMeter(
 
       ac_frequency_multiplier = 1;
       ac_frequency_divisor    = 1;
+
+      power_factor_multiplier = 1;
+      power_factor_divisor    = 100;
 
       energy_multiplier = 1;
       energy_divisor    = 1000;
@@ -449,6 +455,12 @@ void initZ2SDeviceElectricityMeter(
 
   Supla_Z2S_ElectricityMeter->setFreqDivisor(ac_frequency_divisor, false);
 
+  Supla_Z2S_ElectricityMeter->setPowerFactorMultiplier(
+    power_factor_multiplier, false);
+
+  Supla_Z2S_ElectricityMeter->setPowerFactorDivisor(
+    power_factor_divisor, false);
+
   Supla_Z2S_ElectricityMeter->setEnergyMultiplier(energy_multiplier, false);
   Supla_Z2S_ElectricityMeter->setEnergyDivisor(energy_divisor, false);
 
@@ -542,7 +554,7 @@ void msgZ2SDeviceElectricityMeter(
 
     case Z2S_EM_POWER_FACTOR_A_SEL: 
     
-      Supla_ElectricityMeter->setPowerFactor(0, em_value * 1000); 
+      Supla_ElectricityMeter->setPowerFactor2(0, em_value); 
     break;
 
 
@@ -613,7 +625,7 @@ void msgZ2SDeviceElectricityMeter(
     
     case Z2S_EM_POWER_FACTOR_B_SEL: 
       
-      Supla_ElectricityMeter->setPowerFactor(1, em_value * 1000); 
+      Supla_ElectricityMeter->setPowerFactor2(1, em_value); 
     break;
 
 
@@ -661,7 +673,7 @@ void msgZ2SDeviceElectricityMeter(
 
     case Z2S_EM_POWER_FACTOR_C_SEL: 
       
-      Supla_ElectricityMeter->setPowerFactor(2, em_value * 1000); 
+      Supla_ElectricityMeter->setPowerFactor2(2, em_value); 
     break;
 
     

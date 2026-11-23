@@ -155,6 +155,22 @@ static inline uint32_t readTuyaBigEndianValue(
 
 /*****************************************************************************/
 
+static inline int32_t readTuyaBigEndianSignedValue(
+  const uint8_t *val, uint16_t size) {
+
+  switch (size) {
+    case 1: return (int8_t)val[0];
+    case 2: return (int16_t)(((uint16_t)val[0] << 8) | val[1]);
+    case 4: return (int32_t)(((uint32_t)val[0] << 24) |
+                             ((uint32_t)val[1] << 16) |
+                             ((uint32_t)val[2] << 8)  |
+                             (uint32_t)val[3]);
+    default: return 0;
+  }
+}
+
+/*****************************************************************************/
+
 // HVAC data reporting                         //
 
 void processTuyaHvacDataReport(
@@ -1269,12 +1285,11 @@ void processTuya3PhasesV1ElectricityMeterDataReport(
       case TUYA_3PHASES_V1_ELECTRICITY_METER_POWER_FACTOR_B_DP:
       case TUYA_3PHASES_V1_ELECTRICITY_METER_POWER_FACTOR_C_DP: {
         if (Supla::Element* em = getEmElement()) {
-          // Explicit mapping: note Z2S_EM_POWER_FACTOR_A_SEL is 0x05 while B/C are 0x14/0x24
           uint8_t sel = (dp_id == TUYA_3PHASES_V1_ELECTRICITY_METER_POWER_FACTOR_A_DP) ? Z2S_EM_POWER_FACTOR_A_SEL :
                         (dp_id == TUYA_3PHASES_V1_ELECTRICITY_METER_POWER_FACTOR_B_DP) ? Z2S_EM_POWER_FACTOR_B_SEL :
                                                                                          Z2S_EM_POWER_FACTOR_C_SEL;
           msgZ2SDeviceElectricityMeter(
-            em, sel, (int32_t)readTuyaBigEndianValue(val, dp_size));
+            em, sel, readTuyaBigEndianSignedValue(val, dp_size));
         }
       } break;
 
@@ -1313,7 +1328,8 @@ void processTuya3PhasesV1ElectricityMeterDataReport(
               SUPLA_CHANNELTYPE_THERMOMETER,
               TUYA_3PHASES_ELECTRICITY_METER_TEMPERATURE_SID)) {
           msgZ2SDeviceTempHumidityTemp(
-            el, (float)(int32_t)readTuyaBigEndianValue(val, dp_size) / 10.0f);
+            el, (float)(int32_t)readTuyaBigEndianSignedValue(
+              val, dp_size) / 10.0f);
         }
       } break;
 

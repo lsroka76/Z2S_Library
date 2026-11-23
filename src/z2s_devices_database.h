@@ -5115,6 +5115,11 @@ inline constexpr z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY,
 	  .z2s_device_endpoints_count = 1},
 
+  {	.manufacturer_name = "_TZ3210_tqlv4ug4", .model_name = "TS0001",
+    .z2s_device_uid = 10505,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY,
+	  .z2s_device_endpoints_count = 1},
+
   {	.manufacturer_name = "_TZ3210_n0wbkysi", .model_name = "TS0003",
     .z2s_device_uid = 10550,
 	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY,
@@ -8252,6 +8257,11 @@ inline constexpr z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   { .manufacturer_name = "_TZE204_glk6viwg", .model_name = "TS0601",
     .z2s_device_uid = 37900,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_EONE_E40,
+    .z2s_device_endpoints_count = 1},
+
+  { .manufacturer_name = "_TZE204_lnxdk2ch", .model_name = "TS0601",
+    .z2s_device_uid = 37905,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TS0601_EONE_E40,
     .z2s_device_endpoints_count = 1},
 

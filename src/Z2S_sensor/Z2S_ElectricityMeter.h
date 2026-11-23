@@ -160,6 +160,36 @@ uint16_t getFreqDivisor() {
   return _ac_frequency_divisor;
 }
 
+void setPowerFactorMultiplier(
+  uint16_t power_factor_multiplier, bool from_zigbee = true) {
+
+  if (_ignore_zigbee_scaling && from_zigbee)
+    return;
+
+  if (power_factor_multiplier > 0)
+    _power_factor_multiplier = power_factor_multiplier;
+}
+
+uint16_t getPowerFactorMultiplier() {
+
+  return _power_factor_multiplier;
+}
+
+void setPowerFactorDivisor(
+  uint16_t power_factor_divisor, bool from_zigbee = true) {
+
+  if (_ignore_zigbee_scaling && from_zigbee)
+    return;
+
+  if (power_factor_divisor > 0)
+    _power_factor_divisor = power_factor_divisor;
+}
+
+uint16_t getPowerFactorDivisor() {
+
+  return _power_factor_divisor;
+}
+
 void setEnergyMultiplier(uint32_t energy_multiplier, bool from_zigbee = true) {
   
   if (_ignore_zigbee_scaling && from_zigbee)
@@ -288,6 +318,25 @@ void setFreq2(uint32_t freq) {
     _ac_frequency_multiplier, _ac_frequency_divisor, em_freq);
 
   setFreq(em_freq);
+}
+
+void setPowerFactor2(int phase, int32_t power_factor) {
+
+  int32_t em_power_factor;
+
+  if ((_power_factor_multiplier == 0) || (_power_factor_divisor == 0))
+    em_power_factor = power_factor * 1000;
+  else
+    em_power_factor =
+      ((int64_t)power_factor * _power_factor_multiplier * 1000) /
+      _power_factor_divisor;
+
+  log_d(
+    "_power_factor_multiplier = %d, _power_factor_divisor = %d, "
+    "em_power_factor = %ld",
+    _power_factor_multiplier, _power_factor_divisor, em_power_factor);
+
+  setPowerFactor(phase, em_power_factor);
 }
 
 void setFwdActEnergy2(int phase, unsigned _supla_int64_t energy) {
@@ -642,6 +691,9 @@ void iterateAlways() override {
 
     uint16_t _ac_frequency_multiplier = 0;
     uint16_t _ac_frequency_divisor    = 0;
+
+    uint16_t _power_factor_multiplier = 0;
+    uint16_t _power_factor_divisor    = 0;
 
     uint32_t _energy_multiplier       = 0;
     uint32_t _energy_divisor          = 0;
