@@ -646,6 +646,7 @@ class CalculatedGPM : public VirtualGeneralPurposeMeasurement,
       double temp, float setpoint, bool is_cooling,
       float dt, bool use_derivative);
     void commitPwmOutput(double out_pct);
+    void iterateTpiOutput(uint32_t now_ms);
 
   private:
 
@@ -666,6 +667,12 @@ class CalculatedGPM : public VirtualGeneralPurposeMeasurement,
     bool _hvac_halted = false;
     int8_t _last_kp_dir = 0;
     float _last_effective_setpoint = NAN;
+
+    float _tpi_duty_pct = NAN;
+    uint32_t _tpi_window_start_ms = 0;
+    uint32_t _tpi_last_switch_ms = 0;
+    uint32_t _tpi_last_tick_ms = 0;
+    int8_t _tpi_relay_state = -1;
 };
 
 /*****************************************************************************/

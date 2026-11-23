@@ -2336,6 +2336,12 @@ void Supla::Sensor::CalculatedGPM::resetControllerState() {
   _last_kp_dir = 0;
   _hvac_halted = false;
   _last_effective_setpoint = NAN;
+
+  _tpi_duty_pct = NAN;
+  _tpi_window_start_ms = 0;
+  _tpi_last_switch_ms = 0;
+  _tpi_last_tick_ms = 0;
+  _tpi_relay_state = -1;
 }
 
 /*****************************************************************************/
@@ -2566,6 +2572,9 @@ void Supla::Sensor::CalculatedGPM::validateDestinationChannel() {
   if (dst_ch == 0xFF) {
     _destination_Supla_element = nullptr;
     _last_destination_channel = 0xFF;
+    _tpi_relay_state = -1;
+    _tpi_window_start_ms = 0;
+    _tpi_last_switch_ms = 0;
     return;
   }
 
@@ -2579,7 +2588,96 @@ void Supla::Sensor::CalculatedGPM::validateDestinationChannel() {
       
       _destination_Supla_element = dst_core->getZ2SElementPtr();
       _last_destination_channel = dst_ch;
-      _last_pwm_duty = 0xFF; 
+      _last_pwm_duty = 0xFF;
+      _tpi_relay_state = -1;
+      _tpi_window_start_ms = 0;
+      _tpi_last_switch_ms = 0;
+    }
+  }
+}
+
+/*****************************************************************************/
+
+void Supla::Sensor::CalculatedGPM::iterateTpiOutput(uint32_t now_ms) {
+
+  if (isnan(_tpi_duty_pct))
+    return;
+
+  validateDestinationChannel();
+
+  if (!_destination_Supla_element || !_destination_Supla_element->getChannel())
+    return;
+
+  auto *dst_ch = _destination_Supla_element->getChannel();
+  if ((dst_ch->getChannelType() != SUPLA_CHANNELTYPE_RELAY) ||
+      dst_ch->isRollerShutterRelayType()) {
+    return;
+  }
+
+  if (now_ms == 0)
+    now_ms = 1;
+
+  // TPI period from Keepalive (s), default 600 s, minimum 10 s
+  uint32_t period_ms = getKeepAliveMs();
+  if (period_ms == 0)
+    period_ms = 600000UL;
+  else if (period_ms < 10000UL)
+    period_ms = 10000UL;
+
+  // Min ON/OFF time from Timeout (s), default 60 s, clamped to period / 2
+  uint32_t min_switch_ms = getTimeoutMs();
+  if (min_switch_ms == 0)
+    min_switch_ms = 60000UL;
+  if (min_switch_ms > (period_ms / 2UL))
+    min_switch_ms = period_ms / 2UL;
+
+  if (_tpi_window_start_ms == 0) {
+    _tpi_window_start_ms = now_ms;
+  }
+
+  uint32_t elapsed_ms = now_ms - _tpi_window_start_ms;
+  if (elapsed_ms >= period_ms) {
+    _tpi_window_start_ms = now_ms;
+    elapsed_ms = 0;
+  }
+
+  bool want_on = false;
+  bool immediate = false;
+
+  if (_tpi_duty_pct <= 0.0f) {
+    want_on = false;
+    immediate = true;
+  } else if (_tpi_duty_pct >= 100.0f) {
+    want_on = true;
+    immediate = true;
+  } else {
+    uint32_t on_ms = static_cast<uint32_t>(
+      (static_cast<double>(period_ms) * _tpi_duty_pct) / 100.0);
+
+    if (on_ms < min_switch_ms)
+      on_ms = 0;
+    else if ((period_ms - on_ms) < min_switch_ms)
+      on_ms = period_ms;
+
+    want_on = (elapsed_ms < on_ms);
+  }
+
+  int8_t desired = want_on ? 1 : 0;
+  if (desired != _tpi_relay_state) {
+    if (!immediate && (_tpi_relay_state != -1) &&
+        ((now_ms - _tpi_last_switch_ms) < min_switch_ms)) {
+      return;
+    }
+
+    _tpi_relay_state = desired;
+    _tpi_last_switch_ms = now_ms;
+
+    auto *relay =
+      static_cast<Supla::Control::Relay *>(_destination_Supla_element);
+    if (want_on) {
+      relay->turnOn();
+    } else {
+      relay->turnOff();
     }
   }
 }
@@ -2596,36 +2694,31 @@ void Supla::Sensor::CalculatedGPM::commitPwmOutput(double out_pct) {
 
   validateDestinationChannel();
 
-  uint8_t rounded_duty = static_cast<uint8_t>(lround(out_pct));
-  
-  if (_destination_Supla_element && (rounded_duty != _last_pwm_duty)) {
+  if (!_destination_Supla_element)
+    return;
 
-    _last_pwm_duty = rounded_duty;
+  Z2S_Core *dst_core = Z2S_Core::getZ2SCoreByChannelNumber(
+    _last_destination_channel);
 
-    Z2S_Core *dst_core = Z2S_Core::getZ2SCoreByChannelNumber(
-      _last_destination_channel);
-    
-    if (dst_core) {
-      
-      
-      switch (dst_core->getZ2SLocalChannelType()) {
-        
+  if (dst_core &&
+      (dst_core->getZ2SLocalChannelType() == LOCAL_CHANNEL_TYPE_GPIO_PWM)) {
 
-        case LOCAL_CHANNEL_TYPE_GPIO_PWM: {
-          
-          auto *pwm = static_cast<Supla::Control::LocalPWM *>(
-            _destination_Supla_element);
-          pwm->setPWM(rounded_duty);
-        } break;
-          
-        // Future expansion:
-        // case LOCAL_CHANNEL_TYPE_GPIO_RELAY:
-        // case LOCAL_CHANNEL_TYPE_VIRTUAL_RELAY: {
-        //   if (rounded_duty > 0) _destination_Supla_element->handleAction(0, Supla::TURN_ON);
-        //   else _destination_Supla_element->handleAction(0, Supla::TURN_OFF);
-        // } break;
-      }
+    uint8_t rounded_duty = static_cast<uint8_t>(lround(out_pct));
+    if (rounded_duty != _last_pwm_duty) {
+      _last_pwm_duty = rounded_duty;
+      auto *pwm = static_cast<Supla::Control::LocalPWM *>(
+        _destination_Supla_element);
+      pwm->setPWM(rounded_duty);
     }
+    return;
+  }
+
+  auto *dst_ch = _destination_Supla_element->getChannel();
+  if (dst_ch && (dst_ch->getChannelType() == SUPLA_CHANNELTYPE_RELAY) &&
+      !dst_ch->isRollerShutterRelayType()) {
+
+    _tpi_duty_pct = static_cast<float>(out_pct);
+    iterateTpiOutput(millis());
   }
 }
 
@@ -2721,6 +2814,12 @@ void Supla::Sensor::CalculatedGPM::iterateAlways() {
 
   uint32_t now_ms = millis();
   if (now_ms == 0) now_ms = 1;
+
+  if (isControlAlgorithmFunc() && _controller_enabled && !_hvac_halted &&
+      !isnan(_tpi_duty_pct) && ((now_ms - _tpi_last_tick_ms) >= 1000UL)) {
+    _tpi_last_tick_ms = now_ms;
+    iterateTpiOutput(now_ms);
+  }
 
   if (interval_ms &&
       ((_last_refresh_ms == 0) || ((now_ms - _last_refresh_ms) > interval_ms))) {

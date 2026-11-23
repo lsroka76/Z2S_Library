@@ -654,13 +654,15 @@ static constexpr char *src_thermometer_channel_desc =
 static constexpr char *src_thermometer_or_hvac_channel_desc =
   "Enter source local thermometer or HVAC channel #";
 static constexpr char *dst_local_pwm_channel_desc =
-  "Enter destination LocalPWM channel # (or -1 to disable)";
+  "Enter destination LocalPWM or Relay channel # (or -1 to disable)";
 
 static constexpr char *keepalive_desc =
-  "keepalive (s) \u2022 turn on delay (s) \u2022 hold repeat (ms)";
+  "keepalive (s) \u2022 turn on delay (s) \u2022 hold repeat (ms) "
+  "\u2022 TPI period (s) [CalcGPM]";
 
 static constexpr char *timeout_desc =
-	"timeout (s) \u2022 turn off delay (s) [logical gates]";
+  "timeout (s) \u2022 turn off delay (s) [logical gates] "
+  "\u2022 TPI min on/off (s) [CalcGPM]";
 
 static constexpr char *refresh_desc =
   "refresh(s) [ElectricityMeter] \u2022 autoset(s) [VirtualBinary] \u2022 "
@@ -7774,7 +7776,6 @@ void updateChannelInfoLabel(
 
 				if (z2s_channel.local_channel_type == LOCAL_CHANNEL_TYPE_CALC_GPM) {
 
-					enableChannelTimings(4);
 					enableChannelFlags(0);
 					enableControlStyle(local_channel_function_selector, true);
 
@@ -7787,13 +7788,17 @@ void updateChannelInfoLabel(
 					ESPUI.updateSelect(
 						local_channel_function_selector, z2s_channel.local_channel_func);
 
-					ESPUI.updateNumber(refresh_number, z2s_core->getRefreshValue());
-
 					uint8_t cgpm_func = z2s_core->getZ2SLocalChannelFunc();
 
 					if (cgpm_func == CALCULATED_GPM_FUNC_LINEAR_MAP ||
 					    cgpm_func == CALCULATED_GPM_FUNC_PI_CONTROL ||
 					    cgpm_func == CALCULATED_GPM_FUNC_PID_CONTROL) {
+
+						enableChannelTimings(1 + 2 + 4);
+						ESPUI.updateNumber(
+							keepalive_number, z2s_core->getKeepAliveValue());
+						ESPUI.updateNumber(timeout_number, z2s_core->getTimeoutValue());
+						ESPUI.updateNumber(refresh_number, z2s_core->getRefreshValue());
 
 						enableChannelParams(1 + 2 + 4 + 8);
 
@@ -7862,7 +7867,11 @@ void updateChannelInfoLabel(
 						uint8_t dst_ch = z2s_core->getDestinationChannel();
 						ESPUI.updateNumber(
 						  param_4_number, (dst_ch == 0xFF) ? -1 : dst_ch);
-					} else {
+					} 
+					else {
+
+						enableChannelTimings(4);
+						ESPUI.updateNumber(refresh_number, z2s_core->getRefreshValue());
 
 						enableChannelParams(4);
 						ESPUI.updateControlLabel(
