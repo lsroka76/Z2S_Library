@@ -1299,7 +1299,7 @@ void fillMemoryUptimeInformation(char *buf, uint16_t buf_max_len) {
 		uint16_t meminfbuf_size = snprintf_P(
 		  buf, buf_max_len, "<b><i>FreeHeap:</b></i> %u B <b>| <i>MinimalFreeHeap"
 		  ":</b></i> %u B <b>| <i>MaxAllocHeap:</b></i> %u B<b>| <i>CPU usage:"
-	   	"</b></i> %04.1f %%<br><br>"
+	   	"</b></i> %4.1f %%<br><br>"
 			//"<b><i>Custom FreeHeap:</b></i> %u B <b>| <i>Custom MinimalFreeHeap"
 		  //":</b></i> %u B <b>| <i>CustomMaxAllocHeap:</b></i> %u B<br><br>"
 		  //"<b><i>uxTaskGetStackHighWaterMark (main):</b></i> %u B <b>| <i>"

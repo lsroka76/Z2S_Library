@@ -480,6 +480,22 @@ void Z2S_configureDeviceSpecificReporting(
         LUMI_CUSTOM_CLUSTER_TRV_WINDOW_DETECTION_ID,
         ESP_ZB_ZCL_ATTR_TYPE_U8, 1, &write_mask, false, 1,
         LUMI_MANUFACTURER_CODE);
+
+      zbGateway.sendAttributeRead(
+        device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_TRV_BATTERY_ID,
+        false, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 1, LUMI_MANUFACTURER_CODE);
+
+      zbGateway.sendAttributeRead(
+        device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_TRV_SENSOR_TYPE_ID,
+        false, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 1, LUMI_MANUFACTURER_CODE);
+
+      zbGateway.sendAttributeRead(
+        device, LUMI_CUSTOM_CLUSTER, LUMI_CUSTOM_CLUSTER_TRV_SYSTEM_MODE_ID,
+        false, ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV, 1, 1, LUMI_MANUFACTURER_CODE);
+
+      zbGateway.sendAttributeRead(
+        device, ESP_ZB_ZCL_CLUSTER_ID_POWER_CONFIG,
+        ESP_ZB_ZCL_ATTR_POWER_CONFIG_BATTERY_VOLTAGE_ID, false);
     } break;
 
     case Z2S_DEVICE_DESC_LUMI_SMOKE_DETECTOR: {

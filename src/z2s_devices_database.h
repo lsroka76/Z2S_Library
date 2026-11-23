@@ -1804,35 +1804,7 @@ inline constexpr z2s_reporting_set_desc_t Z2S_REPORTING_SETS_DESC[] PROGMEM [[ma
     .z2s_min_interval_value = 0,
     .z2s_max_interval_value = 3600,
     .z2s_delta_value = 10,
-    .z2s_manufacturer_code = 0},
-
-  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_LUMI_TRV,
-    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT,
-    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_THERMOSTAT_SYSTEM_MODE_ID,
-    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM,
-    .z2s_min_interval_value = 10,
-    .z2s_max_interval_value = 3600,
-    .z2s_delta_value_8 = 0,
-    .z2s_manufacturer_code = 0},
-
-  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_LUMI_TRV,
-    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT,
-    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_THERMOSTAT_THERMOSTAT_RUNNING_STATE_ID,
-    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_16BITMAP,
-    .z2s_min_interval_value = 0,
-    .z2s_max_interval_value = 3600,
-    .z2s_delta_value = 0,
-    .z2s_manufacturer_code = 0},
-
-  { .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_LUMI_TRV,
-    .z2s_cluster_id = ESP_ZB_ZCL_CLUSTER_ID_THERMOSTAT,
-    .z2s_attribute_id = ESP_ZB_ZCL_ATTR_THERMOSTAT_PI_HEATING_DEMAND_ID,
-    .z2s_attribute_type = ESP_ZB_ZCL_ATTR_TYPE_U8,
-    .z2s_min_interval_value = 10,
-    .z2s_max_interval_value = 3600,
-    .z2s_delta_value_8 = 10,
-    .z2s_manufacturer_code = 0},
-
+    .z2s_manufacturer_code = 0}
 };//Z2S_REPORTING_SETS_DESC
 
 inline constexpr z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {

@@ -3230,6 +3230,10 @@ void Z2S_onLumiCustomClusterReceive(
           short_addr, ZBD_BATTERY_VOLTAGE_MSG, lumi_battery);
       }
 
+      if (model_id == Z2S_DEVICE_DESC_LUMI_TRV) {
+        return;
+      }
+
 /*-----------Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER-----------*/
 /*----------Z2S_DEVICE_DESC_LUMI_CURTAIN_DRIVER_1----------*/
 
@@ -3618,17 +3622,20 @@ void Z2S_onLumiCustomClusterReceive(
 
 
     case LUMI_CUSTOM_CLUSTER_TRV_SYSTEM_MODE_ID:
+    case LUMI_CUSTOM_CLUSTER_TRV_PRESET_ID:
     case LUMI_CUSTOM_CLUSTER_TRV_CHILD_LOCK_ID:
     case LUMI_CUSTOM_CLUSTER_TRV_BATTERY_ID:
     case LUMI_CUSTOM_CLUSTER_TRV_SCHEDULE_MODE_ID:
-    case LUMI_CUSTOM_CLUSTER_TRV_SENSOR_TYPE_ID: {
+    case LUMI_CUSTOM_CLUSTER_TRV_SENSOR_TYPE_ID:
+    case LUMI_CUSTOM_CLUSTER_W500_PRESET_ID:
+    case LUMI_CUSTOM_CLUSTER_W500_HYSTERESIS_ID: {
 
       Supla::Element* element = Z2S_findZ2SElement(
-        short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HVAC, 
-        NO_CUSTOM_CMD_SID);    
-                                  
+        short_addr, endpoint, cluster, SUPLA_CHANNELTYPE_HVAC,
+        NO_CUSTOM_CMD_SID);
+
       if (!element) {
-    
+
         log_e("no Hvac channel found for address 0x%04X", short_addr);
         return;
       }
@@ -3643,16 +3650,22 @@ void Z2S_onLumiCustomClusterReceive(
             element, TRV_SYSTEM_MODE_MSG, lumi_mode == 0 ? 0 : 1);
         } break;
 
-        //case LUMI_CUSTOM_CLUSTER_TRV_PRESET_ID:
-        
-        
+
+        case LUMI_CUSTOM_CLUSTER_TRV_PRESET_ID: {
+
+          // 0 = manual, 1 = auto, 2 = away
+          msgZ2SDeviceHvac(
+            element, TRV_SCHEDULE_MODE_MSG, lumi_mode == 0 ? 0 : 2);
+        } break;
+
+
         case LUMI_CUSTOM_CLUSTER_TRV_CHILD_LOCK_ID: {
 
           msgZ2SDeviceHvac(
             element, TRV_CHILD_LOCK_MSG, lumi_mode == 0 ? 0 : 1);
         } break;
-        
-        
+
+
         case LUMI_CUSTOM_CLUSTER_TRV_BATTERY_ID: {
 
           log_i("lumi trv battery %u", lumi_mode);
@@ -3660,18 +3673,18 @@ void Z2S_onLumiCustomClusterReceive(
           updateSuplaBatteryLevel(
             short_addr, ZBD_BATTERY_LEVEL_MSG, lumi_mode);
         } break;
-        
-        
+
+
         case LUMI_CUSTOM_CLUSTER_TRV_SCHEDULE_MODE_ID: {
 
-          msgZ2SDeviceHvac(element, TRV_SCHEDULE_MODE_MSG, 
+          msgZ2SDeviceHvac(element, TRV_SCHEDULE_MODE_MSG,
             lumi_mode == 0 ? 0 : 2);
         } break;
 
 
         case LUMI_CUSTOM_CLUSTER_W500_PRESET_ID: {
 
-          msgZ2SDeviceHvac(element, TRV_SCHEDULE_MODE_MSG, 
+          msgZ2SDeviceHvac(element, TRV_SCHEDULE_MODE_MSG,
             lumi_mode == 8 ? 0 : 2);
         } break;
 
@@ -3679,7 +3692,7 @@ void Z2S_onLumiCustomClusterReceive(
         case LUMI_CUSTOM_CLUSTER_W500_HYSTERESIS_ID: {
 
           uint32_t temperature_hysteresis = lumi_mode * 10;
-          msgZ2SDeviceHvac(element, TRV_TEMPERATURE_HYSTERESIS_MSG, 
+          msgZ2SDeviceHvac(element, TRV_TEMPERATURE_HYSTERESIS_MSG,
             temperature_hysteresis);
         } break;
 
@@ -3690,7 +3703,7 @@ void Z2S_onLumiCustomClusterReceive(
 
           msgZ2SDeviceHvac(
             element, TRV_SENSOR_TYPE_MSG, lumi_mode);
-        }
+        } break;
       }
     } break;
   }
