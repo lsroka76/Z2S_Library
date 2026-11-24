@@ -110,7 +110,8 @@ private:
   bool _connected;
   bool _permit_joining;
   bool _is_factory_new = false;
-
+  bool _erase_nvs = false;
+  
   uint8_t _open_network;
   zigbee_scan_result_t *_scan_result;
   SemaphoreHandle_t lock;
@@ -120,6 +121,9 @@ private:
   TaskHandle_t _zigbee_task_handle = NULL;
 
   bool zigbeeInit(esp_zb_cfg_t *zb_cfg, bool erase_nvs);
+  void sendHostBeginFrame();
+  bool waitHostStackStarted(uint32_t timeout_ms);
+
   static void scanCompleteCallback(esp_zb_zdp_status_t zdo_status, uint8_t count, esp_zb_network_descriptor_t *nwk_descriptor);
   const char *getDeviceTypeString(esp_zb_ha_standard_devices_t deviceId);
   void searchBindings();
@@ -133,6 +137,7 @@ public:
 
   bool begin(zigbee_role_t role = ZIGBEE_END_DEVICE, bool erase_nvs = false);
   bool begin(esp_zb_cfg_t *role_cfg, bool erase_nvs = false);
+  void retryHostBegin();
   void stop();
   void start();
 

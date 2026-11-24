@@ -149,6 +149,29 @@ Supla::Sensor::GeneralPurposeMeasurement *cpu_gpm = nullptr;
 bool _restart_scheduled = false;
 static bool _forced_config = false;
 static bool _start_Zigbee = true;
+static bool _zigbee_post_init_done = false;
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+static bool     _zigbee_sync_pending     = false;
+static uint32_t _zigbee_sync_last_try_ms = 0;
+#endif
+
+static void onZigbeeSubsystemStarted() {
+  if (_zigbee_post_init_done) return;
+  _zigbee_post_init_done = true;
+
+  esp_coex_wifi_i154_enable();
+  zbGateway.clearLocalBindings();
+  handleGatewayEvent(Z2S_SUPLA_EVENT_ON_ZIGBEE_STARTED);
+
+  if (!Z2S_GatewayPreferences.getBool("c6_synced", false)) {
+    Z2S_GatewayPreferences.putBool("c6_synced", true);
+
+    if (Z2S_Devices.empty() && !Zigbee.isFactoryStack()) {
+      log_i("Fresh S3 install with non-factory C6 stack -> factory resetting C6!");
+      Zigbee.factoryReset();
+    }
+  }
+}
 
 SemaphoreHandle_t saveMutex;
 
@@ -265,14 +288,17 @@ void supla_callback_bridge(int event, int action) {
       if (sd_current_status == STATUS_SOFTWARE_RESET) {
 
         disableZ2SNotifications();
+        #if defined(USE_GEMINI_PROTOCOL_HOST)
+        _zigbee_sync_pending = false;
+        #endif
 
         log_i("software reset - stopping Zigbee stack");
-  
+
         Zigbee.stop();
         delay(500);
 
         log_i("software reset - closing LittleFs");
-        
+
         _restart_scheduled = true;
         Z2S_endLittleFs(true);
         return;
@@ -281,37 +307,38 @@ void supla_callback_bridge(int event, int action) {
       if (sd_current_status == STATUS_INITIALIZED) {
 
         handleGatewayEvent(Z2S_SUPLA_EVENT_ON_SUPLA_INITIALIZED);
-        
+
         if (_start_Zigbee && (!Zigbee.started())) {
-        
+
           log_i("Starting Zigbee subsystem");
-    
+
           esp_coex_wifi_i154_enable();
-  
+
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+          if (Zigbee.begin(ZIGBEE_COORDINATOR)) {
+            _zigbee_sync_pending = false;
+            onZigbeeSubsystemStarted();
+          } else {
+            log_w("C6 NCP offline - running in degraded mode (Web GUI/OTA active, retrying in background)");
+            _zigbee_sync_pending     = true;
+            _zigbee_sync_last_try_ms = millis();
+          }
+#else
           if (!Zigbee.begin(ZIGBEE_COORDINATOR)) {
-          
+
             log_e("Zigbee failed to start! Rebooting...");
 
             disableGatewayActions();
             _restart_scheduled = true;
             SuplaDevice.scheduleSoftRestart(1000);
+            return;
           }
-          esp_coex_wifi_i154_enable();
-          zbGateway.clearLocalBindings();
-          handleGatewayEvent(Z2S_SUPLA_EVENT_ON_ZIGBEE_STARTED);
-        
-          if (!Z2S_GatewayPreferences.getBool("c6_synced", false)) {
-          
-            Z2S_GatewayPreferences.putBool("c6_synced", true);
-          
-            if (Z2S_Devices.empty() && !Zigbee.isFactoryStack()) {
-              log_i("Fresh S3 install with non-factory C6 stack -> factory resetting C6!");
-              Zigbee.factoryReset();
-            }
-          }
+          onZigbeeSubsystemStarted();
+#endif
         }
         return;
       }
+
       if (sd_current_status == STATUS_REGISTERED_AND_READY) {
 
         handleGatewayEvent(Z2S_SUPLA_EVENT_ON_SUPLA_REGISTERED_AND_READY);
@@ -1093,17 +1120,52 @@ void loop() {
   }
 
   
-  if (_initial_gui_check && (!Z2S_isGUIStarted()) && 
-      ((_enable_gui_on_start != no_gui_mode) || _gui_build_flags) && 
-      Zigbee.started() && 
+  #if defined(USE_GEMINI_PROTOCOL_HOST)
+  if (_zigbee_sync_pending) {
+    if (Zigbee.started()) {
+      _zigbee_sync_pending = false;
+      log_i("C6 NCP online! Completing Zigbee subsystem initialization...");
+      onZigbeeSubsystemStarted();
+      if (Z2S_isGUIStarted()) {
+        Z2S_updateWebGUI();
+      }
+    } else if (millis() - _zigbee_sync_last_try_ms >= 3000) {
+      _zigbee_sync_last_try_ms = millis();
+      Zigbee.retryHostBegin();
+    }
+  }
+#endif
+
+  bool gui_can_start = Zigbee.started();
+
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+  bool degraded_gui_recovery = _zigbee_sync_pending && Supla::Network::IsReady();
+  gui_can_start = gui_can_start || degraded_gui_recovery;
+#endif
+
+  if (_initial_gui_check && (!Z2S_isGUIStarted()) &&
+      gui_can_start &&
       (SuplaDevice.uptime.getUptime() > _gui_start_delay)) {
 
-    _initial_gui_check = false;
-    
-    Z2S_buildWebGUI((gui_modes_t)_enable_gui_on_start, _gui_build_flags);  
-    Z2S_startWebGUI();
-    Z2S_startUpdateServer();
-    onTuyaCustomClusterReceive(GUI_onTuyaCustomClusterReceive);
+    if ((_enable_gui_on_start != no_gui_mode) || _gui_build_flags) {
+      _initial_gui_check = false;
+
+      Z2S_buildWebGUI((gui_modes_t)_enable_gui_on_start, _gui_build_flags);
+      Z2S_startWebGUI();
+      Z2S_startUpdateServer();
+      onTuyaCustomClusterReceive(GUI_onTuyaCustomClusterReceive);
+    }
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+    else if (degraded_gui_recovery) {
+      _initial_gui_check = false;
+      log_w("C6 NCP offline - forcing minimal Web GUI / Update Server for recovery");
+
+      Z2S_buildWebGUI(minimal_gui_mode);
+      Z2S_startWebGUI();
+      Z2S_startUpdateServer();
+      onTuyaCustomClusterReceive(GUI_onTuyaCustomClusterReceive);
+    }
+#endif
   }
  
   SuplaDevice.iterate();

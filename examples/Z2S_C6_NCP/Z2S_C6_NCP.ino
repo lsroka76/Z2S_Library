@@ -43,18 +43,12 @@ void setup() {
     vTaskDelay(pdMS_TO_TICKS(50));
   }
 
-  // 5. Fallback: If C6 was powered on before S3, start coordinator from C6 NVRAM.
-  //    When S3 boots later and sends G_CMD_ZB_BEGIN, C6 will sync & reply immediately!
-  if (!Zigbee.started()) {
-    log_i("Starting C6 Coordinator from NVRAM (S3 will sync when it boots)...");
-    if (Zigbee.begin(ZIGBEE_COORDINATOR, false)) {
-      GeminiBridge::sendStackStartedEvt();
-      log_i("C6 Zigbee Coordinator started!");
-    } else {
-      log_e("C6 Zigbee Coordinator failed to start! Rebooting...");
-      delay(1000);
-      esp_restart();
-    }
+  // 5. Fallback / sync: If S3 hasn't sent G_CMD_ZB_BEGIN yet, start coordinator from C6 NVRAM.
+  //    Serialized with G_CMD_ZB_BEGIN so both tasks can never call Zigbee.begin() concurrently.
+  if (!GeminiBridge::ncpEnsureZigbeeStarted()) {
+    log_e("C6 Zigbee Coordinator failed to start! Rebooting...");
+    delay(1000);
+    esp_restart();
   }
 
   // 6. Disable Task Watchdogs on C6 (same as standalone Z2S_Gateway)

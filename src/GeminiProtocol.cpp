@@ -46,7 +46,10 @@ static volatile uint32_t s_c6_boot_id         = 0;
 static volatile bool     s_ncp_reset_detected = true;
 #elif defined(USE_GEMINI_PROTOCOL_NCP)
 #include <esp_random.h>
-static uint32_t s_c6_boot_id = 0;
+static uint32_t          s_c6_boot_id         = 0;
+static SemaphoreHandle_t s_zb_begin_mutex     = nullptr;
+static StaticSemaphore_t s_zb_begin_mutex_buf = {};
+static volatile bool     s_host_begin_pending = false;
 #endif
 
 SemaphoreHandle_t GeminiBridge::_tx_mutex          = nullptr;
@@ -85,7 +88,11 @@ bool GeminiBridge::initUart() {
   _sync_rsp_sem   = xSemaphoreCreateBinary();
   _joined_mutex   = xSemaphoreCreateMutexStatic(&_joined_mutex_buf);
 
-  #if defined(USE_GEMINI_PROTOCOL_HOST)
+#if defined(USE_GEMINI_PROTOCOL_NCP)
+  s_zb_begin_mutex = xSemaphoreCreateMutexStatic(&s_zb_begin_mutex_buf);
+#endif
+
+#if defined(USE_GEMINI_PROTOCOL_HOST)
   // Optional hardware reset of C6 if EN/BOOT pins are wired (>= 0)
   if (GEMINI_PIN_C6_BOOT >= 0) {
     pinMode(GEMINI_PIN_C6_BOOT, OUTPUT);
@@ -233,6 +240,55 @@ void GeminiBridge::sendStackStartedEvt() {
   evt.c6_boot_id   = s_c6_boot_id;
   evt.c6_uptime_ms = millis();
   sendFrame(G_EVT_STACK_STARTED, &evt, sizeof(evt));
+#endif
+}
+
+#if defined(USE_GEMINI_PROTOCOL_NCP)
+static bool ncpStartZigbee(
+  zigbee_role_t role, bool erase_nvs,
+  uint32_t channel_mask, uint8_t open_network_sec, bool from_host)
+{
+  if (!s_zb_begin_mutex) return false;
+
+  if (from_host) {
+    s_host_begin_pending = true;
+  }
+
+  xSemaphoreTake(s_zb_begin_mutex, portMAX_DELAY);
+
+  if (from_host) {
+    s_host_begin_pending = false;
+  }
+
+  bool started_now = false;
+  if (!Zigbee.started()) {
+    if (from_host) {
+      Zigbee.setPrimaryChannelMask(channel_mask);
+      Zigbee.setRebootOpenNetwork(open_network_sec);
+    } else {
+      log_i("Starting C6 Coordinator from NVRAM (S3 will sync when it boots)...");
+    }
+    started_now = Zigbee.begin(role, erase_nvs);
+    if (!from_host && started_now) {
+      log_i("C6 Zigbee Coordinator started!");
+    }
+  }
+
+  bool is_started = Zigbee.started();
+  if (is_started && (from_host || (started_now && !s_host_begin_pending))) {
+    GeminiBridge::sendStackStartedEvt();
+  }
+
+  xSemaphoreGive(s_zb_begin_mutex);
+  return is_started;
+}
+#endif
+
+bool GeminiBridge::ncpEnsureZigbeeStarted() {
+#if defined(USE_GEMINI_PROTOCOL_NCP)
+  return ncpStartZigbee(ZIGBEE_COORDINATOR, false, 0, 0, false);
+#else
+  return false;
 #endif
 }
 
@@ -637,10 +693,13 @@ void GeminiBridge::cmdWorkerTask(void *arg) {
             s_ncp_version[sizeof(s_ncp_version) - 1] = '\0';
           }
           if (item.hdr.payload_len >= sizeof(G_PktEvtStackStarted)) {
-            s_c6_time_offset     = (int32_t)evt->c6_uptime_ms - (int32_t)millis();
-            s_c6_boot_id         = evt->c6_boot_id;
-            s_ncp_reset_detected = Z2S_syncRtcDeviceTable(evt->c6_boot_id);
-          } else {
+            s_c6_time_offset = (int32_t)evt->c6_uptime_ms - (int32_t)millis();
+            if (s_c6_boot_id != evt->c6_boot_id) {
+              s_c6_boot_id         = evt->c6_boot_id;
+              s_ncp_reset_detected = Z2S_syncRtcDeviceTable(evt->c6_boot_id);
+            }
+          } 
+          else {
             s_ncp_reset_detected = Z2S_syncRtcDeviceTable(0);
           }
         }
@@ -819,15 +878,9 @@ void GeminiBridge::cmdWorkerTask(void *arg) {
       
       case G_CMD_ZB_BEGIN: {
         const auto *req = reinterpret_cast<const G_PktZbBegin *>(p);
-        if (!Zigbee.started()) {
-        
-          Zigbee.setPrimaryChannelMask(req->channel_mask);
-          Zigbee.setRebootOpenNetwork(req->open_network_sec);
-          Zigbee.begin((zigbee_role_t)req->role, req->erase_nvs != 0);
-        }
-        if (Zigbee.started()) {
-          sendStackStartedEvt();
-        }
+        ncpStartZigbee(
+          (zigbee_role_t)req->role, req->erase_nvs != 0,
+          req->channel_mask, req->open_network_sec, true);
       } break;
 
       case G_CMD_OPEN_NETWORK: {

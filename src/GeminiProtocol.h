@@ -437,7 +437,8 @@ public:
 
   static size_t requestOtaChunkFromHost(uint8_t *dest, uint32_t offset, uint8_t size);
   static void sendStackStartedEvt();
-
+  static bool ncpEnsureZigbeeStarted();
+  
   // S3 Host shims for direct ZBOSS SDK calls in Z2S_Gateway.ino & z2s_web_gui.cpp
   static void getCoordinatorIeee(uint8_t *ieee);
   static void getExtendedPanId(uint8_t *ext_pan_id);

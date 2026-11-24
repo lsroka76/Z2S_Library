@@ -11,7 +11,9 @@
 
 #include "Arduino.h"
 
-#define ZB_INIT_TIMEOUT 30000  // 30 seconds
+#define ZB_INIT_TIMEOUT       30000  // 30 seconds (standalone C6 / NCP)
+#define ZB_HOST_INIT_TIMEOUT   8000  // 8 seconds initial wait on S3 Host before degraded mode
+#define ZB_HOST_RETRY_MS       2000  // Re-send G_CMD_ZB_BEGIN every 2 s while waiting
 
 #if !defined(USE_GEMINI_PROTOCOL_HOST)
 extern "C" void zb_set_ed_node_descriptor(bool power_src, bool rx_on_when_idle, bool alloc_addr);
@@ -55,19 +57,25 @@ static void zb_apsde_data_confirm_handler(esp_zb_apsde_data_confirm_t confirm);
 #endif
 
 bool ZigbeeCore::begin(esp_zb_cfg_t *role_cfg, bool erase_nvs) {
+  _role      = (zigbee_role_t)role_cfg->esp_zb_role;
+  _erase_nvs = erase_nvs;
   if (!zigbeeInit(role_cfg, erase_nvs)) {
     log_e("ZigbeeCore begin failed");
     return false;
   }
-  _role = (zigbee_role_t)role_cfg->esp_zb_role;
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+  return waitHostStackStarted(ZB_HOST_INIT_TIMEOUT);
+#else
   if (xSemaphoreTake(lock, pdMS_TO_TICKS(ZB_INIT_TIMEOUT)) != pdTRUE) {
     log_e("ZigbeeCore begin timeout");
   }
   return started();
+#endif
 }
 
 bool ZigbeeCore::begin(zigbee_role_t role, bool erase_nvs) {
   bool status = true;
+  _erase_nvs = erase_nvs;
   switch (role) {
     case ZIGBEE_COORDINATOR: {
       _role = ZIGBEE_COORDINATOR;
@@ -91,10 +99,18 @@ bool ZigbeeCore::begin(zigbee_role_t role, bool erase_nvs) {
       log_e("Invalid Zigbee Role");
       return false;
   }
-  if (!status || xSemaphoreTake(lock, pdMS_TO_TICKS(ZB_INIT_TIMEOUT)) != pdTRUE) {
-    log_e("ZigbeeCore begin failed or timeout");
+  if (!status) {
+    log_e("ZigbeeCore begin failed");
+    return false;
+  }
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+  return waitHostStackStarted(ZB_HOST_INIT_TIMEOUT);
+#else
+  if (xSemaphoreTake(lock, pdMS_TO_TICKS(ZB_INIT_TIMEOUT)) != pdTRUE) {
+    log_e("ZigbeeCore begin timeout");
   }
   return started();
+#endif
 }
 
 void ZigbeeCore::addEndpoint(ZigbeeEP *ep) {
@@ -132,16 +148,64 @@ static void esp_zb_task(void *pvParameters) {
 }
 #endif
 
-bool ZigbeeCore::zigbeeInit(esp_zb_cfg_t *zb_cfg, bool erase_nvs) {
+void ZigbeeCore::sendHostBeginFrame() {
 #if defined(USE_GEMINI_PROTOCOL_HOST)
-  GeminiBridge::initUart();
   G_PktZbBegin pkt = {
     .channel_mask     = _primary_channel_mask,
     .role             = (uint8_t)_role,
-    .erase_nvs        = (uint8_t)(erase_nvs ? 1 : 0),
+    .erase_nvs        = (uint8_t)(_erase_nvs ? 1 : 0),
     .open_network_sec = _open_network
   };
   GeminiBridge::sendFrame(G_CMD_ZB_BEGIN, &pkt, sizeof(pkt));
+#endif
+}
+
+bool ZigbeeCore::waitHostStackStarted(uint32_t timeout_ms) {
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+  uint32_t start_ms = millis();
+  while (!started()) {
+    uint32_t elapsed = millis() - start_ms;
+    if (elapsed >= timeout_ms) {
+      break;
+    }
+    uint32_t remaining = timeout_ms - elapsed;
+    uint32_t step_ms   = (remaining < ZB_HOST_RETRY_MS) ? remaining : ZB_HOST_RETRY_MS;
+    if (xSemaphoreTake(lock, pdMS_TO_TICKS(step_ms)) == pdTRUE && started()) {
+      break;
+    }
+    if (!started() && (millis() - start_ms < timeout_ms)) {
+      log_i("Waiting for C6 NCP... retrying G_CMD_ZB_BEGIN");
+      sendHostBeginFrame();
+    }
+  }
+  if (!started()) {
+    log_w("C6 NCP did not respond within %lu ms", (unsigned long)timeout_ms);
+  }
+  return started();
+#else
+  return started();
+#endif
+}
+
+void ZigbeeCore::retryHostBegin() {
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+  if (!started()) {
+    GeminiBridge::initUart();
+    sendHostBeginFrame();
+  }
+#endif
+}
+
+bool ZigbeeCore::zigbeeInit(esp_zb_cfg_t *zb_cfg, bool erase_nvs) {
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+  _erase_nvs = erase_nvs;
+  if (!started()) {
+    xSemaphoreTake(lock, 0); // Flush any stale token before starting UART tasks
+  }
+  GeminiBridge::initUart();
+  if (!started()) {
+    sendHostBeginFrame();
+  }
   return true;
 #else
   esp_zb_platform_config_t platform_config = {
