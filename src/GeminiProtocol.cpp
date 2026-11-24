@@ -1160,10 +1160,15 @@ void GeminiBridge::cmdWorkerTask(void *arg) {
       case G_CMD_BIND_CLUSTER: {
         const auto *req = reinterpret_cast<const G_PktBindClusterReq *>(p);
         zbg_device_params_t dev = req->device;
+        zbGateway._last_bind_success = false;
+        zbGateway._last_bind_status  = ESP_ZB_ZDP_STATUS_INV_REQUESTTYPE;
         if (req->mode == 0)      zbGateway.bindDeviceCluster(&dev, req->cluster_id, req->groupcast_flag);
         else if (req->mode == 1) zbGateway.bindDeviceCluster2(&dev, req->cluster_id);
         else if (req->mode == 2) zbGateway.unbindLocalDeviceCluster(&dev, req->cluster_id);
-        uint8_t rsp[2] = { 1, 0 };
+        uint8_t rsp[2] = {
+          (uint8_t)(zbGateway._last_bind_success ? 1 : 0),
+          (uint8_t)zbGateway._last_bind_status
+        };
         sendFrame(G_RSP_STATUS, rsp, sizeof(rsp), item.hdr.seq_num);
       } break;
 

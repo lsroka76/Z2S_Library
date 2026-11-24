@@ -900,11 +900,9 @@ private:
 
   static findcb_userdata_t findcb_userdata;
   static volatile bool _last_bind_success;
+  static volatile esp_zb_zdp_status_t _last_bind_status;
   static volatile bool _in_binding;
   static volatile bool _new_device_joined;
-
-  static volatile uint8_t _binding_error_retries;
-
 
   static query_basic_cluster_data_t _last_device_query;
   static esp_zb_zcl_attribute_t _read_attr_last_result;
@@ -1047,6 +1045,8 @@ private:
     uint16_t manuf_specific, uint8_t buffer_size, uint8_t *buffer);
 
   static void bindCb(esp_zb_zdp_status_t zdo_status, void *user_ctx);
+  static bool executeBindRequest(
+    esp_zb_zdo_bind_req_param_t *bind_req, const zbg_device_params_t *device, bool unbind);
   static void bindDevicesCb(esp_zb_zdp_status_t zdo_status, void *user_ctx);
   static void find_Cb(
     esp_zb_zdp_status_t zdo_status, uint16_t addr, uint8_t endpoint, 

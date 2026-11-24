@@ -18,10 +18,10 @@ esp_zb_zcl_ota_upgrade_server_variable_t ota_server_variable = {
 ZigbeeGateway *ZigbeeGateway::_instance = nullptr;
 findcb_userdata_t ZigbeeGateway::findcb_userdata;
 volatile bool ZigbeeGateway::_last_bind_success = false;
+volatile esp_zb_zdp_status_t ZigbeeGateway::_last_bind_status = ESP_ZB_ZDP_STATUS_TIMEOUT;
 volatile bool ZigbeeGateway::_in_binding = false;
 volatile bool ZigbeeGateway::_new_device_joined = false;
 volatile bool ZigbeeGateway::_active_pairing = false;
-volatile uint8_t ZigbeeGateway::_binding_error_retries = 0;
 query_basic_cluster_data_t ZigbeeGateway::_last_device_query;
 volatile uint8_t ZigbeeGateway::_read_attr_last_tsn = 0;
 volatile uint8_t ZigbeeGateway::_read_attr_last_tsn_flag = 0xFF;
@@ -46,8 +46,15 @@ uint16_t ZigbeeGateway::_write_attr_attribute_id_last_result = {};
 esp_zb_zcl_status_t ZigbeeGateway::_custom_cmd_status_last_result = {};
 uint8_t ZigbeeGateway::_custom_cmd_resp_to_cmd_last_result = {};
 
-#define ZB_CMD_TIMEOUT 10000
+#define ZB_CMD_TIMEOUT             10000
+#define ZB_BIND_TOTAL_TIMEOUT_MS   12000 // Strictly < S3's 15000 ms UART wait timeout
+#define ZB_BIND_ATTEMPT_TIMEOUT_MS  5000 // Per-attempt wait cap
+#define ZB_BIND_MAX_ATTEMPTS           3 // 1 initial attempt + up to 2 retries
 
+#if !defined(USE_GEMINI_PROTOCOL_HOST)
+static zbg_device_params_t          s_bind_device      = {};
+static volatile uint32_t            s_bind_gen         = 0;
+#endif
 SemaphoreHandle_t ZigbeeGateway::gt_lock;
 
 ZigbeeGateway::ZigbeeGateway(uint8_t endpoint) : ZigbeeEP(endpoint) {
@@ -192,26 +199,104 @@ void ZigbeeGateway::bindDevicesCb(esp_zb_zdp_status_t zdo_status, void *user_ctx
     log_e("Devices direct %sbinding error (0x%02X)!", unbind ? "un" : "", zdo_status);
 }
 
+/*****************************************************************************/
+
 void ZigbeeGateway::bindCb(esp_zb_zdp_status_t zdo_status, void *user_ctx) {
-  zbg_device_params_t *device = (zbg_device_params_t *)user_ctx;
+#if !defined(USE_GEMINI_PROTOCOL_HOST)
+  uint32_t cb_gen = (uint32_t)(uintptr_t)user_ctx;
+  if (!_in_binding || cb_gen != s_bind_gen) {
+    log_w("Ignoring late/stale bindCb (status 0x%02X, gen %lu != %lu)",
+          zdo_status, (unsigned long)cb_gen, (unsigned long)s_bind_gen);
+    return;
+  }
+
+  _last_bind_status = zdo_status;
   if (zdo_status == ESP_ZB_ZDP_STATUS_SUCCESS) {
-    log_i("ZED (0x%x), endpoint (0x%x) cluster (0x%x) has bounded to ZC", 
-          device->short_addr, device->endpoint, device->cluster_id);
+    log_i("ZED (0x%04x), endpoint (0x%02x) cluster (0x%04x) has bounded to ZC",
+          s_bind_device.short_addr, s_bind_device.endpoint, s_bind_device.cluster_id);
     _is_bound = true;
     _last_bind_success = true;
   } else {
-    log_e("Binding failed (0x%x)! Device (0x%x), endpoint (0x%x), cluster (0x%x)", 
-          zdo_status, device->short_addr, device->endpoint, device->cluster_id);
-    if (_binding_error_retries > 0) {
-      _last_bind_success = false;
-      --_binding_error_retries;
-    } else {
-      _last_bind_success = true;
-    }
+    log_e("Binding failed (0x%02x)! Device (0x%04x), endpoint (0x%02x), cluster (0x%04x)",
+          zdo_status, s_bind_device.short_addr, s_bind_device.endpoint, s_bind_device.cluster_id);
+    _last_bind_success = false;
   }
   _in_binding = false;
   xSemaphoreGive(gt_lock);
+#endif
 }
+
+/*****************************************************************************/
+
+#if !defined(USE_GEMINI_PROTOCOL_HOST)
+bool ZigbeeGateway::executeBindRequest(
+  esp_zb_zdo_bind_req_param_t *bind_req, const zbg_device_params_t *device, bool unbind) {
+
+  uint32_t start_ms = millis();
+  _last_bind_success = false;
+
+  for (uint8_t attempt = 0; attempt < ZB_BIND_MAX_ATTEMPTS; attempt++) {
+    uint32_t elapsed = millis() - start_ms;
+    if (elapsed >= ZB_BIND_TOTAL_TIMEOUT_MS) {
+      break;
+    }
+    uint32_t remaining = ZB_BIND_TOTAL_TIMEOUT_MS - elapsed;
+    if (attempt > 0 && remaining < 2000) {
+      break; // Not enough budget left for a meaningful RF retry
+    }
+    uint32_t wait_ms = (remaining < ZB_BIND_ATTEMPT_TIMEOUT_MS) ? remaining : ZB_BIND_ATTEMPT_TIMEOUT_MS;
+
+    esp_zb_lock_acquire(portMAX_DELAY);
+    s_bind_device      = *device;
+    uint32_t my_gen    = ++s_bind_gen;
+    _last_bind_success = false;
+    _last_bind_status = ESP_ZB_ZDP_STATUS_TIMEOUT;
+    _in_binding        = true;
+    xSemaphoreTake(gt_lock, 0); // Flush any stale token while ZBOSS is locked
+
+    if (unbind) {
+      esp_zb_zdo_device_unbind_req(bind_req, bindCb, (void *)(uintptr_t)my_gen);
+    } else {
+      esp_zb_zdo_device_bind_req(bind_req, bindCb, (void *)(uintptr_t)my_gen);
+    }
+    esp_zb_lock_release();
+
+    if (xSemaphoreTake(gt_lock, pdMS_TO_TICKS(wait_ms)) != pdTRUE) {
+      bool late_success = false;
+      esp_zb_lock_acquire(portMAX_DELAY);
+      _in_binding = false;
+      xSemaphoreTake(gt_lock, 0); // Consume token if bindCb raced at the exact timeout boundary
+      late_success = _last_bind_success;
+      esp_zb_lock_release();
+
+      if (late_success) {
+        return true;
+      }
+      log_e("Semaphore timeout while %sbinding (attempt %u/%u, addr 0x%04x, cl 0x%04x)",
+            unbind ? "un" : "", attempt + 1, ZB_BIND_MAX_ATTEMPTS,
+            device->short_addr, device->cluster_id);
+      continue;
+    }
+
+    if (_last_bind_success) {
+      return true;
+    }
+
+    // Abort retries immediately on permanent ZDP rejections
+    if (_last_bind_status == ESP_ZB_ZDP_STATUS_NOT_SUPPORTED ||
+        _last_bind_status == ESP_ZB_ZDP_STATUS_INVALID_EP    ||
+        _last_bind_status == ESP_ZB_ZDP_STATUS_TABLE_FULL    ||
+        _last_bind_status == ESP_ZB_ZDP_STATUS_NO_ENTRY) {
+      log_w("Permanent ZDP error 0x%02x - aborting %sbind retries",
+            _last_bind_status, unbind ? "un" : "");
+      return false;
+    }
+  }
+  return false;
+}
+#endif
+
+/*****************************************************************************/
 
 void ZigbeeGateway::find_Cb(
   esp_zb_zdp_status_t zdo_status, uint16_t addr, uint8_t endpoint, 
@@ -430,8 +515,11 @@ void ZigbeeGateway::zbReadBasicCluster(
   }
 }
 
+/*****************************************************************************/
+
 void ZigbeeGateway::bindDeviceCluster(
   zbg_device_params_t *device, uint16_t cluster_id, uint8_t groupcast_flag) {
+  if (!device) return;
 #if defined(USE_GEMINI_PROTOCOL_HOST)
   G_PktBindClusterReq req = {
     .device         = *device,
@@ -440,18 +528,20 @@ void ZigbeeGateway::bindDeviceCluster(
     .mode           = 0
   };
   uint8_t rsp[2] = {};
-  GeminiBridge::sendCommandWaitReply(
+  bool got_rsp = GeminiBridge::sendCommandWaitReply(
     G_CMD_BIND_CLUSTER, &req, sizeof(req), G_RSP_STATUS, rsp, sizeof(rsp), 15000);
+  _last_bind_success = got_rsp && (rsp[0] != 0);
+  _last_bind_status  = got_rsp ? (esp_zb_zdp_status_t)rsp[1] : ESP_ZB_ZDP_STATUS_TIMEOUT;
 #else
   esp_zb_zdo_bind_req_param_t bind_req = {};
   bind_req.req_dst_addr = device->short_addr;
   memcpy(bind_req.src_address, device->ieee_addr, sizeof(esp_zb_ieee_addr_t));
   bind_req.src_endp   = device->endpoint;
-  bind_req.cluster_id = cluster_id; 
-  
+  bind_req.cluster_id = cluster_id;
+
   if (groupcast_flag & 1) {
     bind_req.dst_addr_mode = ESP_ZB_ZDO_BIND_DST_ADDR_MODE_16_BIT_GROUP;
-    
+
     esp_zb_lock_acquire(portMAX_DELAY);
     bind_req.dst_address_u.addr_short = esp_zb_get_short_address();
     esp_zb_lock_release();
@@ -459,31 +549,91 @@ void ZigbeeGateway::bindDeviceCluster(
     bind_req.dst_endp = 1;
   } else {
     bind_req.dst_addr_mode = ESP_ZB_ZDO_BIND_DST_ADDR_MODE_64_BIT_EXTENDED;
+
     esp_zb_lock_acquire(portMAX_DELAY);
     esp_zb_get_long_address(bind_req.dst_address_u.addr_long);
     esp_zb_lock_release();
 
-    bind_req.dst_endp = _instance->getEndpoint(); 
+    bind_req.dst_endp = _instance->getEndpoint();
   }
-    
+
   device->cluster_id = cluster_id;
-  zbg_device_params_t bind_device = *device;
-
-  _last_bind_success = false;
-  _binding_error_retries = 5;
-
-  while (!_last_bind_success) {
-    esp_zb_lock_acquire(portMAX_DELAY);
-    esp_zb_zdo_device_bind_req(&bind_req, bindCb, (void *)&bind_device);
-    esp_zb_lock_release();
-
-    if (xSemaphoreTake(gt_lock, pdMS_TO_TICKS(ZB_CMD_TIMEOUT)) != pdTRUE) {
-      log_e("Semaphore timeout while binding");
-      break;
-    }
-  }
+  executeBindRequest(&bind_req, device, false);
 #endif
 }
+
+/*****************************************************************************/
+
+void ZigbeeGateway::bindDeviceCluster2(
+  zbg_device_params_t *device, uint16_t cluster_id) {
+  if (!device) return;
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+  G_PktBindClusterReq req = {
+    .device         = *device,
+    .cluster_id     = cluster_id,
+    .groupcast_flag = 0,
+    .mode           = 1
+  };
+  uint8_t rsp[2] = {};
+  bool got_rsp = GeminiBridge::sendCommandWaitReply(
+    G_CMD_BIND_CLUSTER, &req, sizeof(req), G_RSP_STATUS, rsp, sizeof(rsp), 15000);
+  _last_bind_success = got_rsp && (rsp[0] != 0);
+  _last_bind_status  = got_rsp ? (esp_zb_zdp_status_t)rsp[1] : ESP_ZB_ZDP_STATUS_TIMEOUT;
+#else
+  esp_zb_zdo_bind_req_param_t bind_req = {};
+  bind_req.req_dst_addr = device->short_addr;
+  memcpy(bind_req.dst_address_u.addr_long, device->ieee_addr, sizeof(esp_zb_ieee_addr_t));
+  bind_req.dst_endp      = device->endpoint;
+  bind_req.cluster_id    = cluster_id;
+  bind_req.dst_addr_mode = ESP_ZB_ZDO_BIND_DST_ADDR_MODE_64_BIT_EXTENDED;
+
+  esp_zb_lock_acquire(portMAX_DELAY);
+  esp_zb_get_long_address(bind_req.src_address);
+  esp_zb_lock_release();
+
+  bind_req.src_endp  = _instance->getEndpoint();
+  device->cluster_id = cluster_id;
+  executeBindRequest(&bind_req, device, false);
+#endif
+}
+
+/*****************************************************************************/
+
+void ZigbeeGateway::unbindLocalDeviceCluster(
+  zbg_device_params_t *device, uint16_t cluster_id) {
+  if (!device) return;
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+  G_PktBindClusterReq req = {
+    .device         = *device,
+    .cluster_id     = cluster_id,
+    .groupcast_flag = 0,
+    .mode           = 2
+  };
+  uint8_t rsp[2] = {};
+  bool got_rsp = GeminiBridge::sendCommandWaitReply(
+    G_CMD_BIND_CLUSTER, &req, sizeof(req), G_RSP_STATUS, rsp, sizeof(rsp), 15000);
+  _last_bind_success = got_rsp && (rsp[0] != 0);
+  _last_bind_status  = got_rsp ? (esp_zb_zdp_status_t)rsp[1] : ESP_ZB_ZDP_STATUS_TIMEOUT;
+#else
+  esp_zb_zdo_bind_req_param_t bind_req = {};
+
+  esp_zb_lock_acquire(portMAX_DELAY);
+  bind_req.req_dst_addr = esp_zb_get_short_address();
+  esp_zb_get_long_address(bind_req.src_address);
+  esp_zb_lock_release();
+
+  bind_req.src_endp      = _instance->getEndpoint();
+  bind_req.cluster_id    = cluster_id;
+  bind_req.dst_addr_mode = ESP_ZB_ZDO_BIND_DST_ADDR_MODE_64_BIT_EXTENDED;
+  memcpy(bind_req.dst_address_u.addr_long, device->ieee_addr, sizeof(esp_zb_ieee_addr_t));
+  bind_req.dst_endp      = device->endpoint;
+
+  device->cluster_id = cluster_id;
+  executeBindRequest(&bind_req, device, true);
+#endif
+}
+
+/*****************************************************************************/
 
 void ZigbeeGateway::bindDevices(
   esp_zb_ieee_addr_t src_ieee_addr, esp_zb_ieee_addr_t dst_ieee_addr,
@@ -515,90 +665,6 @@ void ZigbeeGateway::bindDevices(
   else
     esp_zb_zdo_device_bind_req(&bind_req, bindDevicesCb, (void *)unbind);
   esp_zb_lock_release();
-#endif
-}
-
-void ZigbeeGateway::bindDeviceCluster2(
-  zbg_device_params_t *device, uint16_t cluster_id) {
-#if defined(USE_GEMINI_PROTOCOL_HOST)
-  G_PktBindClusterReq req = {
-    .device         = *device,
-    .cluster_id     = cluster_id,
-    .groupcast_flag = 0,
-    .mode           = 1
-  };
-  uint8_t rsp[2] = {};
-  GeminiBridge::sendCommandWaitReply(
-    G_CMD_BIND_CLUSTER, &req, sizeof(req), G_RSP_STATUS, rsp, sizeof(rsp), 15000);
-#else
-  esp_zb_zdo_bind_req_param_t bind_req = {};
-  bind_req.req_dst_addr = device->short_addr;
-  memcpy(bind_req.dst_address_u.addr_long, device->ieee_addr, sizeof(esp_zb_ieee_addr_t));
-  bind_req.dst_endp      = device->endpoint;
-  bind_req.cluster_id    = cluster_id; 
-  bind_req.dst_addr_mode = ESP_ZB_ZDO_BIND_DST_ADDR_MODE_64_BIT_EXTENDED;
-  esp_zb_lock_acquire(portMAX_DELAY);
-  esp_zb_get_long_address(bind_req.src_address);
-  esp_zb_lock_release();
-  bind_req.src_endp      = _instance->getEndpoint(); 
-    
-  device->cluster_id = cluster_id;
-  _last_bind_success = false;
-  _binding_error_retries = 5;
-
-  while (!_last_bind_success) {
-    esp_zb_lock_acquire(portMAX_DELAY);
-    esp_zb_zdo_device_bind_req(&bind_req, bindCb, (void *)device);
-    esp_zb_lock_release();
-
-    if (xSemaphoreTake(gt_lock, pdMS_TO_TICKS(ZB_CMD_TIMEOUT)) != pdTRUE) {
-      log_e("Semaphore timeout while binding");
-      break;
-    }
-  }
-#endif
-}
-
-void ZigbeeGateway::unbindLocalDeviceCluster(
-  zbg_device_params_t *device, uint16_t cluster_id) {
-#if defined(USE_GEMINI_PROTOCOL_HOST)
-  G_PktBindClusterReq req = {
-    .device         = *device,
-    .cluster_id     = cluster_id,
-    .groupcast_flag = 0,
-    .mode           = 2
-  };
-  uint8_t rsp[2] = {};
-  GeminiBridge::sendCommandWaitReply(
-    G_CMD_BIND_CLUSTER, &req, sizeof(req), G_RSP_STATUS, rsp, sizeof(rsp), 15000);
-#else
-  esp_zb_zdo_bind_req_param_t bind_req = {};
-
-  esp_zb_lock_acquire(portMAX_DELAY);
-  bind_req.req_dst_addr = esp_zb_get_short_address();
-  esp_zb_get_long_address(bind_req.src_address);
-  esp_zb_lock_release();
-
-  bind_req.src_endp      = _instance->getEndpoint();
-  bind_req.cluster_id    = cluster_id;
-  bind_req.dst_addr_mode = ESP_ZB_ZDO_BIND_DST_ADDR_MODE_64_BIT_EXTENDED;
-  memcpy(bind_req.dst_address_u.addr_long, device->ieee_addr, sizeof(esp_zb_ieee_addr_t));
-  bind_req.dst_endp      = device->endpoint;
-
-  device->cluster_id = cluster_id;
-  _last_bind_success = false;
-  _binding_error_retries = 5;
-
-  while (!_last_bind_success) {
-    esp_zb_lock_acquire(portMAX_DELAY);
-    esp_zb_zdo_device_unbind_req(&bind_req, bindCb, (void *)device);
-    esp_zb_lock_release();
-
-    if (xSemaphoreTake(gt_lock, pdMS_TO_TICKS(ZB_CMD_TIMEOUT)) != pdTRUE) {
-      log_e("Semaphore timeout while unbinding");
-      break;
-    }
-  }
 #endif
 }
 
@@ -1092,7 +1158,7 @@ void ZigbeeGateway::readClusterReportCmd(
   } else {
     uint8_t rsp[2] = {};
     GeminiBridge::sendCommandWaitReply(
-      G_CMD_READ_REPORT_CMD, &req, sizeof(req), G_RSP_STATUS, rsp, sizeof(rsp), 10000);
+      G_CMD_READ_REPORT_CMD, &req, sizeof(req), G_RSP_STATUS, rsp, sizeof(rsp), 11500);
   }
 #else
   esp_zb_zcl_report_attr_cmd_t report_cmd = {};
@@ -2160,7 +2226,7 @@ void ZigbeeGateway::sendSimpleDescriptorRequestCmd(
   req.dst_endpoint = endpoint;
   uint32_t dev_id  = 0;
   if (GeminiBridge::sendCommandWaitReply(
-        G_CMD_SIMPLE_DESC_REQ, &req, sizeof(req), G_RSP_SIMPLE_DESC, &dev_id, sizeof(dev_id), 10000)) {
+        G_CMD_SIMPLE_DESC_REQ, &req, sizeof(req), G_RSP_SIMPLE_DESC, &dev_id, sizeof(dev_id), 11500)) {
     if (user_ctx) *((uint32_t *)user_ctx) = dev_id;
   }
 #else
