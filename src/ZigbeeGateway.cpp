@@ -1050,15 +1050,43 @@ bool ZigbeeGateway::isDeviceBound(uint16_t short_addr, esp_zb_ieee_addr_t ieee_a
   return (_on_btc_bound_device && _on_btc_bound_device(&zbg_device, 1, 1));
 }
 
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+static uint8_t zclAttrDeltaSize(uint8_t attr_type) {
+  if ((attr_type >= 0x18 && attr_type <= 0x1F) || // 8..64-bit bitmap
+      (attr_type >= 0x20 && attr_type <= 0x27) || // U8..U64
+      (attr_type >= 0x28 && attr_type <= 0x2F)) { // S8..S64
+    return (uint8_t)((attr_type & 0x07) + 1);
+  }
+  switch (attr_type) {
+    case 0x10: // BOOL
+    case 0x30: // 8BIT_ENUM
+      return 1;
+    case 0x31: // 16BIT_ENUM
+    case 0x38: // SEMI float
+      return 2;
+    case 0x39: // SINGLE float
+    case 0xE0: // TIME_OF_DAY
+    case 0xE1: // DATE
+    case 0xE2: // UTC_TIME
+      return 4;
+    case 0x3A: // DOUBLE float
+      return 8;
+    default:
+      return 2;
+  }
+}
+#endif
+
 bool ZigbeeGateway::setClusterReporting(
   zbg_device_params_t *device, uint16_t cluster_id, 
   uint16_t attribute_id, uint8_t attribute_type, uint16_t min_interval, 
   uint16_t max_interval, uint16_t delta, bool ack, uint8_t direction,
   uint8_t disable_default_response, uint8_t manuf_specific, uint16_t manuf_code) {
-  int16_t report_change = delta;
+  alignas(4) uint8_t report_change[8] = {};
+  memcpy(report_change, &delta, sizeof(delta));
   return setClusterReportingExt(
     device, cluster_id, attribute_id, attribute_type, min_interval, max_interval,
-    &report_change, ack, direction, disable_default_response, manuf_specific, manuf_code);
+    report_change, ack, direction, disable_default_response, manuf_specific, manuf_code);
 }
 
 bool ZigbeeGateway::setClusterReportingExt(
@@ -1074,7 +1102,11 @@ bool ZigbeeGateway::setClusterReportingExt(
   req.attribute_type   = attribute_type;
   req.min_interval     = min_interval;
   req.max_interval     = max_interval;
-  if (delta) memcpy(req.delta_bytes, delta, 8);
+  if (delta) {
+    uint8_t delta_len = zclAttrDeltaSize(attribute_type);
+    if (delta_len > sizeof(req.delta_bytes)) delta_len = sizeof(req.delta_bytes);
+    memcpy(req.delta_bytes, delta, delta_len);
+  }
   req.ack              = ack ? 1 : 0;
   req.direction        = direction;
   req.dis_default_resp = disable_default_response;
@@ -1213,7 +1245,8 @@ bool ZigbeeGateway::readClusterReportCfgCmd(
         G_CMD_READ_REPORT_CFG, &req, sizeof(req), G_RSP_READ_REPORT_CFG, &rsp, sizeof(rsp), 2500)) {
     return false;
   }
-  _read_report_config_resp_variable_last_result = rsp.variable;
+  _read_report_config_resp_variable_last_result      = rsp.variable;
+  _read_report_config_resp_variable_last_result.next = nullptr;
   return (rsp.success != 0);
 #else
   esp_zb_zcl_read_report_config_cmd_t report_cmd = {};
@@ -1381,13 +1414,18 @@ void ZigbeeGateway::sendAttributesRead(
   uint16_t *attribute_ids) {
 #if defined(USE_GEMINI_PROTOCOL_HOST)
   G_PktReadAttrMultReq req = {};
-  req.short_addr  = device->short_addr;
+  req.short_addr   = device->short_addr;
   memcpy(req.ieee_addr, device->ieee_addr, 8);
   req.dst_endpoint = device->endpoint;
   req.cluster_id   = cluster_id;
-  req.attr_number  = (attr_number <= 32) ? attr_number : 32;
-  memcpy(req.attr_ids, attribute_ids, req.attr_number * sizeof(uint16_t));
-  GeminiBridge::sendFrame(G_CMD_READ_ATTR_MULT, &req, sizeof(req));
+  req.attr_number  = (attribute_ids && attr_number > 0)
+                     ? ((attr_number <= 32) ? attr_number : 32)
+                     : 0;
+  if (req.attr_number > 0) {
+    memcpy(req.attr_ids, attribute_ids, req.attr_number * sizeof(uint16_t));
+  }
+  uint16_t tx_len = (uint16_t)(offsetof(G_PktReadAttrMultReq, attr_ids) + req.attr_number * sizeof(uint16_t));
+  GeminiBridge::sendFrame(G_CMD_READ_ATTR_MULT, &req, tx_len);
 #else
   esp_zb_zcl_read_attr_cmd_t read_req = {};
   if (device->short_addr != 0) {
@@ -1449,13 +1487,14 @@ bool ZigbeeGateway::sendAttributeWrite(
   if (attribute_value && req.attribute_size > 0) {
     memcpy(req.value, attribute_value, req.attribute_size);
   }
+  uint16_t tx_len = (uint16_t)(offsetof(G_PktWriteAttrReq, value) + req.attribute_size);
   if (!ack) {
-    GeminiBridge::sendFrame(G_CMD_WRITE_ATTR, &req, sizeof(req));
+    GeminiBridge::sendFrame(G_CMD_WRITE_ATTR, &req, tx_len);
     return false;
   }
   G_PktWriteAttrRsp rsp = {};
   if (!GeminiBridge::sendCommandWaitReply(
-        G_CMD_WRITE_ATTR, &req, sizeof(req), G_RSP_WRITE_ATTR, &rsp, sizeof(rsp), 2500)) {
+        G_CMD_WRITE_ATTR, &req, tx_len, G_RSP_WRITE_ATTR, &rsp, sizeof(rsp), 2500)) {
     return false;
   }
   _write_attr_status_last_result       = (esp_zb_zcl_status_t)rsp.status;
@@ -1548,13 +1587,14 @@ bool ZigbeeGateway::sendAttributeWriteExt(
   if (attribute_value && req.attribute_size > 0) {
     memcpy(req.value, attribute_value, req.attribute_size);
   }
+  uint16_t tx_len = (uint16_t)(offsetof(G_PktWriteAttrReq, value) + req.attribute_size);
   if (!ack) {
-    GeminiBridge::sendFrame(G_CMD_WRITE_ATTR, &req, sizeof(req));
+    GeminiBridge::sendFrame(G_CMD_WRITE_ATTR, &req, tx_len);
     return false;
   }
   G_PktWriteAttrRsp rsp = {};
   if (!GeminiBridge::sendCommandWaitReply(
-        G_CMD_WRITE_ATTR, &req, sizeof(req), G_RSP_WRITE_ATTR, &rsp, sizeof(rsp), 2500)) {
+        G_CMD_WRITE_ATTR, &req, tx_len, G_RSP_WRITE_ATTR, &rsp, sizeof(rsp), 2500)) {
     return false;
   }
   _write_attr_status_last_result       = (esp_zb_zcl_status_t)rsp.status;
@@ -2324,13 +2364,14 @@ bool ZigbeeGateway::sendCustomClusterCmd(
   if (custom_data && req.data_size > 0) {
     memcpy(req.data, custom_data, req.data_size);
   }
+  uint16_t tx_len = (uint16_t)(offsetof(G_PktCustomClusterReq, data) + req.data_size);
   if (!ack) {
-    GeminiBridge::sendFrame(G_CMD_CUSTOM_CLUSTER_REQ, &req, sizeof(req));
+    GeminiBridge::sendFrame(G_CMD_CUSTOM_CLUSTER_REQ, &req, tx_len);
     return false;
   }
   uint8_t rsp[3] = {};
   if (!GeminiBridge::sendCommandWaitReply(
-        G_CMD_CUSTOM_CLUSTER_REQ, &req, sizeof(req), G_RSP_CUSTOM_CMD, rsp, sizeof(rsp), 2500)) {
+        G_CMD_CUSTOM_CLUSTER_REQ, &req, tx_len, G_RSP_CUSTOM_CMD, rsp, sizeof(rsp), 2500)) {
     return false;
   }
   _custom_cmd_status_last_result      = (esp_zb_zcl_status_t)rsp[1];
@@ -2613,10 +2654,29 @@ bool ZigbeeGateway::zbRawCmdHandler(
       }
     #endif
 
-    if (bytes_read != max_data_size) {
-      *(p - 1) = (uint8_t)bytes_read;
+    if (bytes_read == 0) {
+      p = zcl_frame + 3; // Rewind past SUCCESS status & request echo
+      if (s_ota_image_size > 0 && file_offset >= s_ota_image_size) {
+        log_w("OTA block request past EOF (offset=%lu >= size=%lu) -> ABORT",
+              (unsigned long)file_offset, (unsigned long)s_ota_image_size);
+        *p++ = 0x95; // ESP_ZB_ZCL_STATUS_ABORT
+      } else {
+        log_w("OTA block read returned 0 at offset=%lu -> WAIT_FOR_DATA (1s)",
+              (unsigned long)file_offset);
+        uint32_t cur_time   = 0;
+        uint32_t req_time   = 1;  // Ask client to retry in 1 s
+        uint16_t min_period = 50; // 50 ms minimum block period
+        *p++ = 0x97; // ESP_ZB_ZCL_STATUS_WAIT_FOR_DATA
+        memcpy(p, &cur_time,   4); p += 4;
+        memcpy(p, &req_time,   4); p += 4;
+        memcpy(p, &min_period, 2); p += 2;
+      }
+    } else {
+      if (bytes_read != max_data_size) {
+        *(p - 1) = (uint8_t)bytes_read;
+      }
+      p += bytes_read;
     }
-    p += bytes_read;
 
     uint8_t zcl_len = (uint8_t)(p - zcl_frame);
     esp_zb_apsde_data_req_t aps_req = {};
@@ -2816,7 +2876,8 @@ bool ZigbeeGateway::sendAPSDEDataRequestCmd(
   if (payload_data && req.payload_size > 0) {
     memcpy(req.payload, payload_data, req.payload_size);
   }
-  return GeminiBridge::sendFrame(G_CMD_APSDE_RAW_REQ, &req, sizeof(req));
+  uint16_t tx_len = (uint16_t)(offsetof(G_PktApsdeRawReq, payload) + req.payload_size);
+  return GeminiBridge::sendFrame(G_CMD_APSDE_RAW_REQ, &req, tx_len);
 #else
   uint8_t hdr_len = manuf_specific ? 5 : 3;
   if ((uint16_t)payload_size + hdr_len > 255) return false;

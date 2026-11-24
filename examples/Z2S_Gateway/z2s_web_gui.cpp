@@ -15,6 +15,7 @@
 #include "z2s_device_tuya_custom_cluster.h"
 #include "z2s_device_virtual_relay.h"
 #include "z2s_device_local_action_handler.h"
+#include "z2s_device_electricity_meter.h"
 #include "TuyaDatapoints.h"
 
 #include "z2s_version_info.h"
@@ -167,6 +168,7 @@ uint16_t trv_cooperative_childlock_switcher;
 uint16_t set_sorwns_on_start_switcher;
 uint16_t enable_resend_temperature_switcher;
 uint16_t skip_subdevice_registation_switcher;
+uint16_t em_sw_reverse_energy_switcher;
 uint16_t param_1_text;
 uint16_t param_1_desc_label;
 uint16_t param_1_save_button;
@@ -521,6 +523,7 @@ volatile PushoverMessageGUIState previous_pushover_message_gui_state =
 #define GUI_CB_TRV_COOPERATIVE_CHILDLOCK_FLAG 0x400A
 #define GUI_CB_ENABLE_RESEND_TEMPERATURE_FLAG 0x400B
 #define GUI_CB_SKIP_SUBDEVICE_REGISTRATION_FLAG 0x400C
+#define GUI_CB_EM_SW_REVERSE_ENERGY_FLAG 0x400D
 
 #define GUI_CB_UPDATE_KEEPALIVE_FLAG 0x4020
 #define GUI_CB_UPDATE_TIMEOUT_FLAG 0x4021
@@ -2110,6 +2113,11 @@ void buildChannelsTabGUI() {
 	  Control::Type::Switcher, "Enable temperature forwarding", 
 		(long int)0, Control::Color::Dark, zb_channel_flags_label,
 	  editChannelFlagsCallback, (void *)GUI_CB_ENABLE_RESEND_TEMPERATURE_FLAG);
+
+	em_sw_reverse_energy_switcher = ESPUI.addControl(
+  Control::Type::Switcher, "Enable SW reverse energy (from negative power)",
+  (long int)0, Control::Color::Dark, zb_channel_flags_label,
+  editChannelFlagsCallback, (void *)GUI_CB_EM_SW_REVERSE_ENERGY_FLAG);
 
 	ESPUI.setPanelWide(zb_channel_flags_label, true);
 
@@ -7309,6 +7317,7 @@ void enableChannelControls(bool enable) {
 	ESPUI.updateNumber(set_sorwns_on_start_switcher, 0);
 	ESPUI.updateNumber(enable_resend_temperature_switcher, 0);
 	ESPUI.updateNumber(skip_subdevice_registation_switcher, 0);
+	ESPUI.updateNumber(em_sw_reverse_energy_switcher, 0);
 	ESPUI.updateSelect(local_channel_function_selector, -1);
 
 	enableControlStyle(channel_name_text, enable);
@@ -7321,6 +7330,7 @@ void enableChannelControls(bool enable) {
 	enableControlStyle(set_sorwns_on_start_switcher, enable);
 	enableControlStyle(enable_resend_temperature_switcher, enable);
 	enableControlStyle(skip_subdevice_registation_switcher, enable);
+	enableControlStyle(em_sw_reverse_energy_switcher, enable);
 	enableControlStyle(param_1_text, enable);
 	enableControlStyle(param_2_text, enable);
 	enableControlStyle(param_3_number, enable);
@@ -7431,6 +7441,13 @@ void enableChannelFlags(uint8_t flags_mask) {
 	else {
 		ESPUI.updateNumber(skip_subdevice_registation_switcher, 0);
 		enableControlStyle(skip_subdevice_registation_switcher, false);
+	}
+
+	if (flags_mask & 32)
+  	enableControlStyle(em_sw_reverse_energy_switcher, true);
+	else {
+  	ESPUI.updateNumber(em_sw_reverse_energy_switcher, 0);
+  	enableControlStyle(em_sw_reverse_energy_switcher, false);
 	}
 
 	if (flags_mask == 0)
@@ -8373,17 +8390,19 @@ void updateChannelInfoLabel(
 			break;
 
 
-		case SUPLA_CHANNELTYPE_ELECTRICITY_METER:
-			{
+		case SUPLA_CHANNELTYPE_ELECTRICITY_METER: {
 
-				enableChannelTimings(7);  //timeout + keepalive + refresh
-				ESPUI.updateNumber(keepalive_number, z2s_core->getKeepAliveValue());
-				ESPUI.updateNumber(timeout_number, z2s_core->getTimeoutValue());
-				ESPUI.updateNumber(refresh_number, z2s_core->getRefreshValue());
+    	enableChannelTimings(7);  //timeout + keepalive + refresh
+    	ESPUI.updateNumber(keepalive_number, z2s_core->getKeepAliveValue());
+    	ESPUI.updateNumber(timeout_number, z2s_core->getTimeoutValue());
+    	ESPUI.updateNumber(refresh_number, z2s_core->getRefreshValue());
 
-				enableChannelFlags(16);
-			}
-			break;
+    	enableChannelFlags(16 + 32);
+    	ESPUI.updateNumber(
+      	em_sw_reverse_energy_switcher,
+      	(z2s_channel.user_data_flags &
+       	USER_DATA_FLAG_EM_SW_REVERSE_ENERGY) ? 1 : 0);
+  	} break;
 
 
 		default:
@@ -10539,6 +10558,29 @@ void editChannelFlagsCallback(BasicControl *sender, int type, void *param) {
 						  USER_DATA_FLAG_SKIP_SUBDEVICE_REGISTRATION);
 				}
 				break;
+
+			
+			case GUI_CB_EM_SW_REVERSE_ENERGY_FLAG: {
+
+    		bool enabled = (type == S_ACTIVE);
+
+    		if (enabled)
+      		z2s_core->setChannelUserDataFlags(
+        		USER_DATA_FLAG_EM_SW_REVERSE_ENERGY);
+    		else
+      		z2s_core->clearChannelUserDataFlags(
+        		USER_DATA_FLAG_EM_SW_REVERSE_ENERGY);
+
+    		if (z2s_core->getZ2SChannelType() ==
+        	SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
+      	
+					auto *em = static_cast<Supla::Sensor::Z2S_ElectricityMeter *>(
+        		z2s_core->getZ2SElementPtr());
+      		if (em)
+        		em->onSwReverseEnergyFlagChanged(enabled);
+    		}
+				addGUICommand(gui_cmd_update_channel_info, -2);
+			} break;
 		}
 	}
 }

@@ -58,6 +58,7 @@
 #define USER_DATA_FLAG_SKIP_SUBDEVICE_REGISTRATION        (1 << 14) // 0x04000
 #define USER_DATA_FLAG_EXTENDED_DATA_COUNTER              (1 << 15) // 0x08000
 #define USER_DATA_FLAG_IGNORE_CHANNEL_BATTERY_LEVEL       (1 << 16) // 0x10000
+#define USER_DATA_FLAG_EM_SW_REVERSE_ENERGY               (1 << 17) // 0x20000
 
 /*****************************************************************************/
 
@@ -2393,7 +2394,8 @@ uint16_t getRollerShutterPostCmdPingDelayS() {
       // (millis() - getZbDeviceLastSeenMs()) checks in all channel classes
       // yield the exact elapsed milliseconds since C6 heard the device:
       uint32_t elapsed_ms = z2s_millis() - c6_seen_ms;
-      return millis() - elapsed_ms;
+      uint32_t s3_seen_ms = millis() - elapsed_ms;
+      return (s3_seen_ms == 0) ? 0xFFFFFFFFUL : s3_seen_ms;
 #else
       return c6_seen_ms;
 #endif
@@ -2403,9 +2405,14 @@ uint16_t getRollerShutterPostCmdPingDelayS() {
 
   void setZbDeviceLastSeenMs(uint32_t last_seen_ms) {
 
-    if (_z2s_device)
-      _z2s_device->setLastSeenMs(
-        (last_seen_ms == 0) ? 0 : z2s_millis(), false);
+    if (_z2s_device) {
+      if (last_seen_ms == 0) {
+        _z2s_device->setLastSeenMs(0, false);
+      } else {
+        uint32_t now_ms = z2s_millis();
+        _z2s_device->setLastSeenMs((now_ms == 0) ? 0xFFFFFFFFUL : now_ms, false);
+      }
+    }
   }
 
 

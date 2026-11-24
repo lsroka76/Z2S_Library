@@ -237,6 +237,7 @@ bool hasTuyaCustomCluster(uint32_t model_id) {
     case Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER:
     case Z2S_DEVICE_DESC_TUYA_1PHASE_ELECTRICITY_METER:
     case Z2S_DEVICE_DESC_TUYA_1PHASE_V1_ELECTRICITY_METER:
+    case Z2S_DEVICE_DESC_TUYA_3PHASES_V1_ELECTRICITY_METER:
     case Z2S_DEVICE_DESC_TUYA_DIN_RCBO_EM_TEMP:
     case Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH:
     case Z2S_DEVICE_DESC_TS0601_TRV_SASWELL:
@@ -970,14 +971,18 @@ bool Z2S_Core::saveChannelExtendedData(
     file_name_buffer, Z2S_CHANNELS_EXTENDED_DATA_PREFIX_V2, 
     getChannelIndex(), extended_data_type);
   
-  if (Z2S_saveFile(file_name_buffer, extended_data, channel_edt_size)) {
+if (Z2S_saveFile(file_name_buffer, extended_data, channel_edt_size)) {
 
     log_i(
       "Saving Zigbee<=>Supla channel extended data in file %s: SUCCESS", 
       file_name_buffer);
     
-    setExtendedDataType(extended_data_type);
-    return setChannelUserDataFlags(USER_DATA_FLAG_HAS_EXTENDED_DATA, true); 
+    if ((getExtendedDataType() != extended_data_type) ||
+        !checkChannelUserDataFlags(USER_DATA_FLAG_HAS_EXTENDED_DATA)) {
+      setExtendedDataType(extended_data_type);
+      return setChannelUserDataFlags(USER_DATA_FLAG_HAS_EXTENDED_DATA, true);
+    }
+    return true;
   } 
   else {
     

@@ -312,7 +312,10 @@ bool GeminiBridge::didNcpResetSinceLastHostBoot() {
 #endif
 }
 
+static uint32_t s_ota_bytes = 0;
+
 bool GeminiBridge::hostNcpOtaBegin() {
+  s_ota_bytes = 0;
   uint8_t rsp[2] = {};
   if (!sendCommandWaitReply(G_CMD_NCP_OTA_BEGIN, nullptr, 0, G_RSP_STATUS, rsp, sizeof(rsp), 5000)) {
     return false;
@@ -321,7 +324,6 @@ bool GeminiBridge::hostNcpOtaBegin() {
 }
 
 bool GeminiBridge::hostNcpOtaWrite(const uint8_t *data, size_t len) {
-  static uint32_t s_ota_bytes = 0; // reset to 0 in hostNcpOtaBegin()
   size_t offset = 0;
   while (offset < len) {
     uint16_t chunk = ((len - offset) > 256) ? 256 : (uint16_t)(len - offset);
@@ -533,7 +535,7 @@ size_t GeminiBridge::requestOtaChunkFromHost(uint8_t *dest, uint32_t offset, uin
   G_PktOtaChunkReq req = { .offset = offset, .size = size };
   G_PktOtaChunkRsp rsp = {};
   if (sendCommandWaitReply(
-        G_EVT_OTA_CHUNK_REQ, &req, sizeof(req), G_RSP_OTA_CHUNK, &rsp, sizeof(rsp), 500)) {
+        G_EVT_OTA_CHUNK_REQ, &req, sizeof(req), G_RSP_OTA_CHUNK, &rsp, sizeof(rsp), 1000)) {
     uint8_t copy_len = (rsp.bytes_read <= size) ? rsp.bytes_read : size;
     if (copy_len > 0 && dest) {
       memcpy(dest, rsp.data, copy_len);
@@ -780,15 +782,26 @@ void GeminiBridge::cmdWorkerTask(void *arg) {
       } break;
 
       case G_EVT_ATTR_REPORT: {
+        if (item.hdr.payload_len < sizeof(G_PktEvtAttrReport)) break;
         const auto *evt = reinterpret_cast<const G_PktEvtAttrReport *>(p);
         if (evt->rssi != 0 && zbGateway._on_update_device_last_rssi) {
           zbGateway._on_update_device_last_rssi(evt->short_addr, evt->rssi);
         }
+
+        uint16_t max_avail = item.hdr.payload_len - sizeof(G_PktEvtAttrReport);
+        uint16_t data_size = (evt->data_size <= max_avail) ? evt->data_size : max_avail;
+        if (data_size > 256) data_size = 256;
+
+        alignas(4) uint8_t aligned_data[256];
+        if (data_size > 0) {
+          memcpy(aligned_data, evt->data, data_size);
+        }
+
         esp_zb_zcl_attribute_t attr = {};
         attr.id         = evt->attr_id;
         attr.data.type  = (esp_zb_zcl_attr_type_t)evt->attr_type;
-        attr.data.size  = evt->data_size;
-        attr.data.value = (evt->data_size > 0) ? (void *)evt->data : nullptr;
+        attr.data.size  = data_size;
+        attr.data.value = (data_size > 0) ? (void *)aligned_data : nullptr;
 
         esp_zb_zcl_addr_t addr = {};
         addr.addr_type    = ESP_ZB_ZCL_ADDR_TYPE_SHORT;
@@ -851,13 +864,15 @@ void GeminiBridge::cmdWorkerTask(void *arg) {
       } break;
 
       case G_EVT_OTA_CHUNK_REQ: {
+        if (item.hdr.payload_len < sizeof(G_PktOtaChunkReq)) break;
         const auto *req = reinterpret_cast<const G_PktOtaChunkReq *>(p);
         G_PktOtaChunkRsp rsp = {};
         uint8_t max_sz = (req->size <= sizeof(rsp.data)) ? req->size : sizeof(rsp.data);
         if (zbGateway._on_fill_ota_buffer) {
           rsp.bytes_read = (uint8_t)zbGateway._on_fill_ota_buffer(rsp.data, req->offset, max_sz);
         }
-        sendFrame(G_RSP_OTA_CHUNK, &rsp, sizeof(rsp), item.hdr.seq_num);
+        uint16_t tx_len = (uint16_t)(offsetof(G_PktOtaChunkRsp, data) + rsp.bytes_read);
+        sendFrame(G_RSP_OTA_CHUNK, &rsp, tx_len, item.hdr.seq_num);
       } break;
 
       case G_EVT_OTA_STATUS: {
@@ -997,6 +1012,7 @@ void GeminiBridge::cmdWorkerTask(void *arg) {
       } break;
 
       case G_CMD_READ_ATTR: {
+        if (item.hdr.payload_len < sizeof(G_PktReadAttrReq)) break;
         const auto *req = reinterpret_cast<const G_PktReadAttrReq *>(p);
         zbg_device_params_t dev = {};
         dev.short_addr = req->short_addr;
@@ -1015,26 +1031,48 @@ void GeminiBridge::cmdWorkerTask(void *arg) {
           auto *attr    = zbGateway.getReadAttrLastResult();
           rsp.attr_id   = attr->id;
           rsp.attr_type = attr->data.type;
-          rsp.data_size = (attr->data.size <= 256) ? attr->data.size : 256;
-          if (attr->data.value && rsp.data_size > 0) {
+          rsp.data_size = (attr->data.value && attr->data.size <= 256) ? attr->data.size : 0;
+          if (rsp.data_size > 0) {
             memcpy(rsp.data, attr->data.value, rsp.data_size);
           }
-          sendFrame(G_RSP_READ_ATTR, &rsp, sizeof(rsp), item.hdr.seq_num);
+          uint16_t tx_len = (uint16_t)(offsetof(G_PktReadAttrRsp, data) + rsp.data_size);
+          sendFrame(G_RSP_READ_ATTR, &rsp, tx_len, item.hdr.seq_num);
         }
       } break;
 
       case G_CMD_READ_ATTR_MULT: {
+        constexpr uint16_t hdr_sz = offsetof(G_PktReadAttrMultReq, attr_ids);
+        if (item.hdr.payload_len < hdr_sz) break;
         const auto *req = reinterpret_cast<const G_PktReadAttrMultReq *>(p);
+        uint8_t max_count = (uint8_t)((item.hdr.payload_len - hdr_sz) / sizeof(uint16_t));
+        uint8_t count = (req->attr_number <= 32) ? req->attr_number : 32;
+        if (count > max_count) count = max_count;
+        if (count == 0) break;
+
         zbg_device_params_t dev = {};
         dev.short_addr = req->short_addr;
         dev.endpoint   = req->dst_endpoint;
         memcpy(dev.ieee_addr, req->ieee_addr, 8);
-        uint8_t count = (req->attr_number <= 32) ? req->attr_number : 32;
-        zbGateway.sendAttributesRead(&dev, req->cluster_id, count, (uint16_t *)req->attr_ids);
+
+        alignas(4) uint16_t aligned_ids[32];
+        memcpy(aligned_ids, req->attr_ids, count * sizeof(uint16_t));
+        zbGateway.sendAttributesRead(&dev, req->cluster_id, count, aligned_ids);
       } break;
 
       case G_CMD_WRITE_ATTR: {
+        constexpr uint16_t hdr_sz = offsetof(G_PktWriteAttrReq, value);
+        if (item.hdr.payload_len < hdr_sz) break;
         const auto *req = reinterpret_cast<const G_PktWriteAttrReq *>(p);
+        uint16_t max_val  = item.hdr.payload_len - hdr_sz;
+        uint16_t val_size = (req->attribute_size <= sizeof(G_PktWriteAttrReq::value))
+                            ? req->attribute_size : sizeof(G_PktWriteAttrReq::value);
+        if (val_size > max_val) val_size = max_val;
+
+        alignas(4) uint8_t aligned_val[sizeof(G_PktWriteAttrReq::value)] = {};
+        if (val_size > 0) {
+          memcpy(aligned_val, req->value, val_size);
+        }
+
         zbg_device_params_t dev = {};
         dev.short_addr = req->short_addr;
         dev.endpoint   = req->dst_endpoint;
@@ -1044,14 +1082,14 @@ void GeminiBridge::cmdWorkerTask(void *arg) {
         if (req->is_ext) {
           ok = zbGateway.sendAttributeWriteExt(
             &dev, req->cluster_id, req->attribute_id,
-            (esp_zb_zcl_attr_type_t)req->attribute_type, req->attribute_size,
-            (void *)req->value, req->ack != 0, req->manuf_specific,
+            (esp_zb_zcl_attr_type_t)req->attribute_type, val_size,
+            (void *)aligned_val, req->ack != 0, req->manuf_specific,
             req->manuf_code, req->dis_default_resp != 0, req->profile_id);
         } else {
           ok = zbGateway.sendAttributeWrite(
             &dev, req->cluster_id, req->attribute_id,
-            (esp_zb_zcl_attr_type_t)req->attribute_type, req->attribute_size,
-            (void *)req->value, req->ack != 0, req->manuf_specific,
+            (esp_zb_zcl_attr_type_t)req->attribute_type, val_size,
+            (void *)aligned_val, req->ack != 0, req->manuf_specific,
             req->manuf_code, req->dis_default_resp != 0, req->src_endpoint);
         }
         if (req->ack) {
@@ -1065,11 +1103,14 @@ void GeminiBridge::cmdWorkerTask(void *arg) {
       } break;
 
       case G_CMD_CONFIG_REPORT: {
+        if (item.hdr.payload_len < sizeof(G_PktConfigReportReq)) break;
         const auto *req = reinterpret_cast<const G_PktConfigReportReq *>(p);
         zbg_device_params_t dev = req->device;
+        alignas(4) uint8_t aligned_delta[8];
+        memcpy(aligned_delta, req->delta_bytes, sizeof(aligned_delta));
         bool ok = zbGateway.setClusterReportingExt(
           &dev, req->cluster_id, req->attribute_id, req->attribute_type,
-          req->min_interval, req->max_interval, (void *)req->delta_bytes,
+          req->min_interval, req->max_interval, (void *)aligned_delta,
           req->ack != 0, req->direction, req->dis_default_resp,
           req->manuf_specific, req->manuf_code);
         if (req->ack) {
@@ -1105,7 +1146,19 @@ void GeminiBridge::cmdWorkerTask(void *arg) {
       } break;
 
       case G_CMD_CUSTOM_CLUSTER_REQ: {
+        constexpr uint16_t hdr_sz = offsetof(G_PktCustomClusterReq, data);
+        if (item.hdr.payload_len < hdr_sz) break;
         const auto *req = reinterpret_cast<const G_PktCustomClusterReq *>(p);
+        uint16_t max_data  = item.hdr.payload_len - hdr_sz;
+        uint16_t data_size = (req->data_size <= sizeof(G_PktCustomClusterReq::data))
+                             ? req->data_size : sizeof(G_PktCustomClusterReq::data);
+        if (data_size > max_data) data_size = max_data;
+
+        alignas(4) uint8_t aligned_data[sizeof(G_PktCustomClusterReq::data)] = {};
+        if (data_size > 0) {
+          memcpy(aligned_data, req->data, data_size);
+        }
+
         zbg_device_params_t dev = {};
         dev.short_addr = req->short_addr;
         dev.endpoint   = req->dst_endpoint;
@@ -1113,8 +1166,8 @@ void GeminiBridge::cmdWorkerTask(void *arg) {
 
         bool ok = zbGateway.sendCustomClusterCmd(
           &dev, req->custom_cluster_id, req->custom_command_id,
-          (esp_zb_zcl_attr_type_t)req->data_type, req->data_size,
-          (uint8_t *)req->data, req->ack != 0, req->direction,
+          (esp_zb_zcl_attr_type_t)req->data_type, data_size,
+          aligned_data, req->ack != 0, req->direction,
           req->dis_default_resp, req->manuf_specific, req->manuf_code);
 
         if (req->ack) {
@@ -1128,10 +1181,22 @@ void GeminiBridge::cmdWorkerTask(void *arg) {
       } break;
 
       case G_CMD_APSDE_RAW_REQ: {
+        constexpr uint16_t hdr_sz = offsetof(G_PktApsdeRawReq, payload);
+        if (item.hdr.payload_len < hdr_sz) break;
         const auto *req = reinterpret_cast<const G_PktApsdeRawReq *>(p);
+        uint16_t max_payload = item.hdr.payload_len - hdr_sz;
+        uint8_t payload_size = (req->payload_size <= sizeof(G_PktApsdeRawReq::payload))
+                               ? req->payload_size : sizeof(G_PktApsdeRawReq::payload);
+        if (payload_size > max_payload) payload_size = (uint8_t)max_payload;
+
+        alignas(4) uint8_t aligned_payload[sizeof(G_PktApsdeRawReq::payload)] = {};
+        if (payload_size > 0) {
+          memcpy(aligned_payload, req->payload, payload_size);
+        }
+
         zbGateway.sendAPSDEDataRequestCmd(
           req->short_addr, req->tsn, req->dst_endpoint, req->cluster_id,
-          req->command_id, req->payload_size, (uint8_t *)req->payload,
+          req->command_id, payload_size, aligned_payload,
           req->direction, req->dis_default_resp, req->manuf_specific,
           req->manuf_code, req->is_global != 0, req->profile_id);
       } break;

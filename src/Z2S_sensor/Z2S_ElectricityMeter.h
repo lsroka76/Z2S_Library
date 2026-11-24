@@ -272,6 +272,10 @@ void setPowerActive2(int phase, int64_t power) {
         _active_power_multiplier, _active_power_divisor, em_power);
 
   setPowerActive(phase, em_power);
+  if ((phase >= 0) && (phase < MAX_PHASES) &&
+      checkChannelUserDataFlags(USER_DATA_FLAG_EM_SW_REVERSE_ENERGY)) {
+    integrateSwReverseEnergy(phase, em_power);
+  }
 }
 
 void setPowerReactive2(int phase, int64_t power) {
@@ -362,6 +366,9 @@ void setFwdActEnergy2(int phase, unsigned _supla_int64_t energy) {
 
 void setRvrActEnergy2(int phase, unsigned _supla_int64_t energy) {
 
+  if (checkChannelUserDataFlags(USER_DATA_FLAG_EM_SW_REVERSE_ENERGY))
+    return;
+
   if (energy == 0)
     return;
 
@@ -432,6 +439,14 @@ void onInit() override {
   
   if (getTimeoutMs())
     getChannel()->setStateOffline();
+
+  if (checkChannelUserDataFlags(USER_DATA_FLAG_EM_SW_REVERSE_ENERGY)) {
+    uint8_t phases = _one_phase ? 1 : MAX_PHASES;
+    for (uint8_t i = 0; i < phases; i++) {
+      setRvrActEnergy(i, total_reverse_active_energy_counter[i]);
+    }
+    _last_sw_rvr_save_ms = millis();
+  }
 }
 
 /*****************************************************************************/
@@ -444,21 +459,29 @@ virtual void readValuesFromDevice() {
 
 void resetStorage() {
 
+  bool sw_rvr = checkChannelUserDataFlags(USER_DATA_FLAG_EM_SW_REVERSE_ENERGY);
   channel_extended_data_em_t channel_extended_data_em = {};
 
   memcpy(
     channel_extended_data_em.ieee_addr, getChannelIeeeAddress(), 
     sizeof(esp_zb_ieee_addr_t));
 
-  for (uint8_t i = 0; i <3; i++) {
+  taskENTER_CRITICAL(&Z2S_globalMutex);
+  for (uint8_t i = 0; i < 3; i++) {
   
     total_forward_active_energy_counter[i] = 
       emValue.total_forward_active_energy[i];
     channel_extended_data_em.total_forward_active_energy_counter[i] = 
       total_forward_active_energy_counter[i];
     
-    total_reverse_active_energy_counter[i] = 
-      emValue.total_reverse_active_energy[i];
+    if (sw_rvr) {
+      total_reverse_active_energy_counter[i] = 0;
+      _rvr_energy_rem[i] = 0;
+      _last_power_ms[i]  = 0;
+    } else {
+      total_reverse_active_energy_counter[i] = 
+        emValue.total_reverse_active_energy[i];
+    }
     channel_extended_data_em.total_reverse_active_energy_counter[i] = 
       total_reverse_active_energy_counter[i];
 
@@ -471,7 +494,19 @@ void resetStorage() {
       emValue.total_reverse_reactive_energy[i];
     channel_extended_data_em.total_reverse_reactive_energy_counter[i] = 
       total_reverse_reactive_energy_counter[i];
+  }
 
+  if (sw_rvr) {
+    _sw_rvr_unsaved_delta = 0;
+    _last_sw_rvr_save_ms  = millis();
+  }
+  taskEXIT_CRITICAL(&Z2S_globalMutex);
+
+  if (sw_rvr) {
+    uint8_t phases = _one_phase ? 1 : MAX_PHASES;
+    for (uint8_t i = 0; i < phases; i++) {
+      setRvrActEnergy(i, 0);
+    }
   }
 
   total_forward_active_energy_balanced_counter = 
@@ -497,6 +532,15 @@ void clearCounters() {
   memcpy(
     channel_extended_data_em.ieee_addr, getChannelIeeeAddress(), 
     sizeof(esp_zb_ieee_addr_t));
+
+  if (checkChannelUserDataFlags(USER_DATA_FLAG_EM_SW_REVERSE_ENERGY)) {
+    taskENTER_CRITICAL(&Z2S_globalMutex);
+    for (uint8_t i = 0; i < 3; i++) {
+      channel_extended_data_em.total_reverse_active_energy_counter[i] =
+        total_reverse_active_energy_counter[i];
+    }
+    taskEXIT_CRITICAL(&Z2S_globalMutex);
+  }
 
   saveChannelExtendedData(CHANNEL_EXTENDED_DATA_TYPE_EM, 
     (uint8_t *)&channel_extended_data_em);
@@ -612,6 +656,22 @@ void iterateAlways() override {
 
   Supla::Sensor::ElectricityMeter::iterateAlways();
 
+  if (checkChannelUserDataFlags(USER_DATA_FLAG_EM_SW_REVERSE_ENERGY)) {
+    uint64_t unsaved = 0;
+    uint32_t last_save = 0;
+
+    taskENTER_CRITICAL(&Z2S_globalMutex);
+    unsaved   = _sw_rvr_unsaved_delta;
+    last_save = _last_sw_rvr_save_ms;
+    taskEXIT_CRITICAL(&Z2S_globalMutex);
+
+    if ((unsaved > 0) &&
+        ((unsaved >= SW_RVR_SAVE_DELTA_UNITS) ||
+         ((millis() - last_save) >= SW_RVR_SAVE_INTERVAL_MS))) {
+      saveSwReverseEnergyCounters();
+    }
+  }
+
   if (!_ignore_zigbee_scaling) {
 
     if (_fresh_start && ((millis() - _last_init_ms) > _init_ms)) {
@@ -666,6 +726,114 @@ void iterateAlways() override {
   }
 }
 
+static constexpr uint32_t SW_RVR_SAVE_INTERVAL_MS = 1800000UL; // 30 min
+static constexpr uint32_t SW_RVR_MAX_DT_MS        = 120000UL;  // 2 min cap
+static constexpr uint64_t SW_RVR_SAVE_DELTA_UNITS = 100000ULL; // 1.0 kWh
+
+void onSwReverseEnergyFlagChanged(bool enabled) {
+
+  uint64_t rvr_snapshot[MAX_PHASES] = {};
+
+  taskENTER_CRITICAL(&Z2S_globalMutex);
+  for (uint8_t i = 0; i < MAX_PHASES; i++) {
+    _last_power_ms[i]  = 0;
+    _rvr_energy_rem[i] = 0;
+    rvr_snapshot[i]    = total_reverse_active_energy_counter[i];
+  }
+  _sw_rvr_unsaved_delta = 0;
+  _last_sw_rvr_save_ms  = millis();
+  taskEXIT_CRITICAL(&Z2S_globalMutex);
+
+  if (enabled) {
+    uint8_t phases = _one_phase ? 1 : MAX_PHASES;
+    for (uint8_t i = 0; i < phases; i++) {
+      setRvrActEnergy(i, rvr_snapshot[i]);
+    }
+  } else {
+    emValue.measured_values &= ~EM_VAR_REVERSE_ACTIVE_ENERGY;
+    valueChanged = true;
+  }
+}
+
+void integrateSwReverseEnergy(int phase, int64_t em_power) {
+
+  uint32_t now_ms = millis();
+  if (now_ms == 0) now_ms = 1;
+
+  uint64_t new_rvr_energy = 0;
+  bool updated = false;
+
+  taskENTER_CRITICAL(&Z2S_globalMutex);
+  uint32_t prev_ms = _last_power_ms[phase];
+  _last_power_ms[phase] = now_ms;
+
+  if ((em_power < 0) && (prev_ms != 0)) {
+    uint32_t dt_ms = now_ms - prev_ms;
+    if ((dt_ms > 0) && (dt_ms <= SW_RVR_MAX_DT_MS)) {
+      // 1 Supla unit (0.00001 kWh) = 3,600,000,000 * (0.00001 W) * ms
+      uint64_t acc   = static_cast<uint64_t>(-em_power) * dt_ms +
+                       _rvr_energy_rem[phase];
+      uint64_t delta = acc / 3600000000ULL;
+      _rvr_energy_rem[phase] = acc % 3600000000ULL;
+
+      if (delta > 0) {
+        total_reverse_active_energy_counter[phase] += delta;
+        _sw_rvr_unsaved_delta += delta;
+        new_rvr_energy = total_reverse_active_energy_counter[phase];
+        updated = true;
+      }
+    }
+  }
+  taskEXIT_CRITICAL(&Z2S_globalMutex);
+
+  if (updated) {
+    setRvrActEnergy(phase, new_rvr_energy);
+  }
+}
+
+void saveSwReverseEnergyCounters() {
+
+  channel_extended_data_em_t channel_extended_data_em = {};
+
+  memcpy(
+    channel_extended_data_em.ieee_addr, getChannelIeeeAddress(),
+    sizeof(esp_zb_ieee_addr_t));
+
+  uint64_t saved_delta = 0;
+
+  taskENTER_CRITICAL(&Z2S_globalMutex);
+  for (uint8_t i = 0; i < MAX_PHASES; i++) {
+    channel_extended_data_em.total_forward_active_energy_counter[i] =
+      total_forward_active_energy_counter[i];
+    channel_extended_data_em.total_reverse_active_energy_counter[i] =
+      total_reverse_active_energy_counter[i];
+    channel_extended_data_em.total_forward_reactive_energy_counter[i] =
+      total_forward_reactive_energy_counter[i];
+    channel_extended_data_em.total_reverse_reactive_energy_counter[i] =
+      total_reverse_reactive_energy_counter[i];
+  }
+  channel_extended_data_em.total_forward_active_energy_balanced_counter =
+    total_forward_active_energy_balanced_counter;
+  channel_extended_data_em.total_reverse_active_energy_balanced_counter =
+    total_reverse_active_energy_balanced_counter;
+  saved_delta = _sw_rvr_unsaved_delta;
+  taskEXIT_CRITICAL(&Z2S_globalMutex);
+
+  if (saveChannelExtendedData(
+        CHANNEL_EXTENDED_DATA_TYPE_EM,
+        (uint8_t *)&channel_extended_data_em)) {
+
+    taskENTER_CRITICAL(&Z2S_globalMutex);
+    _sw_rvr_unsaved_delta =
+      (_sw_rvr_unsaved_delta > saved_delta)
+        ? (_sw_rvr_unsaved_delta - saved_delta)
+        : 0;
+    _last_sw_rvr_save_ms = millis();
+    taskEXIT_CRITICAL(&Z2S_globalMutex);
+
+    log_i("SW reverse energy counters saved to LittleFS");
+  }
+}
   protected:
 
     //uint64_t		         *_data_counter = nullptr;
@@ -701,12 +869,17 @@ void iterateAlways() override {
     uint16_t _current_multiplier_modifier = 1;
     uint16_t _current_divisor_modifier    = 1;
 
-    uint64_t  total_forward_active_energy_counter[3];
-    uint64_t  total_reverse_active_energy_counter[3];
-    uint64_t  total_forward_reactive_energy_counter[3];
-    uint64_t  total_reverse_reactive_energy_counter[3];
-    uint64_t  total_forward_active_energy_balanced_counter;
-    uint64_t  total_reverse_active_energy_balanced_counter;
+    uint64_t total_forward_active_energy_counter[3]          = {};
+    uint64_t total_reverse_active_energy_counter[3]          = {};
+    uint64_t total_forward_reactive_energy_counter[3]        = {};
+    uint64_t total_reverse_reactive_energy_counter[3]        = {};
+    uint64_t total_forward_active_energy_balanced_counter    = 0;
+    uint64_t total_reverse_active_energy_balanced_counter    = 0;
+
+    uint64_t _rvr_energy_rem[MAX_PHASES]                     = {};
+    uint64_t _sw_rvr_unsaved_delta                           = 0;
+    uint32_t _last_power_ms[MAX_PHASES]                      = {};
+    uint32_t _last_sw_rvr_save_ms                            = 0;
     
     uint32_t _init_ms       = 30000;
     
