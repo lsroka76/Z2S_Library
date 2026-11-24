@@ -5914,7 +5914,7 @@ bool Z2S_isGUIBuilt() {
 
 void onUpdateBegin(const UpdateType type, int &result) {
 
-	rgbLedWrite(RGB_BUILTIN, 255, 0, 255);
+	Z2S_rgbLedOverride(255, 0, 255);
 
 	if (type == UpdateType::FILE_SYSTEM) {
 		log_i("Filesystem OTA begin - locking and unmounting LittleFS");
@@ -5926,7 +5926,7 @@ void onUpdateBegin(const UpdateType type, int &result) {
 
 void onUpdateEnd(const UpdateType type, int &result) {
 
-	rgbLedWrite(RGB_BUILTIN, 0, 0, 0);
+	Z2S_rgbLedRelease();
 
 	if (result == UpdateResult::UPDATE_OK) {
 		log_i("HTTP OTA finished successfully - scheduling clean soft restart");
@@ -6008,7 +6008,7 @@ void guiGitHubOtaProgress(size_t current, size_t total) {
 	if (total == 0) {
 		switch (current) {
 			case 0:
-				rgbLedWrite(RGB_BUILTIN, 0, 0, 0);
+				Z2S_rgbLedRelease();
 				ESPUI.updateLabel(
 					github_ota_info_label, "OTA Successful. Rebooting...");
 				ESPUI.flush(false);
@@ -6016,14 +6016,14 @@ void guiGitHubOtaProgress(size_t current, size_t total) {
 
 			case 1:
 				previousOtaProgress = -1;
-				rgbLedWrite(RGB_BUILTIN, 255, 0, 255);
+				Z2S_rgbLedOverride(255, 0, 255);
 				ESPUI.updateLabel(
 					github_ota_info_label, "Starting OTA from GitHub...");
 				ESPUI.flush(false);
 				break;
 
 			case 2:
-				rgbLedWrite(RGB_BUILTIN, 0, 0, 0);
+				Z2S_rgbLedRelease();
 				ESPUI.updateLabel(
 				  github_ota_info_label,
 				  "GitHub OTA failed - check logs for error code!");

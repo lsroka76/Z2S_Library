@@ -17,9 +17,13 @@ int8_t getZ2SDeviceRGBColorMode(uint32_t model_id) {
 
 
     case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_MODEL_B:
+
+      sub_id = Z2S_TUYA_COLOR_XY_RGB; 
+    break;
+
     case Z2S_DEVICE_DESC_TUYA_RGBW_BULB_NO_CT:
 
-      sub_id = Z2S_TUYA_COLOR_HS_XY_RGB; 
+      sub_id = Z2S_TUYA_COLOR_XY_RGB; 
     break;
 
 

@@ -22,6 +22,7 @@
 //#include <supla/network/esp_wifi.h>
 #include "z2s_esp_wifi.h"
 #include <supla/device/supla_ca_cert.h>
+#include <supla/io.h>
 #include <supla/storage/eeprom.h>
 #include <supla/storage/littlefs_config.h>
 #include <supla/clock/clock.h>
@@ -400,26 +401,28 @@ void supla_callback_bridge(int event, int action) {
   }
 }
 
+/*****************************************************************************/
 
 void Z2S_onOpenNetwork(uint8_t permit_duration) {
-
   if (permit_duration) {
-
+    
     log_i("Network open for %u s", permit_duration);
 
-    rgbLedWrite(RGB_BUILTIN, 0, 255, 0);
+    Z2S_rgbLedOverride(0, 255, 0);
     GUI_onZigbeeOpenNetwork(true);
     handleGatewayEvent(Z2S_SUPLA_EVENT_ON_ZIGBEE_OPEN_NETWORK);
-  }
+  } 
   else {
     
     log_i("Network closed");
 
-    rgbLedWrite(RGB_BUILTIN, 0, 0, 0);
+    Z2S_rgbLedRelease();
     GUI_onZigbeeOpenNetwork(false);
     handleGatewayEvent(Z2S_SUPLA_EVENT_ON_ZIGBEE_CLOSE_NETWORK);
   }
 }
+
+/*****************************************************************************/
 
 void enableZ2SNotifications() {
 
@@ -563,7 +566,92 @@ void listDir(fs::FS &fs, const char *dirname, uint8_t levels) {
   root.close(); 
 }
 
-Supla::Device::StatusLed statusLed(RGB_BUILTIN, true);
+/*****************************************************************************/
+
+#ifndef RGB_BRIGHTNESS
+  #define RGB_BRIGHTNESS 64
+#endif
+
+class Z2S_RgbStatusIo : public Supla::Io::Base {
+ public:
+  Z2S_RgbStatusIo() : Supla::Io::Base() {
+    _mutex = xSemaphoreCreateMutexStatic(&_mutex_buf);
+  }
+
+  void customPinMode(int channelNumber, uint8_t pin, uint8_t mode) override {
+    (void)channelNumber;
+    (void)pin;
+    (void)mode;
+  }
+
+  void customDigitalWrite(int channelNumber, uint8_t pin, uint8_t val) override {
+    (void)channelNumber;
+    lock();
+    _supla_pin = pin;
+    _supla_val = val;
+    if (!_override_active) {
+      applySuplaStateLocked();
+    }
+    unlock();
+  }
+
+  void setOverrideColor(uint8_t r, uint8_t g, uint8_t b) {
+    lock();
+    _override_active = true;
+    writeRgbLocked(r, g, b);
+    unlock();
+  }
+
+  void releaseOverride() {
+    lock();
+    _override_active = false;
+    applySuplaStateLocked();
+    unlock();
+  }
+
+ private:
+  void lock() {
+    if (_mutex) xSemaphoreTake(_mutex, portMAX_DELAY);
+  }
+
+  void unlock() {
+    if (_mutex) xSemaphoreGive(_mutex);
+  }
+
+  void applySuplaStateLocked() {
+    if (_supla_val == HIGH) {
+      writeRgbLocked(RGB_BRIGHTNESS, RGB_BRIGHTNESS, RGB_BRIGHTNESS);
+    } else {
+      writeRgbLocked(0, 0, 0);
+    }
+  }
+
+  void writeRgbLocked(uint8_t r, uint8_t g, uint8_t b) {
+    rgbLedWrite(_supla_pin, r, g, b);
+    // Optional: if supporting mixed v1.0 (GPIO48) & v1.1 (GPIO38) S3 boards
+    // and neither pin is used by a LocalRelay/GPIO channel, replace the line
+    // above on ESP32-S3 with:
+    //   rgbLedWrite(48, r, g, b);
+    //   rgbLedWrite(38, r, g, b);
+  }
+
+  SemaphoreHandle_t _mutex           = nullptr;
+  StaticSemaphore_t _mutex_buf       = {};
+  uint8_t           _supla_pin       = RGB_BUILTIN;
+  uint8_t           _supla_val       = LOW;
+  bool              _override_active = false;
+};
+
+Z2S_RgbStatusIo rgbStatusIo;
+Supla::Device::StatusLed statusLed(&rgbStatusIo, RGB_BUILTIN, false);
+
+void Z2S_rgbLedOverride(uint8_t r, uint8_t g, uint8_t b) {
+  rgbStatusIo.setOverrideColor(r, g, b);
+}
+
+void Z2S_rgbLedRelease() {
+  rgbStatusIo.releaseOverride();
+}
 
 /*****************************************************************************/
 
@@ -1391,7 +1479,7 @@ void loop() {
 
     while ((joined_device = popNextJoinedDevice()) != nullptr) {
 
-      rgbLedWrite(RGB_BUILTIN, 0, 0, 255);  // Blue
+      Z2S_rgbLedOverride(0, 0, 255);
 
       if (zpm->getState() == 2)
         zpm->notifySrpcAboutParingEnd(
@@ -1556,9 +1644,9 @@ void loop() {
             break;
           } else {
             if (Zigbee.isNetworkOpen())
-              rgbLedWrite(RGB_BUILTIN, 0, 255, 0);
+              Z2S_rgbLedOverride(0, 255, 0);
             else
-              rgbLedWrite(RGB_BUILTIN, 0, 0, 0);
+              Z2S_rgbLedRelease();
 
             zbGateway.clearQueryBasicClusterData();
 
@@ -1607,8 +1695,12 @@ void loop() {
             joined_device->ieee_addr, joined_device->short_addr, false, false);
         }
 
-        rgbLedWrite(RGB_BUILTIN, 255, 0, 0);  // Red
+        Z2S_rgbLedOverride(255, 0, 0);  // Red
         delay(1000);
+        if (Zigbee.isNetworkOpen())
+          Z2S_rgbLedOverride(0, 255, 0);
+        else
+          Z2S_rgbLedRelease();
 
         GUI_onLastBindingFailure(true);
 

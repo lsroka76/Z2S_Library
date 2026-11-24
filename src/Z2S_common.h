@@ -191,6 +191,9 @@ struct Z2S_RtcDeviceTable {
 extern Z2S_RtcDeviceTable z2s_rtc_dev_table;
 #endif
 
+void Z2S_rgbLedOverride(uint8_t r, uint8_t g, uint8_t b);
+void Z2S_rgbLedRelease();
+
 bool Z2S_syncRtcDeviceTable(uint32_t c6_boot_id);
 void Z2S_clearRtcDeviceSlot(int16_t device_index);
 
