@@ -17,6 +17,7 @@ void onTelnetConnect(String ip) {
   Serial.print(ip);
   Serial.println(" connected");
   
+  telnet.clearInput();
   telnet.println("\n>Welcome " + telnet.getIP());
   telnet.println(">Use quit  to disconnect.");
 }
@@ -31,6 +32,8 @@ void onTelnetReconnect(String ip) {
   Serial.print(">- Telnet: ");
   Serial.print(ip);
   Serial.println("> reconnected");
+
+  telnet.clearInput();
 }
 
 void onTelnetConnectionAttempt(String ip) {
