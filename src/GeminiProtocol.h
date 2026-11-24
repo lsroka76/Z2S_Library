@@ -470,10 +470,13 @@ public:
   static void lockJoinedDevices();
   static void unlockJoinedDevices();
 
+  static uint32_t getQueueDropCount();
+
 private:
   static void rxTask(void *arg);
   static void handleFrame(const GeminiFrameHeader &hdr, const uint8_t *payload);
   static void cmdWorkerTask(void *arg);
+  static void fastWorkerTask(void *arg);
 
   static SemaphoreHandle_t _tx_mutex;
   static SemaphoreHandle_t _sync_cmd_mutex;

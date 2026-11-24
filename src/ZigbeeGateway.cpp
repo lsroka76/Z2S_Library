@@ -55,6 +55,30 @@ uint8_t ZigbeeGateway::_custom_cmd_resp_to_cmd_last_result = {};
 static zbg_device_params_t          s_bind_device      = {};
 static volatile uint32_t            s_bind_gen         = 0;
 #endif
+
+#if defined(USE_GEMINI_PROTOCOL_NCP)
+static uint16_t s_raw_rssi_short_addr = 0xFFFF;
+static int8_t   s_raw_rssi_val        = 0;
+static uint32_t s_raw_rssi_ms         = 0;
+
+static inline void cacheRawReportRssi(uint16_t short_addr, int8_t rssi) {
+  s_raw_rssi_short_addr = short_addr;
+  s_raw_rssi_val        = rssi;
+  s_raw_rssi_ms         = millis();
+}
+
+static inline int8_t consumeRawReportRssi(uint16_t short_addr) {
+  if (s_raw_rssi_val != 0 &&
+      s_raw_rssi_short_addr == short_addr &&
+      (millis() - s_raw_rssi_ms) < 200) {
+    int8_t rssi = s_raw_rssi_val;
+    s_raw_rssi_val = 0; // Apply once per RF frame on multi-attribute reports
+    return rssi;
+  }
+  return 0;
+}
+#endif
+
 SemaphoreHandle_t ZigbeeGateway::gt_lock;
 
 ZigbeeGateway::ZigbeeGateway(uint8_t endpoint) : ZigbeeEP(endpoint) {
@@ -506,9 +530,10 @@ void ZigbeeGateway::zbReadBasicCluster(
     xSemaphoreGive(gt_lock);
   } else {
     #if defined(USE_GEMINI_PROTOCOL_NCP)
-      GeminiBridge::forwardAttrReport(
-        src_address.u.short_addr, src_endpoint, cluster_id, attribute, true, true);
-    #else
+    int8_t rssi = consumeRawReportRssi(src_address.u.short_addr);
+    GeminiBridge::forwardAttrReport(
+      src_address.u.short_addr, src_endpoint, cluster_id, attribute, true, true, rssi);
+  #else
       if (_on_basic_receive)
         _on_basic_receive(src_address.u.short_addr, src_endpoint, cluster_id, attribute);
     #endif
@@ -752,8 +777,9 @@ void ZigbeeGateway::zbProcessAttributeReporting(
   const esp_zb_zcl_attribute_t *attribute, bool reporting) {
 
 #if defined(USE_GEMINI_PROTOCOL_NCP)
+  int8_t rssi = reporting ? consumeRawReportRssi(src_address.u.short_addr) : 0;
   GeminiBridge::forwardAttrReport(
-    src_address.u.short_addr, src_endpoint, cluster_id, attribute, reporting);
+    src_address.u.short_addr, src_endpoint, cluster_id, attribute, reporting, false, rssi);
   return;
 #else
   switch (cluster_id) {
@@ -2608,19 +2634,20 @@ bool ZigbeeGateway::zbRawCmdHandler(
   }
 
   // 2. FAST EXIT for standard ZCL Foundation commands (Report/ReadRsp/WriteRsp/etc.)
-  if (is_common_command) {
-    #if defined(USE_GEMINI_PROTOCOL_NCP)
-      // Update RSSI for standard reports/responses not carrying RSSI in their ZBOSS struct
-      if ((cmd_id == 0x0A) ||
-          ((cmd_id == 0x01) && (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_BASIC))) {
-        uint8_t rssi_pkt[3];
-        memcpy(rssi_pkt, &source.u.short_addr, 2);
-        rssi_pkt[2] = (uint8_t)rssi;
-        GeminiBridge::sendFrame(G_EVT_UPDATE_RSSI, rssi_pkt, sizeof(rssi_pkt));
-      }
-    #endif
-    return false;
-  }
+if (is_common_command) {
+  #if defined(USE_GEMINI_PROTOCOL_NCP)
+    if (cmd_id == 0x0A) {
+      // Piggybacked onto the immediately following G_EVT_ATTR_REPORT frame
+      cacheRawReportRssi(source.u.short_addr, rssi);
+    } else if ((cmd_id == 0x01) && (cluster_id == ESP_ZB_ZCL_CLUSTER_ID_BASIC)) {
+      uint8_t rssi_pkt[3];
+      memcpy(rssi_pkt, &source.u.short_addr, 2);
+      rssi_pkt[2] = (uint8_t)rssi;
+      GeminiBridge::sendFrame(G_EVT_UPDATE_RSSI, rssi_pkt, sizeof(rssi_pkt));
+    }
+  #endif
+  return false;
+}
 
   // 3. OTA Upgrade Image Block Request (cmd_id == 3)
   if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_OTA_UPGRADE) && (cmd_id == 3) && buffer_size >= 14) {

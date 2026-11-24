@@ -1509,6 +1509,11 @@ void loop() {
           "Error while pairing - can't read manufacturer id (5x). "
           "Try to pair device once again!");
 
+        if (Zigbee.isNetworkOpen())
+          Z2S_rgbLedOverride(0, 255, 0);
+        else
+          Z2S_rgbLedRelease();
+
         free(joined_device);
         joined_device = nullptr;
         zbGateway.clearQueryBasicClusterData();

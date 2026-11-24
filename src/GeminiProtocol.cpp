@@ -1,5 +1,6 @@
 #include "soc/usb_serial_jtag_struct.h"
 #include "driver/gpio.h"
+#include <esp_attr.h>
 
 #include "GeminiProtocol.h"
 
@@ -78,7 +79,55 @@ struct QueuedCommand {
   uint8_t           payload[GEMINI_MAX_PAYLOAD];
 };
 
-static QueueHandle_t s_cmd_queue = nullptr;
+#if defined(USE_GEMINI_PROTOCOL_HOST) && defined(BOARD_HAS_PSRAM)
+  #define GEMINI_CMD_QUEUE_LEN 48
+  EXT_RAM_BSS_ATTR static uint8_t s_cmd_queue_storage[GEMINI_CMD_QUEUE_LEN * sizeof(QueuedCommand)];
+#elif defined(USE_GEMINI_PROTOCOL_HOST)
+  #define GEMINI_CMD_QUEUE_LEN 24
+  static uint8_t s_cmd_queue_storage[GEMINI_CMD_QUEUE_LEN * sizeof(QueuedCommand)];
+#else
+  #define GEMINI_CMD_QUEUE_LEN 12
+  static uint8_t s_cmd_queue_storage[GEMINI_CMD_QUEUE_LEN * sizeof(QueuedCommand)];
+#endif
+
+static StaticQueue_t     s_cmd_queue_struct = {};
+static QueueHandle_t     s_cmd_queue        = nullptr;
+static volatile uint32_t s_queue_drop_count = 0;
+
+#if defined(USE_GEMINI_PROTOCOL_NCP)
+#define GEMINI_FAST_MAX_PAYLOAD 24
+#define GEMINI_FAST_QUEUE_LEN   16
+
+struct FastQueuedCommand {
+  GeminiFrameHeader hdr;
+  uint8_t           payload[GEMINI_FAST_MAX_PAYLOAD];
+};
+
+static StaticQueue_t s_fast_queue_struct = {};
+static uint8_t       s_fast_queue_storage[GEMINI_FAST_QUEUE_LEN * sizeof(FastQueuedCommand)];
+static QueueHandle_t s_fast_cmd_queue    = nullptr;
+
+static inline bool isFastLaneCmd(uint8_t msg_type) {
+  switch (msg_type) {
+    case G_CMD_ON_OFF:
+    case G_CMD_LEVEL_MOVE:
+    case G_CMD_COLOR_MOVE:
+    case G_CMD_WINDOW_COVERING:
+    case G_CMD_IAS_ENROLL_RSP:
+    case G_CMD_ADD_GROUP:
+    case G_CMD_OPEN_NETWORK:
+    case G_CMD_SET_TIME_CLUSTER:
+    case G_CMD_SET_TX_POWER:
+      return true;
+    default:
+      return false;
+  }
+}
+#endif
+
+uint32_t GeminiBridge::getQueueDropCount() {
+  return s_queue_drop_count;
+}
 
 bool GeminiBridge::initUart() {
   if (_tx_mutex != nullptr) return true; // Already initialized
@@ -113,7 +162,7 @@ bool GeminiBridge::initUart() {
     gpio_reset_pin((gpio_num_t)GEMINI_PIN_TX);
     gpio_reset_pin((gpio_num_t)GEMINI_PIN_RX);
   }
-  #elif defined(USE_GEMINI_PROTOCOL_NCP)
+#elif defined(USE_GEMINI_PROTOCOL_NCP)
   // If using C6 Native USB port pins (GPIO12 D- / GPIO13 D+), disconnect internal USB PHY & pull-up
   if (GEMINI_PIN_TX == 12 || GEMINI_PIN_RX == 13 || GEMINI_PIN_TX == 13 || GEMINI_PIN_RX == 12) {
     USB_SERIAL_JTAG.chip_rst.usb_uart_chip_rst_dis = 1; // Disable hardware USB reset detector
@@ -122,7 +171,7 @@ bool GeminiBridge::initUart() {
     gpio_reset_pin((gpio_num_t)GEMINI_PIN_TX);
     gpio_reset_pin((gpio_num_t)GEMINI_PIN_RX);
   }
-  #endif
+#endif
 
   bool use_hw_flow = (GEMINI_PIN_RTS >= 0 && GEMINI_PIN_CTS >= 0);
 
@@ -149,7 +198,17 @@ bool GeminiBridge::initUart() {
   uart_set_rx_full_threshold(GEMINI_UART_NUM, 32);
   uart_set_rx_timeout(GEMINI_UART_NUM, 2);
 
-  s_cmd_queue = xQueueCreate(12, sizeof(QueuedCommand));
+  s_cmd_queue = xQueueCreateStatic(
+    GEMINI_CMD_QUEUE_LEN, sizeof(QueuedCommand),
+    s_cmd_queue_storage, &s_cmd_queue_struct);
+
+#if defined(USE_GEMINI_PROTOCOL_NCP)
+  s_fast_cmd_queue = xQueueCreateStatic(
+    GEMINI_FAST_QUEUE_LEN, sizeof(FastQueuedCommand),
+    s_fast_queue_storage, &s_fast_queue_struct);
+  xTaskCreate(fastWorkerTask, "gemini_fast", 4096, nullptr, 14, nullptr);
+#endif
+
   xTaskCreate(cmdWorkerTask, "gemini_wrk", 8192, nullptr, 12, nullptr);
   xTaskCreate(rxTask,        "gemini_rx",  6144, nullptr, 18, nullptr);
 
@@ -631,12 +690,33 @@ void GeminiBridge::handleFrame(const GeminiFrameHeader &hdr, const uint8_t *payl
     return;
   }
 
+#if defined(USE_GEMINI_PROTOCOL_NCP)
+  if (s_fast_cmd_queue && isFastLaneCmd(hdr.msg_type) &&
+      hdr.payload_len <= GEMINI_FAST_MAX_PAYLOAD) {
+    FastQueuedCommand fast_item;
+    fast_item.hdr = hdr;
+    if (hdr.payload_len > 0) {
+      memcpy(fast_item.payload, payload, hdr.payload_len);
+    }
+    if (xQueueSend(s_fast_cmd_queue, &fast_item, 0) != pdTRUE) {
+      s_queue_drop_count++;
+      log_e("GeminiBridge fast queue full! Dropped msg 0x%02X (drops=%lu)",
+            hdr.msg_type, (unsigned long)s_queue_drop_count);
+    }
+    return;
+  }
+#endif
+
   QueuedCommand item;
   item.hdr = hdr;
   if (hdr.payload_len > 0) {
     memcpy(item.payload, payload, hdr.payload_len);
   }
-  xQueueSend(s_cmd_queue, &item, 0);
+  if (xQueueSend(s_cmd_queue, &item, 0) != pdTRUE) {
+    s_queue_drop_count++;
+    log_e("GeminiBridge cmd queue full! Dropped msg 0x%02X (drops=%lu)",
+          hdr.msg_type, (unsigned long)s_queue_drop_count);
+  }
 }
 
 void GeminiBridge::forwardAttrReport(
@@ -664,6 +744,137 @@ void GeminiBridge::forwardAttrReport(
     memcpy(pkt->data, attribute->data.value, data_size);
   }
   sendFrame(G_EVT_ATTR_REPORT, buf, sizeof(G_PktEvtAttrReport) + data_size);
+}
+
+void GeminiBridge::fastWorkerTask(void *arg) {
+#if defined(USE_GEMINI_PROTOCOL_NCP)
+  FastQueuedCommand item;
+  for (;;) {
+    if (xQueueReceive(s_fast_cmd_queue, &item, portMAX_DELAY) != pdTRUE) continue;
+    if (!Zigbee.started()) continue;
+
+    const uint8_t *p = item.payload;
+
+    switch (item.hdr.msg_type) {
+      case G_CMD_ON_OFF: {
+        if (item.hdr.payload_len < sizeof(G_PktSimpleCmd)) break;
+        const auto *req = reinterpret_cast<const G_PktSimpleCmd *>(p);
+        zbg_device_params_t dev = {};
+        dev.short_addr = req->short_addr;
+        dev.endpoint   = req->dst_endpoint;
+        memcpy(dev.ieee_addr, req->ieee_addr, 8);
+        zbGateway.sendOnOffCmd(&dev, req->flag1 != 0);
+      } break;
+
+      case G_CMD_LEVEL_MOVE: {
+        if (item.hdr.payload_len < sizeof(G_PktSimpleCmd)) break;
+        const auto *req = reinterpret_cast<const G_PktSimpleCmd *>(p);
+        zbg_device_params_t dev = {};
+        dev.short_addr = req->short_addr;
+        dev.endpoint   = req->dst_endpoint;
+        memcpy(dev.ieee_addr, req->ieee_addr, 8);
+        zbGateway.sendLevelMoveToLevelCmd(&dev, (uint8_t)req->param1, req->param2, req->flag1 != 0);
+      } break;
+
+      case G_CMD_COLOR_MOVE: {
+        if (item.hdr.payload_len < sizeof(G_PktSimpleCmd)) break;
+        const auto *req = reinterpret_cast<const G_PktSimpleCmd *>(p);
+        zbg_device_params_t dev = {};
+        dev.short_addr = req->short_addr;
+        dev.endpoint   = req->dst_endpoint;
+        memcpy(dev.ieee_addr, req->ieee_addr, 8);
+        switch (req->cmd_sub_type) {
+          case G_COLOR_MOVE_HUE:
+            zbGateway.sendColorMoveToHueCmd(&dev, (uint8_t)req->param1, req->flag1, req->param2);
+            break;
+          case G_COLOR_MOVE_SAT:
+            zbGateway.sendColorMoveToSaturationCmd(&dev, (uint8_t)req->param1, req->param2);
+            break;
+          case G_COLOR_MOVE_HUE_SAT:
+            zbGateway.sendColorMoveToHueAndSaturationCmd(&dev, (uint8_t)req->param1, (uint8_t)req->param2, req->param3);
+            break;
+          case G_COLOR_ENH_MOVE_HUE_SAT:
+            zbGateway.sendColorEnhancedMoveToHueAndSaturationCmd(&dev, req->param1, (uint8_t)req->param2, req->param3);
+            break;
+          case G_COLOR_MOVE_XY:
+            zbGateway.sendColorMoveToColorCmd(&dev, req->param1, req->param2, req->param3);
+            break;
+          case G_COLOR_MOVE_CT:
+            zbGateway.sendColorMoveToColorTemperatureCmd(&dev, req->param1, req->param2);
+            break;
+        }
+      } break;
+
+      case G_CMD_WINDOW_COVERING: {
+        if (item.hdr.payload_len < sizeof(G_PktSimpleCmd)) break;
+        const auto *req = reinterpret_cast<const G_PktSimpleCmd *>(p);
+        zbg_device_params_t dev = {};
+        dev.short_addr = req->short_addr;
+        dev.endpoint   = req->dst_endpoint;
+        memcpy(dev.ieee_addr, req->ieee_addr, 8);
+        uint16_t val = req->param1;
+        zbGateway.sendWindowCoveringCmd(&dev, req->cmd_sub_type, (req->flag1 != 0) ? (void *)&val : nullptr);
+      } break;
+
+      case G_CMD_IAS_ENROLL_RSP: {
+        if (item.hdr.payload_len < sizeof(G_PktSimpleCmd)) break;
+        const auto *req = reinterpret_cast<const G_PktSimpleCmd *>(p);
+        zbg_device_params_t dev = {};
+        dev.short_addr = req->short_addr;
+        dev.endpoint   = req->dst_endpoint;
+        memcpy(dev.ieee_addr, req->ieee_addr, 8);
+        zbGateway.sendIASzoneEnrollResponseCmd(&dev, (uint8_t)req->param1, (uint8_t)req->param2);
+      } break;
+
+      case G_CMD_ADD_GROUP: {
+        if (item.hdr.payload_len < sizeof(G_PktSimpleCmd)) break;
+        const auto *req = reinterpret_cast<const G_PktSimpleCmd *>(p);
+        zbg_device_params_t dev = {};
+        dev.short_addr = req->short_addr;
+        dev.endpoint   = req->dst_endpoint;
+        memcpy(dev.ieee_addr, req->ieee_addr, 8);
+        zbGateway.sendAddGroupRequestCmd(&dev, req->param1, req->flag1 != 0);
+      } break;
+
+      case G_CMD_OPEN_NETWORK: {
+        if (item.hdr.payload_len < 1) break;
+        uint8_t open_sec = *p;
+        Zigbee.openNetwork(open_sec);
+        sendFrame(G_EVT_OPEN_NETWORK, &open_sec, sizeof(uint8_t));
+      } break;
+
+      case G_CMD_SET_TIME_CLUSTER: {
+        if (item.hdr.payload_len < sizeof(G_PktTimeClusterSync)) break;
+        const auto *req = reinterpret_cast<const G_PktTimeClusterSync *>(p);
+        uint32_t utc_t = req->utc_time;
+        uint32_t loc_t = req->local_time;
+        uint8_t  stat  = req->time_status;
+        esp_zb_lock_acquire(portMAX_DELAY);
+        esp_zb_zcl_set_attribute_val(
+          1, ESP_ZB_ZCL_CLUSTER_ID_TIME, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE,
+          ESP_ZB_ZCL_ATTR_TIME_TIME_ID, &utc_t, false);
+        esp_zb_zcl_set_attribute_val(
+          1, ESP_ZB_ZCL_CLUSTER_ID_TIME, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE,
+          ESP_ZB_ZCL_ATTR_TIME_TIME_STATUS_ID, &stat, false);
+        esp_zb_zcl_set_attribute_val(
+          1, ESP_ZB_ZCL_CLUSTER_ID_TIME, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE,
+          ESP_ZB_ZCL_ATTR_TIME_LOCAL_TIME_ID, &loc_t, false);
+        esp_zb_lock_release();
+      } break;
+
+      case G_CMD_SET_TX_POWER: {
+        if (item.hdr.payload_len < 1) break;
+        int8_t pwr = (int8_t)(*p);
+        esp_zb_lock_acquire(portMAX_DELAY);
+        esp_zb_set_tx_power(pwr);
+        esp_zb_lock_release();
+      } break;
+    }
+  }
+#else
+  (void)arg;
+  vTaskDelete(nullptr);
+#endif
 }
 
 void GeminiBridge::cmdWorkerTask(void *arg) {
@@ -888,6 +1099,7 @@ void GeminiBridge::cmdWorkerTask(void *arg) {
     #elif defined(USE_GEMINI_PROTOCOL_NCP)
     // =========================================================================
     // C6 NCP WORKER: Execute Zigbee commands requested by S3 Host
+    // (Real-time actuation commands are routed directly to fastWorkerTask)
     // =========================================================================
     switch (item.hdr.msg_type) {
       
@@ -898,13 +1110,6 @@ void GeminiBridge::cmdWorkerTask(void *arg) {
           req->channel_mask, req->open_network_sec, true);
       } break;
 
-      case G_CMD_OPEN_NETWORK: {
-        uint8_t open_sec = *p;
-        Zigbee.openNetwork(open_sec);
-        // Always echo the state back so S3 GUI/LED stays in sync even if C6 was already open!
-        sendFrame(G_EVT_OPEN_NETWORK, &open_sec, sizeof(uint8_t));
-      } break;
-
       case G_CMD_FACTORY_RESET: {
         Zigbee.factoryReset();
       } break;
@@ -913,31 +1118,6 @@ void GeminiBridge::cmdWorkerTask(void *arg) {
         uint32_t mask = 0;
         memcpy(&mask, p, sizeof(uint32_t));
         Zigbee.setNVRAMChannelMask(mask);
-      } break;
-
-      case G_CMD_SET_TIME_CLUSTER: {
-        const auto *req = reinterpret_cast<const G_PktTimeClusterSync *>(p);
-        uint32_t utc_t = req->utc_time;
-        uint32_t loc_t = req->local_time;
-        uint8_t  stat  = req->time_status;
-        esp_zb_lock_acquire(portMAX_DELAY);
-        esp_zb_zcl_set_attribute_val(
-          1, ESP_ZB_ZCL_CLUSTER_ID_TIME, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE,
-          ESP_ZB_ZCL_ATTR_TIME_TIME_ID, &utc_t, false);
-        esp_zb_zcl_set_attribute_val(
-          1, ESP_ZB_ZCL_CLUSTER_ID_TIME, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE,
-          ESP_ZB_ZCL_ATTR_TIME_TIME_STATUS_ID, &stat, false);
-        esp_zb_zcl_set_attribute_val(
-          1, ESP_ZB_ZCL_CLUSTER_ID_TIME, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE,
-          ESP_ZB_ZCL_ATTR_TIME_LOCAL_TIME_ID, &loc_t, false);
-        esp_zb_lock_release();
-      } break;
-
-      case G_CMD_SET_TX_POWER: {
-        int8_t pwr = (int8_t)(*p);
-        esp_zb_lock_acquire(portMAX_DELAY);
-        esp_zb_set_tx_power(pwr);
-        esp_zb_lock_release();
       } break;
 
       case G_CMD_GET_TX_POWER: {
@@ -1199,80 +1379,6 @@ void GeminiBridge::cmdWorkerTask(void *arg) {
           req->command_id, payload_size, aligned_payload,
           req->direction, req->dis_default_resp, req->manuf_specific,
           req->manuf_code, req->is_global != 0, req->profile_id);
-      } break;
-
-      case G_CMD_ON_OFF: {
-        const auto *req = reinterpret_cast<const G_PktSimpleCmd *>(p);
-        zbg_device_params_t dev = {};
-        dev.short_addr = req->short_addr;
-        dev.endpoint   = req->dst_endpoint;
-        memcpy(dev.ieee_addr, req->ieee_addr, 8);
-        zbGateway.sendOnOffCmd(&dev, req->flag1 != 0);
-      } break;
-
-      case G_CMD_LEVEL_MOVE: {
-        const auto *req = reinterpret_cast<const G_PktSimpleCmd *>(p);
-        zbg_device_params_t dev = {};
-        dev.short_addr = req->short_addr;
-        dev.endpoint   = req->dst_endpoint;
-        memcpy(dev.ieee_addr, req->ieee_addr, 8);
-        zbGateway.sendLevelMoveToLevelCmd(&dev, (uint8_t)req->param1, req->param2, req->flag1 != 0);
-      } break;
-
-      case G_CMD_COLOR_MOVE: {
-        const auto *req = reinterpret_cast<const G_PktSimpleCmd *>(p);
-        zbg_device_params_t dev = {};
-        dev.short_addr = req->short_addr;
-        dev.endpoint   = req->dst_endpoint;
-        memcpy(dev.ieee_addr, req->ieee_addr, 8);
-        switch (req->cmd_sub_type) {
-          case G_COLOR_MOVE_HUE:
-            zbGateway.sendColorMoveToHueCmd(&dev, (uint8_t)req->param1, req->flag1, req->param2);
-            break;
-          case G_COLOR_MOVE_SAT:
-            zbGateway.sendColorMoveToSaturationCmd(&dev, (uint8_t)req->param1, req->param2);
-            break;
-          case G_COLOR_MOVE_HUE_SAT:
-            zbGateway.sendColorMoveToHueAndSaturationCmd(&dev, (uint8_t)req->param1, (uint8_t)req->param2, req->param3);
-            break;
-          case G_COLOR_ENH_MOVE_HUE_SAT:
-            zbGateway.sendColorEnhancedMoveToHueAndSaturationCmd(&dev, req->param1, (uint8_t)req->param2, req->param3);
-            break;
-          case G_COLOR_MOVE_XY:
-            zbGateway.sendColorMoveToColorCmd(&dev, req->param1, req->param2, req->param3);
-            break;
-          case G_COLOR_MOVE_CT:
-            zbGateway.sendColorMoveToColorTemperatureCmd(&dev, req->param1, req->param2);
-            break;
-        }
-      } break;
-
-      case G_CMD_WINDOW_COVERING: {
-        const auto *req = reinterpret_cast<const G_PktSimpleCmd *>(p);
-        zbg_device_params_t dev = {};
-        dev.short_addr = req->short_addr;
-        dev.endpoint   = req->dst_endpoint;
-        memcpy(dev.ieee_addr, req->ieee_addr, 8);
-        uint16_t val = req->param1;
-        zbGateway.sendWindowCoveringCmd(&dev, req->cmd_sub_type, (req->flag1 != 0) ? (void *)&val : nullptr);
-      } break;
-
-      case G_CMD_IAS_ENROLL_RSP: {
-        const auto *req = reinterpret_cast<const G_PktSimpleCmd *>(p);
-        zbg_device_params_t dev = {};
-        dev.short_addr = req->short_addr;
-        dev.endpoint   = req->dst_endpoint;
-        memcpy(dev.ieee_addr, req->ieee_addr, 8);
-        zbGateway.sendIASzoneEnrollResponseCmd(&dev, (uint8_t)req->param1, (uint8_t)req->param2);
-      } break;
-
-      case G_CMD_ADD_GROUP: {
-        const auto *req = reinterpret_cast<const G_PktSimpleCmd *>(p);
-        zbg_device_params_t dev = {};
-        dev.short_addr = req->short_addr;
-        dev.endpoint   = req->dst_endpoint;
-        memcpy(dev.ieee_addr, req->ieee_addr, 8);
-        zbGateway.sendAddGroupRequestCmd(&dev, req->param1, req->flag1 != 0);
       } break;
 
       case G_CMD_BIND_CLUSTER: {
