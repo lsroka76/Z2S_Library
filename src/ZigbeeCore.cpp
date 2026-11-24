@@ -282,6 +282,8 @@ void ZigbeeCore::openNetwork(uint8_t time) {
 void ZigbeeCore::factoryReset() {
 #if defined(USE_GEMINI_PROTOCOL_HOST)
   GeminiBridge::sendFrame(G_CMD_FACTORY_RESET, nullptr, 0);
+  uart_wait_tx_done(GEMINI_UART_NUM, pdMS_TO_TICKS(100));
+  vTaskDelay(pdMS_TO_TICKS(50));
   esp_restart();
 #else
   esp_zb_factory_reset();
