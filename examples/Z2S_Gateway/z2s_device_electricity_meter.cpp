@@ -3,467 +3,119 @@
 /*****************************************************************************/
 
 void initZ2SDeviceElectricityMeter(
-  uint16_t channel_index, z2s_device_params_t* _z2s_channel, 
+  uint16_t channel_index, z2s_device_params_t* _z2s_channel,
   Supla::Element *element) {
-
-  bool _isTuya, _active_query;
-  bool _one_phase = true;
-
-  uint16_t current_multiplier_modifier = 1;
-  uint16_t current_divisor_modifier    = 1;
-  
-  uint16_t current_multiplier = 0;
-  uint16_t current_divisor    = 0;
-
-  uint16_t voltage_multiplier = 0;
-  uint16_t voltage_divisor    = 0;
-  
-  uint16_t active_power_multiplier = 0;
-  uint16_t active_power_divisor    = 0;
-
-  uint16_t ac_frequency_multiplier = 0;
-  uint16_t ac_frequency_divisor = 0;
-
-  uint16_t power_factor_multiplier = 0;
-  uint16_t power_factor_divisor    = 0;
-
-  uint32_t  energy_multiplier = 0;
-  uint32_t  energy_divisor = 0;
-
-  int64_t  fwd_energy_counter = 0;
-
-  bool ignore_zigbee_scaling = false;
-  bool extended_data_counter = false;
 
   Z2S_Device *device = Z2S_Device::getZ2SDeviceByDeviceIndex(
     _z2s_channel->Zb_device_id);
 
   if (device == nullptr) {
-
     log_e(
       "Fatal error - no ZigBee device for channel (index %u)", channel_index);
-
     return;
   }
 
-  switch (_z2s_channel->model_id) {
-    
-
-    case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2: {
-
-      _isTuya = true; 
-      _active_query = false; //true;
-
-      if (device->hasManufacturerName("_TZ3000_5f43h46b") ||
-          device->hasManufacturerName("_TZ3000_w0qqde0g")) {
-
-        energy_multiplier = 1;
-        energy_divisor  = 100;
-      
-        ignore_zigbee_scaling = true;
-      }
-    } break;
-
-
-    case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1: {
-
-      _isTuya = true; 
-      _active_query = false; //true;
-
-      if (device->hasManufacturerName("_TZ3210_rwmitwj4") ||
-          device->hasManufacturerName("_TZ3210_w0qqde0g") ||
-          device->hasManufacturerName("_TZ3008_reatplte")) {
-
-        energy_multiplier = 1;
-        energy_divisor  = 100;
-      
-        ignore_zigbee_scaling = true;
-      }
-    } break;
-
-
-    case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER: {
-
-      _isTuya = true; 
-      _active_query = false;
-
-      if (device->hasManufacturerName("_TZ3000_ww6drja5") ||
-          device->hasManufacturerName("_TZ3000_fukaa7nc") ||
-          device->hasManufacturerName("_TZ3210_2uollq9d") ||
-          device->hasManufacturerName("_TZ3210_2putqrmw")) {
-
-        energy_multiplier = 1;
-        energy_divisor  = 100;
-      
-        ignore_zigbee_scaling = true;
-      }
-      
-      if (device->hasManufacturerName("_TZ3008_1a8m8wd6")) {
-
-        voltage_multiplier = 1;
-        voltage_divisor    = 10;
-
-        active_power_multiplier = 1;
-        active_power_divisor    = 10;
-
-        energy_multiplier = 1;
-        energy_divisor  = 100;
-      
-        ignore_zigbee_scaling = true;
-
-      }
-    } break;
-
-
-    case Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER: {
-
-      _one_phase = false; 
-
-      voltage_multiplier = 1;
-      voltage_divisor    = 10;
-
-      ac_frequency_multiplier = 1;
-      ac_frequency_divisor = 100;
-      
-      energy_multiplier = 1;
-      energy_divisor  = 100;
-      
-      ignore_zigbee_scaling = true;
-    } break;
-
-
-    case Z2S_DEVICE_DESC_TUYA_3PHASES_V1_ELECTRICITY_METER: {
-
-      _one_phase = false;
-
-      voltage_multiplier = 1;
-      voltage_divisor    = 10;
-
-      ac_frequency_multiplier = 1;
-      ac_frequency_divisor    = 1;
-
-      power_factor_multiplier = 1;
-      power_factor_divisor    = 100;
-
-      energy_multiplier = 1;
-      energy_divisor    = 1000;
-
-      ignore_zigbee_scaling = true;
-    } break;
-
-
-    case Z2S_DEVICE_DESC_TUYA_1PHASE_ELECTRICITY_METER:
-    case Z2S_DEVICE_DESC_TUYA_1PHASE_V1_ELECTRICITY_METER: {
-
-      _one_phase = true;
-
-      voltage_multiplier = 1;
-      voltage_divisor    = 10;
-
-      ac_frequency_multiplier = 1;
-      ac_frequency_divisor = 100;
-
-      energy_multiplier = 1;
-      energy_divisor  = 100;
-      
-      ignore_zigbee_scaling = true;
-    } break;
-
-
-    case Z2S_DEVICE_DESC_SHELLY_RELAY_ELECTRICITY_METER: {
-
-      _one_phase = true;
-
-      voltage_multiplier = 1;
-      voltage_divisor    = 100;
-
-      ac_frequency_multiplier = 1;
-      ac_frequency_divisor = 100;
-
-      current_multiplier = 1;
-      current_divisor    = 1000;
-
-      active_power_multiplier = 1;
-      active_power_divisor    = 1;
-
-      energy_multiplier = 1;
-      energy_divisor  = 1000000;
-      
-      ignore_zigbee_scaling = true;
-    } break;
-
-
-    case Z2S_DEVICE_DESC_TUYA_DIN_RCBO_EM_TEMP: {
-
-      _one_phase = true;
-
-      voltage_multiplier = 1;
-      voltage_divisor    = 10;
-
-      current_multiplier = 1;
-      current_divisor    = 100;
-
-      active_power_multiplier = 1;
-      active_power_divisor    = 10;
-
-      energy_multiplier = 1;
-      energy_divisor  = 100;
-      
-      ignore_zigbee_scaling = true;
-      extended_data_counter = true;
-    } break;
-
-
-    case Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A: {
-
-      //current_divisor_modifier = 1000; break;
-      current_multiplier = 1;
-      current_divisor    = 1000;
-
-      energy_multiplier = 1;
-      energy_divisor  = 100;
-
-      ignore_zigbee_scaling = true;
-    } break;
-
-
-    case Z2S_DEVICE_DESC_SONOFF_RELAY_ELECTRICITY_METER:
-    case Z2S_DEVICE_DESC_SONOFF_SMART_DIMMER: {
-
-      current_multiplier = 1;
-      current_divisor    = 1000;
-
-      voltage_multiplier = 1;
-      voltage_divisor    = 1000;
-  
-      active_power_multiplier = 1;
-      active_power_divisor    = 1000;
-
-      energy_multiplier = 1;
-      energy_divisor  = 1000;
-
-      ignore_zigbee_scaling = true;
-
-    } break;
-
-    case Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP: {
-
-      current_multiplier = 1;
-      current_divisor    = 1000;
-
-      voltage_multiplier = 1;
-      voltage_divisor    = 1;
-  
-      active_power_multiplier = 1;
-      active_power_divisor    = 1;
-
-      energy_multiplier = 1;
-      energy_divisor  = 100;
-
-      ignore_zigbee_scaling = true;
-
-    } break;
-
-    case Z2S_DEVICE_DESC_DEVELCO_RELAY_ELECTRICITY_METER: {
-
-      /*current_multiplier = 1;
-      current_divisor    = 1000;
-
-      voltage_multiplier = 1;
-      voltage_divisor    = 1000;
-  
-      active_power_multiplier = 1;
-      active_power_divisor    = 1000;*/
-
-      ignore_zigbee_scaling = false;
-
-    } break;
-
-
-    case Z2S_DEVICE_DESC_LUMI_SMART_WALL_OUTLET: {
-
-      ignore_zigbee_scaling = true;
-
-      voltage_multiplier = 1;
-      voltage_divisor    = 100;
-
-      current_multiplier = 1;
-      current_divisor    = 1000;
-      current_divisor_modifier = 100;
-
-      active_power_multiplier = 1;
-      active_power_divisor    = 100;
-
-      energy_multiplier = 1;
-      energy_divisor  = 1000;
-    } break;
-
-
-    case Z2S_DEVICE_DESC_LUMI_RELAY_ELECTRICITY_METER: {
-
-      ignore_zigbee_scaling = true;
-
-      voltage_multiplier = 1;
-      voltage_divisor    = 100;
-
-      current_multiplier = 1;
-      current_divisor    = 1000;
-      current_divisor_modifier = 100;
-
-      active_power_multiplier = 1;
-      active_power_divisor    = 1000;
-
-      energy_multiplier = 1;
-      energy_divisor  = 1000;
-    } break;
-
-
-    case Z2S_DEVICE_DESC_LUMI_DOUBLE_RELAY_ELECTRICITY_METER: {
-
-      ignore_zigbee_scaling = true;
-
-      voltage_multiplier = 1;
-      voltage_divisor    = 100;
-
-      current_multiplier = 1;
-      current_divisor    = 1000;
-      current_divisor_modifier = 100;
-
-      active_power_multiplier = 1;
-      active_power_divisor    = 10;
-
-      energy_multiplier = 1;
-      energy_divisor  = 1000000;
-    } break;
-
-
-    case Z2S_DEVICE_DESC_3PHASES_ELECTRICITY_METER:
-
-      _one_phase = false;
-    break;
-
-
-    default: {
-      _isTuya = false; 
-      _active_query = false;
-    }
+  uint8_t profile_id = Z2S_EM_PROFILE_DEFAULT;
+  uint32_t list_idx  = device->getDevicesListIdx();
+  if (list_idx < Z2S_DEVICES_LIST_COUNT) {
+    profile_id = Z2S_DEVICES_LIST[list_idx].z2s_device_profile_id;
   }
+  if (profile_id >= Z2S_EM_PROFILE_COUNT) {
+    profile_id = Z2S_EM_PROFILE_DEFAULT;
+  }
+
+  const z2s_em_profile_t &p = Z2S_EM_PROFILES[profile_id];
+
+  bool one_phase             = !(p.flags & Z2S_EM_FLAG_THREE_PHASE);
+  bool active_query          =  (p.flags & Z2S_EM_FLAG_ACTIVE_QUERY);
+  bool ignore_zigbee_scaling =  (p.flags & Z2S_EM_FLAG_IGNORE_ZB_SCALING);
+  bool extended_data_counter =  (p.flags & Z2S_EM_FLAG_EXTENDED_COUNTER);
+
+  int64_t fwd_energy_counter = 0;
 
   Supla::Sensor::Z2S_ElectricityMeter *Supla_Z2S_ElectricityMeter = nullptr;
 
   if (element) {
-
-    Supla_Z2S_ElectricityMeter = static_cast<
-      Supla::Sensor::Z2S_ElectricityMeter *>(element);
-  }
-  else {
-
+    Supla_Z2S_ElectricityMeter =
+      static_cast<Supla::Sensor::Z2S_ElectricityMeter *>(element);
+  } else {
     Supla_Z2S_ElectricityMeter = new Supla::Sensor::Z2S_ElectricityMeter(
-      _active_query, _one_phase);
+      active_query, one_phase);
 
     Supla_Z2S_ElectricityMeter->setZ2SChannel(channel_index, _z2s_channel);
-
     Supla_Z2S_ElectricityMeter->getChannel()->setChannelNumber(
-    _z2s_channel->Supla_channel);
+      _z2s_channel->Supla_channel);
   }
-  
-  if (_active_query && (Supla_Z2S_ElectricityMeter->getRefreshMs() == 0))
+
+  if (active_query && (Supla_Z2S_ElectricityMeter->getRefreshMs() == 0))
     Supla_Z2S_ElectricityMeter->setRefreshValue(30);
-    
-  if (device->hasManufacturerName("_TZ3000_kqvb5akv")) {
-
-    current_multiplier = 1;
-    current_divisor    = 1000;
-
-    energy_multiplier = 1;
-    energy_divisor  = 100;
-
-    ignore_zigbee_scaling = true;
-  }
 
   if (extended_data_counter) {
-
     if (!Supla_Z2S_ElectricityMeter->checkChannelUserDataFlags(
-      USER_DATA_FLAG_EXTENDED_DATA_COUNTER)) {
-
+          USER_DATA_FLAG_EXTENDED_DATA_COUNTER)) {
       fwd_energy_counter = Supla_Z2S_ElectricityMeter->getDataCounter();
       Supla_Z2S_ElectricityMeter->initZ2SChannelExtendedDataCounter();
       Supla_Z2S_ElectricityMeter->setChannelExtendedDataCounter(
         fwd_energy_counter);
-    }
-    else 
-      fwd_energy_counter = 
+    } else {
+      fwd_energy_counter =
         Supla_Z2S_ElectricityMeter->getChannelExtendedDataCounter();
+    }
 
-      Supla_Z2S_ElectricityMeter->clearFwdEnergyBuffer();
-      Supla_Z2S_ElectricityMeter->setFwdEnergyTimer(millis());
+    Supla_Z2S_ElectricityMeter->clearFwdEnergyBuffer();
+    Supla_Z2S_ElectricityMeter->setFwdEnergyTimer(millis());
   }
 
   channel_extended_data_em_t channel_extended_data_em = {};
-  
+
   if (Supla_Z2S_ElectricityMeter->loadChannelExtendedData(
-        CHANNEL_EXTENDED_DATA_TYPE_EM, (uint8_t*)&channel_extended_data_em)) {
+        CHANNEL_EXTENDED_DATA_TYPE_EM,
+        (uint8_t *)&channel_extended_data_em)) {
 
     char ieee_addr_str[24] = {};
-
     ieee_addr_to_str(ieee_addr_str, channel_extended_data_em.ieee_addr);
-
     log_i("em ext data ieee address: %s", ieee_addr_str);
-      
 
     if (memcmp(
-          channel_extended_data_em.ieee_addr, _z2s_channel->ieee_addr, 
+          channel_extended_data_em.ieee_addr, _z2s_channel->ieee_addr,
           sizeof(esp_zb_ieee_addr_t)) == 0) {
-
       log_i("EM channel extended data successfully LOADED");
       Supla_Z2S_ElectricityMeter->setEnergyInitialCounters(
         &channel_extended_data_em);
-
     }
   } else {
-
     memcpy(
-      channel_extended_data_em.ieee_addr, _z2s_channel->ieee_addr, 
+      channel_extended_data_em.ieee_addr, _z2s_channel->ieee_addr,
       sizeof(esp_zb_ieee_addr_t));
-  
+
     if (Supla_Z2S_ElectricityMeter->saveChannelExtendedData(
-          CHANNEL_EXTENDED_DATA_TYPE_EM, (uint8_t*)&channel_extended_data_em))
+          CHANNEL_EXTENDED_DATA_TYPE_EM,
+          (uint8_t *)&channel_extended_data_em))
       log_i("EM channel extended data successfully CREATED");
   }
-  
+
   Supla_Z2S_ElectricityMeter->setIgnoreZigbeeScaling(ignore_zigbee_scaling);
 
-  Supla_Z2S_ElectricityMeter->setCurrentMultiplierModifier(
-    current_multiplier_modifier);
+  Supla_Z2S_ElectricityMeter->setCurrentMultiplierModifier(1);
+  Supla_Z2S_ElectricityMeter->setCurrentDivisorModifier(p.c_div_mod);
 
-  Supla_Z2S_ElectricityMeter->setCurrentDivisorModifier(
-    current_divisor_modifier);
+  Supla_Z2S_ElectricityMeter->setVoltageMultiplier(p.v_mul, false);
+  Supla_Z2S_ElectricityMeter->setVoltageDivisor(p.v_div, false);
 
-  Supla_Z2S_ElectricityMeter->setVoltageMultiplier(voltage_multiplier, false);
-  Supla_Z2S_ElectricityMeter->setVoltageDivisor(voltage_divisor, false);
+  Supla_Z2S_ElectricityMeter->setCurrentMultiplier(p.c_mul, false);
+  Supla_Z2S_ElectricityMeter->setCurrentDivisor(p.c_div, false);
 
-  Supla_Z2S_ElectricityMeter->setCurrentMultiplier(current_multiplier, false);
-  Supla_Z2S_ElectricityMeter->setCurrentDivisor(current_divisor, false);
+  Supla_Z2S_ElectricityMeter->setActivePowerMultiplier(p.p_mul, false);
+  Supla_Z2S_ElectricityMeter->setActivePowerDivisor(p.p_div, false);
 
-  Supla_Z2S_ElectricityMeter->setActivePowerMultiplier(
-    active_power_multiplier, false);
+  Supla_Z2S_ElectricityMeter->setFreqMultiplier(p.f_mul, false);
+  Supla_Z2S_ElectricityMeter->setFreqDivisor(p.f_div, false);
 
-  Supla_Z2S_ElectricityMeter->setActivePowerDivisor(
-    active_power_divisor, false);
+  Supla_Z2S_ElectricityMeter->setPowerFactorMultiplier(p.pf_mul, false);
+  Supla_Z2S_ElectricityMeter->setPowerFactorDivisor(p.pf_div, false);
 
-  Supla_Z2S_ElectricityMeter->setFreqMultiplier(
-    ac_frequency_multiplier, false);
-
-  Supla_Z2S_ElectricityMeter->setFreqDivisor(ac_frequency_divisor, false);
-
-  Supla_Z2S_ElectricityMeter->setPowerFactorMultiplier(
-    power_factor_multiplier, false);
-
-  Supla_Z2S_ElectricityMeter->setPowerFactorDivisor(
-    power_factor_divisor, false);
-
-  Supla_Z2S_ElectricityMeter->setEnergyMultiplier(energy_multiplier, false);
-  Supla_Z2S_ElectricityMeter->setEnergyDivisor(energy_divisor, false);
+  Supla_Z2S_ElectricityMeter->setEnergyMultiplier(p.e_mul, false);
+  Supla_Z2S_ElectricityMeter->setEnergyDivisor(p.e_div, false);
 
   if (fwd_energy_counter)
     Supla_Z2S_ElectricityMeter->setFwdActEnergy2(0, fwd_energy_counter);

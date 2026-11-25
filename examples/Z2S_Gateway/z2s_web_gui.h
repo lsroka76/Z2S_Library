@@ -115,7 +115,9 @@ enum gui_commands : uint8_t {
   gui_cmd_delete_ir_code,
   gui_cmd_pushover_message_callback,
   gui_cmd_build_pushover_messages_table,
-  gui_cmd_edit_pushover_messages_table
+  gui_cmd_edit_pushover_messages_table,
+  gui_cmd_get_zbdevice_query_callback,
+  gui_cmd_start_device_ota_callback
 };
 
 class Z2S_Core;

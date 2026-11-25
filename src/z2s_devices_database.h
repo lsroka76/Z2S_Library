@@ -1131,25 +1131,13 @@ typedef struct z2s_device_entity_s {
   uint8_t z2s_device_flags;
   uint8_t z2s_device_endpoints_count;
   uint8_t z2s_device_endpoints_count_m1;
+  uint8_t  z2s_device_profile_id;
 union {
   z2s_device_endpoint_t z2s_device_endpoints[MAX_BOUND_ENDPOINTS];
   const z2s_device_endpoint_t *z2s_device_endpoints_ext;
 };
 } z2s_device_entity_t;
 
-/*constexpr uint32_t val_32_const = 0x811c9dc5;
-constexpr uint32_t prime_32_const = 0x1000193;
-
-constexpr uint32_t hash_32_fnv1a_const2(const char* str_1, const char* str_2, uint32_t value = val_32_const) noexcept {
-  for (; *str_1 != '\0'; ++str_1) {
-    value = (value ^ static_cast<uint32_t>(static_cast<uint8_t>(*str_1))) * prime_32_const;
-  }
-  for (; *str_2 != '\0'; ++str_2) {
-    value = (value ^ static_cast<uint32_t>(static_cast<uint8_t>(*str_2))) * prime_32_const;
-  }
-  return value;
-}
-*/
 
 #define Z2S_REPORTING_SET_FLAG_STANDARD                                 0x0010
 #define Z2S_REPORTING_SET_FLAG_SYNC                                     0x0020
@@ -1806,6 +1794,228 @@ inline constexpr z2s_reporting_set_desc_t Z2S_REPORTING_SETS_DESC[] PROGMEM [[ma
     .z2s_delta_value = 10,
     .z2s_manufacturer_code = 0}
 };//Z2S_REPORTING_SETS_DESC
+
+#define Z2S_EM_FLAG_THREE_PHASE       (1 << 0)
+#define Z2S_EM_FLAG_IGNORE_ZB_SCALING (1 << 1)
+#define Z2S_EM_FLAG_EXTENDED_COUNTER  (1 << 2)
+#define Z2S_EM_FLAG_ACTIVE_QUERY      (1 << 3)
+
+enum Z2S_EmProfileId : uint8_t {
+  Z2S_EM_PROFILE_DEFAULT = 0,       // 1-ph ZCL scaling
+  Z2S_EM_PROFILE_ZCL_3PH,           // 3-ph ZCL scaling
+  Z2S_EM_PROFILE_TUYA_E100,         // e=1/100
+  Z2S_EM_PROFILE_TUYA_V10_P10_E100, // v=1/10, p=1/10, e=1/100
+  Z2S_EM_PROFILE_TUYA_C1000_E100,   // v=1/1, c=1/1000, p=1/1, e=1/100
+  Z2S_EM_PROFILE_TUYA_1PH_EF00,     // v=1/10, f=1/100, e=1/100
+  Z2S_EM_PROFILE_TUYA_3PH_EF00,     // 3ph, v=1/10, f=1/100, e=1/100
+  Z2S_EM_PROFILE_TUYA_3PH_V1_EF00,  // 3ph, v=1/10, f=1/1, pf=1/100, e=1/1000
+  Z2S_EM_PROFILE_TUYA_DIN_RCBO,     // v=1/10, c=1/100, p=1/10, e=1/100 + ext
+  Z2S_EM_PROFILE_SHELLY,            // v=1/100, c=1/1000, p=1/1, f=1/100, e=1/1e6
+  Z2S_EM_PROFILE_SONOFF,            // v=1/1000, c=1/1000, p=1/1000, e=1/1000
+  Z2S_EM_PROFILE_LUMI_WALL_OUTLET,  // v=1/100, c=1/1000(/100), p=1/100, e=1/1000
+  Z2S_EM_PROFILE_LUMI_PLUG,         // v=1/100, c=1/1000(/100), p=1/1000, e=1/1000
+  Z2S_EM_PROFILE_LUMI_DOUBLE_RELAY, // v=1/100, c=1/1000(/100), p=1/10, e=1/1e6
+  Z2S_EM_PROFILE_COUNT
+};
+
+typedef struct z2s_em_profile_s {
+  uint8_t  id;
+  uint8_t  flags;
+  uint16_t c_div_mod;
+  uint16_t v_mul,  v_div;
+  uint16_t c_mul,  c_div;
+  uint16_t p_mul,  p_div;
+  uint16_t f_mul,  f_div;
+  uint16_t pf_mul, pf_div;
+  uint32_t e_mul,  e_div;
+} z2s_em_profile_t;
+
+inline constexpr z2s_em_profile_t Z2S_EM_PROFILES[] PROGMEM = {
+
+  {
+    .id        = Z2S_EM_PROFILE_DEFAULT,
+    .flags     = 0,
+    .c_div_mod = 1,
+    .v_mul     = 0, .v_div  = 0,
+    .c_mul     = 0, .c_div  = 0,
+    .p_mul     = 0, .p_div  = 0,
+    .f_mul     = 0, .f_div  = 0,
+    .pf_mul    = 0, .pf_div = 0,
+    .e_mul     = 0, .e_div  = 0,
+  },
+
+  {
+    .id        = Z2S_EM_PROFILE_ZCL_3PH,
+    .flags     = Z2S_EM_FLAG_THREE_PHASE,
+    .c_div_mod = 1,
+    .v_mul     = 0, .v_div  = 0,
+    .c_mul     = 0, .c_div  = 0,
+    .p_mul     = 0, .p_div  = 0,
+    .f_mul     = 0, .f_div  = 0,
+    .pf_mul    = 0, .pf_div = 0,
+    .e_mul     = 0, .e_div  = 0,
+  },
+
+  {
+    .id        = Z2S_EM_PROFILE_TUYA_E100,
+    .flags     = Z2S_EM_FLAG_IGNORE_ZB_SCALING,
+    .c_div_mod = 1,
+    .v_mul     = 0, .v_div  = 0,
+    .c_mul     = 0, .c_div  = 0,
+    .p_mul     = 0, .p_div  = 0,
+    .f_mul     = 0, .f_div  = 0,
+    .pf_mul    = 0, .pf_div = 0,
+    .e_mul     = 1, .e_div  = 100,
+  },
+
+  {
+    .id        = Z2S_EM_PROFILE_TUYA_V10_P10_E100,
+    .flags     = Z2S_EM_FLAG_IGNORE_ZB_SCALING,
+    .c_div_mod = 1,
+    .v_mul     = 1, .v_div  = 10,
+    .c_mul     = 0, .c_div  = 0,
+    .p_mul     = 1, .p_div  = 10,
+    .f_mul     = 0, .f_div  = 0,
+    .pf_mul    = 0, .pf_div = 0,
+    .e_mul     = 1, .e_div  = 100,
+  },
+
+  {
+    .id        = Z2S_EM_PROFILE_TUYA_C1000_E100,
+    .flags     = Z2S_EM_FLAG_IGNORE_ZB_SCALING,
+    .c_div_mod = 1,
+    .v_mul     = 1, .v_div  = 1,
+    .c_mul     = 1, .c_div  = 1000,
+    .p_mul     = 1, .p_div  = 1,
+    .f_mul     = 0, .f_div  = 0,
+    .pf_mul    = 0, .pf_div = 0,
+    .e_mul     = 1, .e_div  = 100,
+  },
+
+  {
+    .id        = Z2S_EM_PROFILE_TUYA_1PH_EF00,
+    .flags     = Z2S_EM_FLAG_IGNORE_ZB_SCALING,
+    .c_div_mod = 1,
+    .v_mul     = 1, .v_div  = 10,
+    .c_mul     = 0, .c_div  = 0,
+    .p_mul     = 0, .p_div  = 0,
+    .f_mul     = 1, .f_div  = 100,
+    .pf_mul    = 0, .pf_div = 0,
+    .e_mul     = 1, .e_div  = 100,
+  },
+
+  {
+    .id        = Z2S_EM_PROFILE_TUYA_3PH_EF00,
+    .flags     = Z2S_EM_FLAG_THREE_PHASE |
+                 Z2S_EM_FLAG_IGNORE_ZB_SCALING,
+    .c_div_mod = 1,
+    .v_mul     = 1, .v_div  = 10,
+    .c_mul     = 0, .c_div  = 0,
+    .p_mul     = 0, .p_div  = 0,
+    .f_mul     = 1, .f_div  = 100,
+    .pf_mul    = 0, .pf_div = 0,
+    .e_mul     = 1, .e_div  = 100,
+  },
+
+  {
+    .id        = Z2S_EM_PROFILE_TUYA_3PH_V1_EF00,
+    .flags     = Z2S_EM_FLAG_THREE_PHASE |
+                 Z2S_EM_FLAG_IGNORE_ZB_SCALING,
+    .c_div_mod = 1,
+    .v_mul     = 1, .v_div  = 10,
+    .c_mul     = 0, .c_div  = 0,
+    .p_mul     = 0, .p_div  = 0,
+    .f_mul     = 1, .f_div  = 1,
+    .pf_mul    = 1, .pf_div = 100,
+    .e_mul     = 1, .e_div  = 1000,
+  },
+
+  {
+    .id        = Z2S_EM_PROFILE_TUYA_DIN_RCBO,
+    .flags     = Z2S_EM_FLAG_IGNORE_ZB_SCALING |
+                 Z2S_EM_FLAG_EXTENDED_COUNTER,
+    .c_div_mod = 1,
+    .v_mul     = 1, .v_div  = 10,
+    .c_mul     = 1, .c_div  = 100,
+    .p_mul     = 1, .p_div  = 10,
+    .f_mul     = 0, .f_div  = 0,
+    .pf_mul    = 0, .pf_div = 0,
+    .e_mul     = 1, .e_div  = 100,
+  },
+
+  {
+    .id        = Z2S_EM_PROFILE_SHELLY,
+    .flags     = Z2S_EM_FLAG_IGNORE_ZB_SCALING,
+    .c_div_mod = 1,
+    .v_mul     = 1, .v_div  = 100,
+    .c_mul     = 1, .c_div  = 1000,
+    .p_mul     = 1, .p_div  = 1,
+    .f_mul     = 1, .f_div  = 100,
+    .pf_mul    = 0, .pf_div = 0,
+    .e_mul     = 1, .e_div  = 1000000,
+  },
+
+  {
+    .id        = Z2S_EM_PROFILE_SONOFF,
+    .flags     = Z2S_EM_FLAG_IGNORE_ZB_SCALING,
+    .c_div_mod = 1,
+    .v_mul     = 1, .v_div  = 1000,
+    .c_mul     = 1, .c_div  = 1000,
+    .p_mul     = 1, .p_div  = 1000,
+    .f_mul     = 0, .f_div  = 0,
+    .pf_mul    = 0, .pf_div = 0,
+    .e_mul     = 1, .e_div  = 1000,
+  },
+
+  {
+    .id        = Z2S_EM_PROFILE_LUMI_WALL_OUTLET,
+    .flags     = Z2S_EM_FLAG_IGNORE_ZB_SCALING,
+    .c_div_mod = 100,
+    .v_mul     = 1, .v_div  = 100,
+    .c_mul     = 1, .c_div  = 1000,
+    .p_mul     = 1, .p_div  = 100,
+    .f_mul     = 0, .f_div  = 0,
+    .pf_mul    = 0, .pf_div = 0,
+    .e_mul     = 1, .e_div  = 1000,
+  },
+
+  {
+    .id        = Z2S_EM_PROFILE_LUMI_PLUG,
+    .flags     = Z2S_EM_FLAG_IGNORE_ZB_SCALING,
+    .c_div_mod = 100,
+    .v_mul     = 1, .v_div  = 100,
+    .c_mul     = 1, .c_div  = 1000,
+    .p_mul     = 1, .p_div  = 1000,
+    .f_mul     = 0, .f_div  = 0,
+    .pf_mul    = 0, .pf_div = 0,
+    .e_mul     = 1, .e_div  = 1000,
+  },
+
+  {
+    .id        = Z2S_EM_PROFILE_LUMI_DOUBLE_RELAY,
+    .flags     = Z2S_EM_FLAG_IGNORE_ZB_SCALING,
+    .c_div_mod = 100,
+    .v_mul     = 1, .v_div  = 100,
+    .c_mul     = 1, .c_div  = 1000,
+    .p_mul     = 1, .p_div  = 10,
+    .f_mul     = 0, .f_div  = 0,
+    .pf_mul    = 0, .pf_div = 0,
+    .e_mul     = 1, .e_div  = 1000000,
+  },
+};
+
+constexpr bool validateEmProfilesTable() {
+  for (size_t i = 0; i < Z2S_EM_PROFILE_COUNT; ++i) {
+    if (Z2S_EM_PROFILES[i].id != i) return false;
+  }
+  return true;
+}
+
+static_assert(
+  (sizeof(Z2S_EM_PROFILES) / sizeof(Z2S_EM_PROFILES[0]) ==
+   Z2S_EM_PROFILE_COUNT) && validateEmProfilesTable(),
+  "Z2S_EM_PROFILES index/id mismatch!");
+
 
 inline constexpr z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] = {
 
@@ -5267,239 +5477,264 @@ inline constexpr z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_endpoints_count = 4,
     .z2s_device_endpoints = {{ 1, 0, 0, Z2S_DEVICE_DESC_TUYA_GANG_SWITCH_1 }}},
                              
-  {	.manufacturer_name = "_TZ3000_cehuw1lw", .model_name = "TS011F",
+  { .manufacturer_name = "_TZ3000_cehuw1lw", .model_name = "TS011F",
     .z2s_device_uid = 11700,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A,
-	  .z2s_device_endpoints_count = 1}, //A*1000
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A,
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_profile_id = Z2S_EM_PROFILE_TUYA_C1000_E100 }, //A*1000
 
-  {	.manufacturer_name = "_TZ3000_xzhnra8x", .model_name = "TS011F",
+  { .manufacturer_name = "_TZ3000_xzhnra8x", .model_name = "TS011F",
     .z2s_device_uid = 11705,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A,
-	  .z2s_device_endpoints_count = 1}, //A*1000
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A,
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_profile_id = Z2S_EM_PROFILE_TUYA_C1000_E100 }, //A*1000
 
-  {	.manufacturer_name = "_TZ3000_gvn91tmx", .model_name = "TS011F",
+  { .manufacturer_name = "_TZ3000_gvn91tmx", .model_name = "TS011F",
     .z2s_device_uid = 11710,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A,
-	  .z2s_device_endpoints_count = 1,
-    .z2s_device_endpoints = { 
-      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
-      Z2S_REPORTING_SET_DESC_ELECTRICAL_MEASUREMENT_1, 
-      Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A}},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A,
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_profile_id = Z2S_EM_PROFILE_TUYA_C1000_E100,
+    .z2s_device_endpoints = {
+      1, Z2S_REPORTING_SET_FLAG_STANDARD,
+      Z2S_REPORTING_SET_DESC_ELECTRICAL_MEASUREMENT_1,
+      Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A }},
 
-  {	.manufacturer_name = "_TZ3000_okaz9tjs", .model_name = "TS011F",
+  { .manufacturer_name = "_TZ3000_okaz9tjs", .model_name = "TS011F",
     .z2s_device_uid = 11800,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1,
-	  .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1,
+    .z2s_device_endpoints_count = 1 },
 
-  {	.manufacturer_name = "_TZ3210_fgwhjm9j", .model_name = "TS011F",
+  { .manufacturer_name = "_TZ3210_fgwhjm9j", .model_name = "TS011F",
     .z2s_device_uid = 11805,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1,
-	  .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1,
+    .z2s_device_endpoints_count = 1 },
 
-  {	.manufacturer_name = "_TZ3210_w0qqde0g", .model_name = "TS011F",
+  { .manufacturer_name = "_TZ3210_w0qqde0g", .model_name = "TS011F",
     .z2s_device_uid = 11810,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1,
-	  .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1,
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_profile_id = Z2S_EM_PROFILE_TUYA_E100 },
 
-  {	.manufacturer_name = "_TZ3000_waho4jtj", .model_name = "TS011F",
+  { .manufacturer_name = "_TZ3000_waho4jtj", .model_name = "TS011F",
     .z2s_device_uid = 11815,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1,
-	  .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1,
+    .z2s_device_endpoints_count = 1 },
 
-  {	.manufacturer_name = "_TZ3210_rwmitwj4", .model_name = "TS011F",
+  { .manufacturer_name = "_TZ3210_rwmitwj4", .model_name = "TS011F",
     .z2s_device_uid = 11820,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1,
-	  .z2s_device_endpoints_count = 1,
-    .z2s_device_endpoints = { 
-      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
-      Z2S_REPORTING_SET_DESC_ELECTRICAL_MEASUREMENT_1, 
-      Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1}},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1,
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_profile_id = Z2S_EM_PROFILE_TUYA_E100,
+    .z2s_device_endpoints = {
+      1, Z2S_REPORTING_SET_FLAG_STANDARD,
+      Z2S_REPORTING_SET_DESC_ELECTRICAL_MEASUREMENT_1,
+      Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1 }},
 
-  {	.manufacturer_name = "_TZ3008_reatplte", .model_name = "TS011F",
+  { .manufacturer_name = "_TZ3008_reatplte", .model_name = "TS011F",
     .z2s_device_uid = 11825,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1,
-	  .z2s_device_endpoints_count = 1,
-    .z2s_device_endpoints = { 
-      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
-      Z2S_REPORTING_SET_DESC_ELECTRICAL_MEASUREMENT_1, 
-      Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1}},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1,
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_profile_id = Z2S_EM_PROFILE_TUYA_V10_P10_E100,
+    .z2s_device_endpoints = {
+      1, Z2S_REPORTING_SET_FLAG_STANDARD,
+      Z2S_REPORTING_SET_DESC_ELECTRICAL_MEASUREMENT_1,
+      Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_1 }},
 
-  {	.manufacturer_name = "_TZ3000_5f43h46b", .model_name = "TS011F",
+  { .manufacturer_name = "_TZ3000_5f43h46b", .model_name = "TS011F",
     .z2s_device_uid = 11900,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2,
-	  .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2,
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_profile_id = Z2S_EM_PROFILE_TUYA_E100 },
 
-  {	.manufacturer_name = "_TZ3000_w0qqde0g", .model_name = "TS011F",
+  { .manufacturer_name = "_TZ3000_w0qqde0g", .model_name = "TS011F",
     .z2s_device_uid = 12000,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2,
-	  .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_2,
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_profile_id = Z2S_EM_PROFILE_TUYA_E100 },
 
-  {	.manufacturer_name = "_TZ3000_ww6drja5", .model_name = "TS011F",
+  { .manufacturer_name = "_TZ3000_ww6drja5", .model_name = "TS011F",
     .z2s_device_uid = 12100,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER,
-	  .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER,
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_profile_id = Z2S_EM_PROFILE_TUYA_E100 },
 
-  {	.manufacturer_name = "_TZ3000_wzmuk9ai", .model_name = "TS011F",
+  { .manufacturer_name = "_TZ3000_wzmuk9ai", .model_name = "TS011F",
     .z2s_device_uid = 12105,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER,
-	  .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER,
+    .z2s_device_endpoints_count = 1 },
 
-  {	.manufacturer_name = "_TZ3000_gjnozsaz", .model_name = "TS011F",
+  { .manufacturer_name = "_TZ3000_gjnozsaz", .model_name = "TS011F",
     .z2s_device_uid = 12200,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER,
-	  .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER,
+    .z2s_device_endpoints_count = 1 },
 
-  {	.manufacturer_name = "LUMI", .model_name = "lumi.plug.mmeu01",
+  { .manufacturer_name = "LUMI", .model_name = "lumi.plug.mmeu01",
     .z2s_device_uid = 12300,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_RELAY_ELECTRICITY_METER,
-	  .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_RELAY_ELECTRICITY_METER,
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_profile_id = Z2S_EM_PROFILE_LUMI_PLUG },
 
-  {	.manufacturer_name = "_TZ3000_2putqrmw", .model_name = "TS011F",
+  { .manufacturer_name = "_TZ3000_2putqrmw", .model_name = "TS011F",
     .z2s_device_uid = 12400,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER,
-	  .z2s_device_endpoints_count = 1,
-    .z2s_device_endpoints = { 
-      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
-      Z2S_REPORTING_SET_DESC_ELECTRICAL_MEASUREMENT_1, 
-      Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER}},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER,
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = {
+      1, Z2S_REPORTING_SET_FLAG_STANDARD,
+      Z2S_REPORTING_SET_DESC_ELECTRICAL_MEASUREMENT_1,
+      Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER }},
 
-  {	.manufacturer_name = "_TZ3210_2putqrmw", .model_name = "TS011F",
+  { .manufacturer_name = "_TZ3210_2putqrmw", .model_name = "TS011F",
     .z2s_device_uid = 12405,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER,
-	  .z2s_device_endpoints_count = 1,
-    .z2s_device_endpoints = { 
-      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
-      Z2S_REPORTING_SET_DESC_ELECTRICAL_MEASUREMENT_1, 
-      Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER}},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER,
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_profile_id = Z2S_EM_PROFILE_TUYA_E100,
+    .z2s_device_endpoints = {
+      1, Z2S_REPORTING_SET_FLAG_STANDARD,
+      Z2S_REPORTING_SET_DESC_ELECTRICAL_MEASUREMENT_1,
+      Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER }},
 
-  {	.manufacturer_name = "_TZ3000_ksw8qtmt", .model_name = "TS011F",
+  { .manufacturer_name = "_TZ3000_ksw8qtmt", .model_name = "TS011F",
     .z2s_device_uid = 12410,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER,
-	  .z2s_device_endpoints_count = 1,
-    .z2s_device_endpoints = { 
-      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
-      Z2S_REPORTING_SET_DESC_ELECTRICAL_MEASUREMENT_1, 
-      Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER}},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER,
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = {
+      1, Z2S_REPORTING_SET_FLAG_STANDARD,
+      Z2S_REPORTING_SET_DESC_ELECTRICAL_MEASUREMENT_1,
+      Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER }},
 
-  {	.manufacturer_name = "_TZ3000_yujkchbz", .model_name = "TS011F",
+  { .manufacturer_name = "_TZ3000_yujkchbz", .model_name = "TS011F",
     .z2s_device_uid = 12415,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER,
-	  .z2s_device_endpoints_count = 1,
-    .z2s_device_endpoints = { 
-      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
-      Z2S_REPORTING_SET_DESC_ELECTRICAL_MEASUREMENT_1, 
-      Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER}},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER,
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = {
+      1, Z2S_REPORTING_SET_FLAG_STANDARD,
+      Z2S_REPORTING_SET_DESC_ELECTRICAL_MEASUREMENT_1,
+      Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER }},
 
-  {	.manufacturer_name = "_TZ3000_ss98ec5d", .model_name = "TS011F",
+  { .manufacturer_name = "_TZ3000_ss98ec5d", .model_name = "TS011F",
     .z2s_device_uid = 12420,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER,
-	  .z2s_device_endpoints_count = 1,
-    .z2s_device_endpoints = { 
-      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
-      Z2S_REPORTING_SET_DESC_ELECTRICAL_MEASUREMENT_1, 
-      Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER}},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER,
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_endpoints = {
+      1, Z2S_REPORTING_SET_FLAG_STANDARD,
+      Z2S_REPORTING_SET_DESC_ELECTRICAL_MEASUREMENT_1,
+      Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER }},
 
-  {	.manufacturer_name = "_TZ3008_1a8m8wd6", .model_name = "TS011F",
+  { .manufacturer_name = "_TZ3008_1a8m8wd6", .model_name = "TS011F",
     .z2s_device_uid = 12425,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER,
-	  .z2s_device_endpoints_count = 1,
-    .z2s_device_endpoints = { 
-      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
-      Z2S_REPORTING_SET_DESC_ELECTRICAL_MEASUREMENT_1, 
-      Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER}},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER,
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_profile_id = Z2S_EM_PROFILE_TUYA_V10_P10_E100,
+    .z2s_device_endpoints = {
+      1, Z2S_REPORTING_SET_FLAG_STANDARD,
+      Z2S_REPORTING_SET_DESC_ELECTRICAL_MEASUREMENT_1,
+      Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER }},
 
-  {	.manufacturer_name = "Zbeacon", .model_name = "TS011F",
+  { .manufacturer_name = "Zbeacon", .model_name = "TS011F",
     .z2s_device_uid = 12500,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A,
-	  .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A,
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_profile_id = Z2S_EM_PROFILE_TUYA_C1000_E100 },
 
-  {	.manufacturer_name = "_TZ3000_qnejhcsu", .model_name = "TS0001",
+  { .manufacturer_name = "_TZ3000_qnejhcsu", .model_name = "TS0001",
     .z2s_device_uid = 12505,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A,
-	  .z2s_device_endpoints_count = 1,
-    .z2s_device_endpoints = { 
-      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
-      Z2S_REPORTING_SET_DESC_ELECTRICAL_MEASUREMENT_1, 
-      Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A}},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A,
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_profile_id = Z2S_EM_PROFILE_TUYA_C1000_E100,
+    .z2s_device_endpoints = {
+      1, Z2S_REPORTING_SET_FLAG_STANDARD,
+      Z2S_REPORTING_SET_DESC_ELECTRICAL_MEASUREMENT_1,
+      Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A }},
 
-  {	.manufacturer_name = "_TZ3000_2uollq9d", .model_name = "TS011F",
+  { .manufacturer_name = "_TZ3000_2uollq9d", .model_name = "TS011F",
     .z2s_device_uid = 12600,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER,
-	  .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER,
+    .z2s_device_endpoints_count = 1 },
 
-  {	.manufacturer_name = "_TZ3210_2uollq9d", .model_name = "TS011F",
+  { .manufacturer_name = "_TZ3210_2uollq9d", .model_name = "TS011F",
     .z2s_device_uid = 12700,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER,
-	  .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER,
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_profile_id = Z2S_EM_PROFILE_TUYA_E100 },
 
-  {	.manufacturer_name = "_TZ3210_drzlxjne", .model_name = "TS011F",
+  { .manufacturer_name = "_TZ3210_drzlxjne", .model_name = "TS011F",
     .z2s_device_uid = 12705,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER,
-	  .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER,
+    .z2s_device_endpoints_count = 1 },
 
-  {	.manufacturer_name = "_TZ3000_qeuvnohg", .model_name = "TS011F",
+  { .manufacturer_name = "_TZ3000_qeuvnohg", .model_name = "TS011F",
     .z2s_device_uid = 12800,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER,
-	  .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER,
+    .z2s_device_endpoints_count = 1 },
 
-  {	.manufacturer_name = "_TZ3000_fukaa7nc", .model_name = "TS011F",
+  { .manufacturer_name = "_TZ3000_fukaa7nc", .model_name = "TS011F",
     .z2s_device_uid = 12900,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER,
-	  .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER,
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_profile_id = Z2S_EM_PROFILE_TUYA_E100 },
 
-  {	.manufacturer_name = "_TZ3210_5ct6e7ye", .model_name = "TS011F",
+  { .manufacturer_name = "_TZ3210_5ct6e7ye", .model_name = "TS011F",
     .z2s_device_uid = 13000,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER,
-	  .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER,
+    .z2s_device_endpoints_count = 1 },
 
-  {	.manufacturer_name = "_TZ3000_kqvb5akv", .model_name = "TS0001",
+  { .manufacturer_name = "_TZ3000_kqvb5akv", .model_name = "TS0001",
     .z2s_device_uid = 13100,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A,
-	  .z2s_device_endpoints_count = 1,
-    .z2s_device_endpoints = { 
-      1, Z2S_REPORTING_SET_FLAG_STANDARD, 
-      Z2S_REPORTING_SET_DESC_ELECTRICAL_MEASUREMENT_1, 
-      Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A}},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A,
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_profile_id = Z2S_EM_PROFILE_TUYA_C1000_E100,
+    .z2s_device_endpoints = {
+      1, Z2S_REPORTING_SET_FLAG_STANDARD,
+      Z2S_REPORTING_SET_DESC_ELECTRICAL_MEASUREMENT_1,
+      Z2S_DEVICE_DESC_TUYA_RELAY_ELECTRICITY_METER_A }},
 
-  {	.manufacturer_name = "_TZ3000_zrm3oxsh", .model_name = "TS011F",
+  { .manufacturer_name = "_TZ3000_zrm3oxsh", .model_name = "TS011F",
     .z2s_device_uid = 13105,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP,
-	  .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP,
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_profile_id = Z2S_EM_PROFILE_TUYA_C1000_E100 },
 
-  {	.manufacturer_name = "_TZ3000_lepzuhto", .model_name = "TS011F",
+  { .manufacturer_name = "_TZ3000_lepzuhto", .model_name = "TS011F",
     .z2s_device_uid = 13110,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP,
-	  .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP,
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_profile_id = Z2S_EM_PROFILE_TUYA_C1000_E100 },
 
-  {	.manufacturer_name = "_TZ3000_cayepv1a", .model_name = "TS011F",
+  { .manufacturer_name = "_TZ3000_cayepv1a", .model_name = "TS011F",
     .z2s_device_uid = 13115,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP,
-	  .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP,
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_profile_id = Z2S_EM_PROFILE_TUYA_C1000_E100 },
 
-  {	.manufacturer_name = "_TZ3000_qystbcjg", .model_name = "TS011F",
+  { .manufacturer_name = "_TZ3000_qystbcjg", .model_name = "TS011F",
     .z2s_device_uid = 13120,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP,
-	  .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP,
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_profile_id = Z2S_EM_PROFILE_TUYA_C1000_E100 },
 
-  {	.manufacturer_name = "_TZ3000_303avxxt", .model_name = "TS011F",
+  { .manufacturer_name = "_TZ3000_303avxxt", .model_name = "TS011F",
     .z2s_device_uid = 13125,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP,
-	  .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP,
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_profile_id = Z2S_EM_PROFILE_TUYA_C1000_E100 },
 
-  {	.manufacturer_name = "_TZ3000_ibefeicf", .model_name = "TS011F",
+  { .manufacturer_name = "_TZ3000_ibefeicf", .model_name = "TS011F",
     .z2s_device_uid = 13130,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP,
-	  .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP,
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_profile_id = Z2S_EM_PROFILE_TUYA_C1000_E100 },
 
-  {	.manufacturer_name = "_TZ3000_zjchz7pd", .model_name = "TS011F",
+  { .manufacturer_name = "_TZ3000_zjchz7pd", .model_name = "TS011F",
     .z2s_device_uid = 13135,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP,
-	  .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP,
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_profile_id = Z2S_EM_PROFILE_TUYA_C1000_E100 },
 
-  {	.manufacturer_name = "_TZ3000_zv6x8bt2", .model_name = "TS011F",
+  { .manufacturer_name = "_TZ3000_zv6x8bt2", .model_name = "TS011F",
     .z2s_device_uid = 13140,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP,
-	  .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIN_BREAKER_EM_TEMP,
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_profile_id = Z2S_EM_PROFILE_TUYA_C1000_E100 },
 
   {	.manufacturer_name = "ADEO", .model_name = "LDSENK02F",
     .z2s_device_uid = 13200,
@@ -7140,15 +7375,17 @@ inline constexpr z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	//  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_SOS_BUTTON,
 	//  .z2s_device_endpoints_count = 1},
 
-  {	.manufacturer_name = "_TZE284_dikb3dp6", .model_name = "TS0601",
+  { .manufacturer_name = "_TZE284_dikb3dp6", .model_name = "TS0601",
     .z2s_device_uid = 24500,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER,
-	  .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_3PHASES_ELECTRICITY_METER,
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_profile_id = Z2S_EM_PROFILE_TUYA_3PH_EF00 },
 
-  {	.manufacturer_name = "_TZE284_iwn0gpzz", .model_name = "TS0601",
+  { .manufacturer_name = "_TZE284_iwn0gpzz", .model_name = "TS0601",
     .z2s_device_uid = 24600,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_1PHASE_ELECTRICITY_METER,
-	  .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_1PHASE_ELECTRICITY_METER,
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_profile_id = Z2S_EM_PROFILE_TUYA_1PH_EF00 },
 
   {	.manufacturer_name = "ADEO", .model_name = "LDSENK08",
     .z2s_device_uid = 24700,
@@ -7445,15 +7682,17 @@ inline constexpr z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
       { 1, 0, 0, Z2S_DEVICE_DESC_LUMI_CUBE_T1_PRO_1},
       { 2, 0, 0, Z2S_DEVICE_DESC_LUMI_CUBE_T1_PRO_2 }}},
 
-  {	.manufacturer_name = "SONOFF", .model_name = "S60ZBTPF",
+  { .manufacturer_name = "SONOFF", .model_name = "S60ZBTPF",
     .z2s_device_uid = 26700,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_RELAY_ELECTRICITY_METER,
-	  .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_RELAY_ELECTRICITY_METER,
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_profile_id = Z2S_EM_PROFILE_SONOFF },
 
-  {	.manufacturer_name = "eWeLink", .model_name = "CK-BL702-SWP-01(7020)",
+  { .manufacturer_name = "eWeLink", .model_name = "CK-BL702-SWP-01(7020)",
     .z2s_device_uid = 26800,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_RELAY_ELECTRICITY_METER,
-	  .z2s_device_endpoints_count = 1},
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_RELAY_ELECTRICITY_METER,
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_profile_id = Z2S_EM_PROFILE_SONOFF },
 
   {	.manufacturer_name = "_TZ3000_7kscdesh", .model_name = "TS0222",
     .z2s_device_uid = 26900,
@@ -7729,7 +7968,8 @@ inline constexpr z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "Aqara", .model_name = "lumi.plug.aeu001",
     .z2s_device_uid = 31200,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_SMART_WALL_OUTLET,
-    .z2s_device_endpoints_count = 1},
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_profile_id = Z2S_EM_PROFILE_LUMI_WALL_OUTLET },
 
   { .manufacturer_name = "_TZE204_8fffc3kb", .model_name = "TS0601",
     .z2s_device_uid = 31300,
@@ -7754,7 +7994,8 @@ inline constexpr z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZE284_5m4nchbm", .model_name = "TS0601",
     .z2s_device_uid = 31500,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DIN_RCBO_EM_TEMP,
-    .z2s_device_endpoints_count = 1},
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_profile_id = Z2S_EM_PROFILE_TUYA_DIN_RCBO },
 
   { .manufacturer_name = "_TZE284_9ern5sfh", .model_name = "TS0601",
     .z2s_device_uid = 31600,
@@ -7839,19 +8080,21 @@ inline constexpr z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DP_RELAY,
     .z2s_device_endpoints_count = 1},
 
-  {	.manufacturer_name = "Shelly", .model_name = "2PM",
+  { .manufacturer_name = "Shelly", .model_name = "2PM",
     .z2s_device_uid = 32900,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_SHELLY_RELAY_ELECTRICITY_METER,
-	  .z2s_device_endpoints_count = 2,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_SHELLY_RELAY_ELECTRICITY_METER,
+    .z2s_device_endpoints_count = 2,
+    .z2s_device_profile_id = Z2S_EM_PROFILE_SHELLY,
     .z2s_device_endpoints = {
       { 1, 0, 0, Z2S_DEVICE_DESC_SHELLY_RELAY_ELECTRICITY_METER },
       { 2, 0, 0, Z2S_DEVICE_DESC_SHELLY_RELAY_ELECTRICITY_METER }}},
 
-    {	.manufacturer_name = "Shelly", .model_name = "Power Strip",
+  { .manufacturer_name = "Shelly", .model_name = "Power Strip",
     .z2s_device_uid = 32950,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_SHELLY_POWER_STRIP_EM,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_SHELLY_POWER_STRIP_EM,
     .z2s_device_flags = Z2S_DEVICE_CONFIG_FLAG_EXT_ENDPOINTS,
-	  .z2s_device_endpoints_count = 5,
+    .z2s_device_endpoints_count = 5,
+    .z2s_device_profile_id = Z2S_EM_PROFILE_SHELLY,
     .z2s_device_endpoints_ext = SHELLY_RELAY_ELECTRICITY_METER_ENDPOINTS },
 
   { .manufacturer_name = "_TZE204_jpyrsdp3", .model_name = "TS0601",
@@ -7969,7 +8212,8 @@ inline constexpr z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "Zemismart", .model_name = "SPM02-3Z3",
     .z2s_device_uid = 34200,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_3PHASES_ELECTRICITY_METER,
-    .z2s_device_endpoints_count = 1},
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_profile_id = Z2S_EM_PROFILE_ZCL_3PH },
 
   { .manufacturer_name = "SONOFF", .model_name = "MINI-ZBRBS",
     .z2s_device_uid = 34300,
@@ -7996,6 +8240,7 @@ inline constexpr z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_uid = 34600,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_LUMI_DOUBLE_RELAY_ELECTRICITY_METER,
     .z2s_device_endpoints_count = 2,
+    .z2s_device_profile_id = Z2S_EM_PROFILE_LUMI_DOUBLE_RELAY,
     .z2s_device_endpoints = {
       { 1, 0, 0, Z2S_DEVICE_DESC_LUMI_DOUBLE_RELAY_ELECTRICITY_METER },
       { 2, 0, 0, Z2S_DEVICE_DESC_RELAY_1 }}},
@@ -8092,7 +8337,8 @@ inline constexpr z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "SONOFF", .model_name = "MINI-ZBDIM",
     .z2s_device_uid = 35600,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_SMART_DIMMER,
-    .z2s_device_endpoints_count = 1},
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_profile_id = Z2S_EM_PROFILE_SONOFF },
 
   { .manufacturer_name = "LUMI", .model_name = "lumi.vibration.aq1",
     .z2s_device_uid = 35700,
@@ -8131,7 +8377,8 @@ inline constexpr z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "_TZE284_d2zfgtij", .model_name = "TS0601",
     .z2s_device_uid = 36300,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_1PHASE_V1_ELECTRICITY_METER,
-    .z2s_device_endpoints_count = 1},
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_profile_id = Z2S_EM_PROFILE_TUYA_1PH_EF00 },
 
   { .manufacturer_name = "_TZB210_yatkpuha", .model_name = "TS0505B",
     .z2s_device_uid = 36400,
@@ -8200,7 +8447,8 @@ inline constexpr z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
   { .manufacturer_name = "SONOFF", .model_name = "BASIC-ZB1GSP",
     .z2s_device_uid = 37200,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_RELAY_ELECTRICITY_METER,
-    .z2s_device_endpoints_count = 1},
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_profile_id = Z2S_EM_PROFILE_SONOFF },
 
   { .manufacturer_name = "_TZE284_l8xiyymq", .model_name = "TS0601",
     .z2s_device_uid = 37300,
@@ -8307,9 +8555,10 @@ inline constexpr z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 	  .z2s_device_endpoints_count = 1},
 
   { .manufacturer_name = "_TZE200_nslr42tt", .model_name = "TS0601",
-    .z2s_device_uid = 38800, 
+    .z2s_device_uid = 38800,
     .z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_3PHASES_V1_ELECTRICITY_METER,
-    .z2s_device_endpoints_count = 1},
+    .z2s_device_endpoints_count = 1,
+    .z2s_device_profile_id = Z2S_EM_PROFILE_TUYA_3PH_V1_EF00 },
 
   { .manufacturer_name = "SALUS", .model_name = "SQ610NH",
     .z2s_device_uid = 38900,

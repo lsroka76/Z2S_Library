@@ -62,9 +62,6 @@ void             *GeminiBridge::_sync_rsp_dest     = nullptr;
 uint16_t          GeminiBridge::_sync_rsp_max_len  = 0;
 volatile bool     GeminiBridge::_sync_rsp_ok       = false;
 
-SemaphoreHandle_t GeminiBridge::_joined_mutex     = nullptr;
-StaticSemaphore_t GeminiBridge::_joined_mutex_buf = {};
-
 static uint8_t           s_coord_ieee[8]       = {};
 static uint8_t           s_ext_pan_id[8]       = {};
 static uint8_t           s_current_channel     = 20;
@@ -135,7 +132,6 @@ bool GeminiBridge::initUart() {
   _tx_mutex       = xSemaphoreCreateMutex();
   _sync_cmd_mutex = xSemaphoreCreateMutex();
   _sync_rsp_sem   = xSemaphoreCreateBinary();
-  _joined_mutex   = xSemaphoreCreateMutexStatic(&_joined_mutex_buf);
 
 #if defined(USE_GEMINI_PROTOCOL_NCP)
   s_zb_begin_mutex = xSemaphoreCreateMutexStatic(&s_zb_begin_mutex_buf);
@@ -512,15 +508,11 @@ extern "C" bool z2s_zb_storage_read(uint32_t offset, uint8_t *dst, size_t len) {
 #endif
 
 void GeminiBridge::lockJoinedDevices() {
-  if (_joined_mutex) {
-    xSemaphoreTake(_joined_mutex, portMAX_DELAY);
-  }
+  ZigbeeGateway::lockJoinedDevices();
 }
 
 void GeminiBridge::unlockJoinedDevices() {
-  if (_joined_mutex) {
-    xSemaphoreGive(_joined_mutex);
-  }
+  ZigbeeGateway::unlockJoinedDevices();
 }
 
 void GeminiBridge::getCoordinatorIeee(uint8_t *ieee) {
@@ -956,30 +948,11 @@ void GeminiBridge::cmdWorkerTask(void *arg) {
       } break;
 
       case G_EVT_NEW_DEVICE_JOINED: {
+        
         if (item.hdr.payload_len >= sizeof(zbg_device_params_t)) {
+          
           const auto *incoming = reinterpret_cast<const zbg_device_params_t *>(p);
-          lockJoinedDevices();
-          bool updated = false;
-          for (auto *existing : zbGateway._joined_devices) {
-            if (existing &&
-                memcmp(existing->ieee_addr, incoming->ieee_addr,
-                       sizeof(esp_zb_ieee_addr_t)) == 0) {
-              existing->short_addr = incoming->short_addr;
-              existing->endpoint   = incoming->endpoint;
-              updated = true;
-              break;
-            }
-          }
-          if (!updated) {
-            zbg_device_params_t *dev =
-              (zbg_device_params_t *)malloc(sizeof(zbg_device_params_t));
-            if (dev) {
-              memcpy(dev, incoming, sizeof(zbg_device_params_t));
-              zbGateway._joined_devices.push_back(dev);
-            }
-          }
-          zbGateway._new_device_joined = !zbGateway._joined_devices.empty();
-          unlockJoinedDevices();
+          zbGateway.pushJoinedDevice(incoming);
         }
       } break;
 

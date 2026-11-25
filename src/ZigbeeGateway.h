@@ -405,6 +405,12 @@ public:
 
     _new_device_joined = false;
   }
+
+  static void lockJoinedDevices();
+  static void unlockJoinedDevices();
+  void pushJoinedDevice(const zbg_device_params_t *incoming);
+  zbg_device_params_t *popJoinedDevice();
+  void clearNewDeviceJoinedIfEmpty();
   
 
   static void setActivePairing(bool active_pairing) {
@@ -1142,8 +1148,14 @@ protected:
 
   static SemaphoreHandle_t gt_lock;
 
+  static SemaphoreHandle_t _joined_mutex;
+  static StaticSemaphore_t _joined_mutex_buf;
+#if !defined(USE_GEMINI_PROTOCOL_HOST)
+  static SemaphoreHandle_t gt_sync_mutex;
+  static StaticSemaphore_t _gt_sync_mutex_buf;
+#endif
+
   std::list<zbg_device_params_t *> _joined_devices;
-  //std::list<zbg_device_params_t *> _gateway_devices;
 };
 
 extern ZigbeeGateway zbGateway;

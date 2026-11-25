@@ -487,8 +487,6 @@ private:
   static uint16_t          _sync_rsp_max_len;
   static volatile bool     _sync_rsp_ok;
 
-  static SemaphoreHandle_t _joined_mutex;
-  static StaticSemaphore_t _joined_mutex_buf;
 };
 #endif
 

@@ -783,6 +783,8 @@ void clusterCallbackCmd();
 void TuyaDeviceSelectorCmd(int32_t device_slot);
 void TuyaCustomCmdMain(int32_t custom_flag);
 void getClustersAttributesQueryMain(int32_t custom_flag);
+void getZigbeeDeviceQueryMain(int32_t query_flag);
+void startDeviceOTAMain();
 
 void editChannelMain(uint32_t update_channel_flag);
 
@@ -6876,6 +6878,18 @@ void Z2S_loopWebGUI() {
 				enablePushoverTable(true);
 				updatePushoverMessageButtons();
 			} break;
+
+
+			case gui_cmd_get_zbdevice_query_callback: {
+
+				getZigbeeDeviceQueryMain(pending_gui_command.gui_command_value);
+			} break;
+
+
+			case gui_cmd_start_device_ota_callback: {
+
+				startDeviceOTAMain();
+			} break;
 		}
 	}
 	ESPUI.loop();
@@ -8429,7 +8443,8 @@ void channelSelectorCallback(BasicControl *sender, int type, void *param) {
 
 	log_i("selector value = %ld", sender_value);
 
-	if ((sender_value < 0) || (sender_value >= Z2S_ELEMENTS_MAX_NUMBER) || (sender_value == GATEWAY_EVENTS_CHANNEL_INDEX)) {
+	if ((sender_value < 0) || (sender_value >= Z2S_ELEMENTS_MAX_NUMBER) || 
+			(sender_value == GATEWAY_EVENTS_CHANNEL_INDEX)) {
 
 		enableChannelControls(false);
 		return;
@@ -8440,84 +8455,88 @@ void channelSelectorCallback(BasicControl *sender, int type, void *param) {
 	addGUICommand(gui_cmd_update_channel_info, sender_value);
 }
 
-void getZigbeeDeviceQueryCallback(BasicControl *sender, int type, void *param) {
+/*****************************************************************************/
 
-	char general_purpose_gui_buffer[512] = {};
+void getZigbeeDeviceQueryCallback(
+	BasicControl *sender, int type, void *param) {
 
-	if ((type == B_UP) && (ESPUI.getControl(device_selector)->getValueInt() >= 0)) {
+	if (type == B_UP)
+		addGUICommand(
+		  gui_cmd_get_zbdevice_query_callback, (int32_t)(uint32_t)param);
+}
 
-		zbg_device_params_t device;
+/*****************************************************************************/
 
-		uint8_t device_selector_value = ESPUI.getControl(
-			device_selector)->getValueInt();
+void getZigbeeDeviceQueryMain(int32_t query_flag) {
 
-		log_i("device_selector value %u", device_selector_value);
+	char general_purpose_gui_buffer[64] = {};
 
-		device.endpoint = 1;
-		device.cluster_id = 0;
-		/*memcpy(
-		  &device.ieee_addr,
-		  z2s_zb_devices_table[device_selector_value].ieee_addr,
-		  sizeof(esp_zb_ieee_addr_t));
+	int32_t selected_slot = ESPUI.getControl(device_selector)->getValueInt();
+	if (selected_slot < 0)
+		return;
 
-		device.short_addr =
-		  z2s_zb_devices_table[device_selector_value].short_addr;*/
+	uint8_t device_selector_value = (uint8_t)selected_slot;
+	log_i("device_selector value %u", device_selector_value);
 
+	zbg_device_params_t device = {};
+	device.endpoint   = 1;
+	device.cluster_id = 0;
+
+	{
+		Z2S_DevicesLock lock;
 		Z2S_Device *z2s_device = Z2S_Device::getZ2SDeviceByDeviceIndex(
 			device_selector_value);
-
-    if (z2s_device) {
-      memcpy(
-        &device.ieee_addr,
-        z2s_device->getDeviceIeeeAddress(),
-        sizeof(esp_zb_ieee_addr_t));
-
-      device.short_addr = z2s_device->getDeviceShortAddress();
-    }
-		else 
+		if (!z2s_device)
 			return;
 
+		memcpy(
+		  &device.ieee_addr,
+		  z2s_device->getDeviceIeeeAddress(),
+		  sizeof(esp_zb_ieee_addr_t));
+		device.short_addr = z2s_device->getDeviceShortAddress();
+	}
 
-		switch ((uint32_t)param) {
+	switch ((uint32_t)query_flag) {
 
+		case GUI_CB_SWBUILD_FLAG: { // software build ID
 
-			case GUI_CB_SWBUILD_FLAG:
-				{  //software build ID
+			zbGateway.clearQueryBasicClusterData();
 
-					zbGateway.clearQueryBasicClusterData();
+			if (zbGateway.zbQueryDeviceBasicCluster(
+			      &device, true, ESP_ZB_ZCL_ATTR_BASIC_SW_BUILD_ID)) {
 
-					if (zbGateway.zbQueryDeviceBasicCluster(
-					      &device, true, ESP_ZB_ZCL_ATTR_BASIC_SW_BUILD_ID)) {
+				if (strlen(
+				      zbGateway.getQueryBasicClusterData()->software_build_ID) > 0)
+					updateLabel_P(
+					  rssilabel,
+					  zbGateway.getQueryBasicClusterData()->software_build_ID);
+				else
+					updateLabel_P(rssilabel, three_dots_str);
+			} else
+				updateLabel_C(rssilabel, device_query_failed_str);
+		} break;
 
-						if (strlen(
-						      zbGateway.getQueryBasicClusterData()->software_build_ID)
-						    > 0)
-							updateLabel_P(
-							  rssilabel,
-							  zbGateway.getQueryBasicClusterData()->software_build_ID);
-						else
-							updateLabel_P(rssilabel, three_dots_str);
-					} else
-						updateLabel_C(rssilabel, device_query_failed_str);
+		case GUI_CB_RSSI_FLAG: { // RSSI
+
+			if (zbGateway.sendCustomClusterCmd(
+			      &device, 0x0003, 0x0000, ESP_ZB_ZCL_ATTR_TYPE_NULL, 0, nullptr,
+			      true)) {
+
+				int8_t last_rssi = 0;
+				{
+					Z2S_DevicesLock lock;
+					Z2S_Device *z2s_device = Z2S_Device::getZ2SDeviceByDeviceIndex(
+						device_selector_value);
+					if (z2s_device)
+						last_rssi = z2s_device->getRssi();
 				}
-				break;
-
-
-			case GUI_CB_RSSI_FLAG:
-				{  //RSSI
-
-					if (zbGateway.sendCustomClusterCmd(
-					      &device, 0x0003, 0x0000, ESP_ZB_ZCL_ATTR_TYPE_NULL, 0, nullptr,
-					      true)) {
-
-						sprintf_P(
-							general_purpose_gui_buffer, "%d", z2s_device->getRssi());
-						updateLabel_P(rssilabel, general_purpose_gui_buffer);
-					} else
-						updateLabel_C(rssilabel, device_query_failed_str);
-				}
-				break;
-		}
+				snprintf_P(
+				  general_purpose_gui_buffer, sizeof(general_purpose_gui_buffer),
+				  "%d", last_rssi);
+				updateLabel_P(rssilabel, general_purpose_gui_buffer);
+			} else
+				updateLabel_C(rssilabel, device_query_failed_str);
+		} break;
 	}
 }
 
@@ -9151,8 +9170,10 @@ void getClustersAttributesQueryMain(int32_t custom_flag) {
 	}
 }
 
+/*****************************************************************************/
 
-size_t Z2S_onFillOTABuffer(uint8_t *ota_buffer, uint32_t ota_offset, uint8_t size) {
+size_t Z2S_onFillOTABuffer(
+	uint8_t *ota_buffer, uint32_t ota_offset, uint8_t size) {
 
 	if (ota_buffer == nullptr) {  //for status report
 
@@ -9204,68 +9225,72 @@ size_t Z2S_onFillOTABuffer(uint8_t *ota_buffer, uint32_t ota_offset, uint8_t siz
 	return 0;
 }
 
+/*****************************************************************************/
+
 void startDeviceOTACallback(BasicControl *sender, int type, void *param) {
 
-	if ((type == B_UP) && (ESPUI.getControl(device_selector)->getValueInt() >= 0)) {
+	if (type == B_UP)
+		addGUICommand(gui_cmd_start_device_ota_callback);
+}
 
-		uint8_t device_slot = ESPUI.getControl(device_selector)->getValueInt();
+/*****************************************************************************/
 
-		//esp_zb_ota_image_header_t esp_zb_ota_image_header;
-		uint8_t esp_zb_ota_image_header[62];
+void startDeviceOTAMain() {
 
-		Z2S_initLittleFs();
+	int32_t selected_slot = ESPUI.getControl(device_selector)->getValueInt();
+	if (selected_slot < 0)
+		return;
 
-		size_t bytes_read = Z2S_loadBufferFromFile(
-		  "/zigbee_ota/zigbee_ota_file.ota", 0, 62, esp_zb_ota_image_header);  //sizeof(esp_zb_ota_image_header_t),
-		                                                                       //(uint8_t *)&esp_zb_ota_image_header);
+	uint8_t device_slot = (uint8_t)selected_slot;
 
-		Z2S_endLittleFs();
+	esp_zb_ieee_addr_t target_ieee = {};
+	{
+		Z2S_DevicesLock lock;
+		Z2S_Device *z2s_device = Z2S_Device::getZ2SDeviceByDeviceIndex(device_slot);
+		if (!z2s_device)
+			return;
+		memcpy(
+			target_ieee, z2s_device->getDeviceIeeeAddress(), sizeof(esp_zb_ieee_addr_t));
+	}
 
-		/*log_i(
-    "upgrade_file_id = %lu, header_version = %u, header_length = %u\n\r"
-    "field_control = %u, manufacturer_id = %u, image_type = %u\n\r"
-    "file_version = %lu, stack_version = %u, image_size = %lu\n\r", 
-    esp_zb_ota_image_header.upgrade_file_id, 
-    esp_zb_ota_image_header.header_version, 
-    esp_zb_ota_image_header.header_length, 
-    esp_zb_ota_image_header.field_control, 
-    esp_zb_ota_image_header.manufacturer_id, 
-    esp_zb_ota_image_header.image_type, 
-    esp_zb_ota_image_header.file_version, 
-    esp_zb_ota_image_header.stack_version, 
-    esp_zb_ota_image_header.image_size);*/
+	uint8_t esp_zb_ota_image_header[64] = {};
 
-		zbGateway.onFillOTABuffer(Z2S_onFillOTABuffer);
+	Z2S_initLittleFs();
 
-		ota_image_size =
-		  ((esp_zb_ota_image_header_t *)esp_zb_ota_image_header)->image_size;
+	size_t bytes_read = Z2S_loadBufferFromFile(
+	  "/zigbee_ota/zigbee_ota_file.ota", 0, sizeof(esp_zb_ota_image_header),
+	  esp_zb_ota_image_header);
 
-		ota_image_last_offset = 0;
+	Z2S_endLittleFs();
 
-		log_i("ota_image_size = %lu", ota_image_size);
+	if (bytes_read < sizeof(esp_zb_ota_image_header_t)) {
+		log_e("OTA file missing or truncated (%u bytes)", (unsigned)bytes_read);
+		updateLabel_P(zigbee_ota_status_label, OTA_server_notify_failure_str);
+		return;
+	}
 
-		/*if (zbGateway.sendOTAUpgradeServerNotifyRequest(
-		      z2s_zb_devices_table[device_slot].ieee_addr,  esp_zb_ota_image_header,
-		      nullptr) == ESP_OK) {*/
-		
-		Z2S_Device *z2s_device = Z2S_Device::getZ2SDeviceByDeviceIndex(
-			device_slot);
+	zbGateway.onFillOTABuffer(Z2S_onFillOTABuffer);
 
-    if (z2s_device && zbGateway.sendOTAUpgradeServerNotifyRequest(
-          z2s_device->getDeviceIeeeAddress(), esp_zb_ota_image_header,
-          nullptr) == ESP_OK) {
+	ota_image_size =
+	  ((esp_zb_ota_image_header_t *)esp_zb_ota_image_header)->image_size;
 
-			log_i("%s", OTA_server_notify_success_str);
+	ota_image_last_offset = 0;
 
-			updateLabel_P(zigbee_ota_status_label, OTA_server_notify_success_str);
-		} else {
+	log_i("ota_image_size = %lu", ota_image_size);
 
-			log_i("%s", OTA_server_notify_failure_str);
+	if (zbGateway.sendOTAUpgradeServerNotifyRequest(
+	      target_ieee, esp_zb_ota_image_header, nullptr) == ESP_OK) {
 
-			updateLabel_P(zigbee_ota_status_label, OTA_server_notify_failure_str);
-		}
+		log_i("%s", OTA_server_notify_success_str);
+		updateLabel_P(zigbee_ota_status_label, OTA_server_notify_success_str);
+	} else {
+
+		log_i("%s", OTA_server_notify_failure_str);
+		updateLabel_P(zigbee_ota_status_label, OTA_server_notify_failure_str);
 	}
 }
+
+/*****************************************************************************/
 
 void removeDeviceCallback(BasicControl *sender, int type, void *param) {
 

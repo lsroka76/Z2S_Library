@@ -1463,21 +1463,7 @@ void loop() {
   
   if (zbGateway.isNewDeviceJoined()) {
 
-    auto popNextJoinedDevice = []() -> zbg_device_params_t * {
-      zbg_device_params_t *dev = nullptr;
-#if defined(USE_GEMINI_PROTOCOL_HOST)
-      GeminiBridge::lockJoinedDevices();
-#endif
-      if (!zbGateway.getJoinedDevices().empty()) {
-        dev = zbGateway.getLastJoinedDevice();
-      }
-#if defined(USE_GEMINI_PROTOCOL_HOST)
-      GeminiBridge::unlockJoinedDevices();
-#endif
-      return dev;
-    };
-
-    while ((joined_device = popNextJoinedDevice()) != nullptr) {
+  while ((joined_device = zbGateway.popJoinedDevice()) != nullptr) {
 
       Z2S_rgbLedOverride(0, 0, 255);
 
@@ -1730,25 +1716,7 @@ void loop() {
         }
       }
     }
-
-#if defined(USE_GEMINI_PROTOCOL_HOST)
-    GeminiBridge::lockJoinedDevices();
-#endif
-    if (zbGateway.getJoinedDevices().empty()) {
-      zbGateway.clearNewDeviceJoined();
-    }
-#if defined(USE_GEMINI_PROTOCOL_HOST)
-    GeminiBridge::unlockJoinedDevices();
-#endif
-  }
-
-  //bool _basic_cluster_query_success = false;
-
-  /*if (once_test) {
-
-    once_test = false;
-    goto test_label;
-  }*/
-
-  
+    
+    zbGateway.clearNewDeviceJoinedIfEmpty();  
+  }//
 }
