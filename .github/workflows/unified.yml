@@ -207,3 +207,20 @@ jobs:
             **Changelog:**
             ${{ steps.tag_version.outputs.changelog }}
           artifacts: "./release_bins/*.bin"
+
+      # =======================================================================
+      # SAFEGUARD: ENSURE LATEST BADGE STAYS ON GATEWAY RELEASE (v*)
+      # =======================================================================
+      - name: Re-pin Latest badge to newest stable Gateway release
+        if: ${{ inputs.build_mode == 'ncp_only' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          LATEST_GW_TAG=$(gh api "repos/${{ github.repository }}/releases?per_page=100" \
+            --jq '[.[] | select(.draft == false and .prerelease == false and (.tag_name | startswith("v")))] | .[0].tag_name // empty')
+          if [ -n "$LATEST_GW_TAG" ]; then
+            echo "Pinning Latest badge to Gateway release: $LATEST_GW_TAG"
+            gh release edit "$LATEST_GW_TAG" --latest
+          else
+            echo "No stable v* Gateway release found to pin."
+          fi
