@@ -1,4 +1,4 @@
 .build_cache/
 release_bins/
 build_z2s.ps1
-examples/*.bin
+examples/Z2S_Gateway/build/
