@@ -1,2 +1,3 @@
 .build_cache/
 release_bins/
+build_z2s.ps1
