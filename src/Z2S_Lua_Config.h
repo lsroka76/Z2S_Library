@@ -1,5 +1,11 @@
 #pragma once
 
+#if defined(__has_include)
+  #if __has_include(<sdkconfig.h>)
+    #include <sdkconfig.h>
+  #endif
+#endif
+
 /*
  * Enable/disable explicitly via compiler flags (-DZ2S_ENABLE_LUA=1 or 0),
  * or auto-enable only on ESP32-S3 builds with PSRAM configured.
