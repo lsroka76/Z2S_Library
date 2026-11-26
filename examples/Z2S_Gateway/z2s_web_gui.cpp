@@ -31,7 +31,10 @@
 
 #include "web_gui_templates.h"
 
-//#include "custom_js_gz.h"
+#include "z2s_lua_web_gui.h"
+#if Z2S_ENABLE_LUA
+  #include "z2s_lua_engine.h"
+#endif
 
 ESPAsyncHTTPUpdateServer updateServer;
 
@@ -5406,6 +5409,10 @@ void Z2S_buildWebGUI(gui_modes_t mode, uint32_t gui_custom_flags) {
 		buildIrRemoteTabGUI();
 	}
 
+#if Z2S_ENABLE_LUA
+	Z2S_buildLuaWebGUI();
+#endif
+
 	//buildAllChannelSelectors();
 
 	log_i(" ...GUI building FINISHED");
@@ -5622,6 +5629,11 @@ void Z2S_startWebGUI() {
 	  ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getMaxAllocHeap());
 
 	ESPUI.begin("ZIGBEE <=> SUPLA CONTROL PANEL");
+
+#if Z2S_ENABLE_LUA
+  Z2S_registerLuaHttpEndpoints();
+#endif
+
 	GUIstarted = true;
 	setGitHubOtaProgressCallback(guiGitHubOtaProgress);
 	handleGatewayEvent(Z2S_SUPLA_EVENT_ON_GUI_STARTED);
@@ -5921,6 +5933,9 @@ void onUpdateBegin(const UpdateType type, int &result) {
 	if (type == UpdateType::FILE_SYSTEM) {
 		log_i("Filesystem OTA begin - locking and unmounting LittleFS");
 		disableZ2SNotifications();
+#if Z2S_ENABLE_LUA
+		Z2S_LuaEngine::instance().requestStop();
+#endif
 		Z2S_endLittleFs(true);
 	}
 }
@@ -6893,6 +6908,10 @@ void Z2S_loopWebGUI() {
 		}
 	}
 	ESPUI.loop();
+
+#if Z2S_ENABLE_LUA
+  Z2S_loopLuaWebGUI();
+#endif
 }
 
 /*****************************************************************************/

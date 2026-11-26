@@ -9623,107 +9623,94 @@ Supla::ElementWithChannelActions *getElementWithChannelActionsPtr(
 
 Supla::ActionHandler *getActionHandlerPtr(uint8_t Supla_channel_number) {
 
-  auto Supla_element = Z2S_Core::getSuplaElementByChannelNumber(
+  auto *Supla_element = Z2S_Core::getSuplaElementByChannelNumber(
     Supla_channel_number);
 
   if (!Supla_element)
     return nullptr;
 
-  auto Supla_channel = Supla_element->getChannel();
+  auto *Supla_channel = Supla_element->getChannel();
 
   if (Supla_channel) {
 
+    auto *z2s_core = Z2S_Core::getZ2SCoreByChannelNumber(Supla_channel_number);
+    uint8_t local_type = z2s_core ? z2s_core->getZ2SLocalChannelType() : 0;
+
     switch (Supla_channel->getChannelType()) {
 
-
       case SUPLA_CHANNELTYPE_RELAY:
-        
+        if (Supla_channel->isRollerShutterRelayType()) {
+          return (static_cast<Supla::Control::RollerShutterInterface *>(
+            Supla_element))->getRealClient();
+        }
         return (static_cast<Supla::Control::Relay *>(
           Supla_element))->getRealClient();
 
-
       case SUPLA_CHANNELTYPE_VALVE_OPENCLOSE:
-        
         return (static_cast<Supla::Control::ValveBase *>(
           Supla_element))->getRealClient();
 
-
       case SUPLA_CHANNELTYPE_HVAC:
-
         return (static_cast<Supla::Control::HvacBase *>(
           Supla_element))->getRealClient();
 
-
       case SUPLA_CHANNELTYPE_DIMMER:
-
+        if (local_type == LOCAL_CHANNEL_TYPE_GPIO_PWM) {
+          return (static_cast<Supla::Control::LocalPWM *>(
+            Supla_element))->getRealClient();
+        }
+        if (z2s_core &&
+            z2s_core->getChannelModelId() ==
+              Z2S_DEVICE_DESC_TUYA_DIMMER_DOUBLE_SWITCH) {
+          return (static_cast<Supla::Control::Z2S_DimmerBase *>(
+            Supla_element))->getRealClient();
+        }
         return (static_cast<Supla::Control::Z2S_DimmerInterface *>(
           Supla_element))->getRealClient();
 
-      
       case SUPLA_CHANNELTYPE_RGBLEDCONTROLLER:
-
         return (static_cast<Supla::Control::Z2S_RGBInterface *>(
           Supla_element))->getRealClient();
 
-
       case SUPLA_CHANNELTYPE_DIMMERANDRGBLED:
-
         return (static_cast<Supla::Control::Z2S_RGBCCTInterface *>(
           Supla_element))->getRealClient();
 
-      
       case SUPLA_CHANNELTYPE_ACTIONTRIGGER:
-
         return (static_cast<Supla::Control::ActionTrigger *>(
           Supla_element))->getRealClient();
 
-
       case SUPLA_CHANNELTYPE_BINARYSENSOR:
-
+        if (local_type == LOCAL_CHANNEL_TYPE_GPIO_BINARY)
+          return nullptr;
         return (static_cast<Supla::Sensor::VirtualBinary *>(
           Supla_element))->getRealClient();
 
-      
       case SUPLA_CHANNELTYPE_ELECTRICITY_METER:
-
         return (static_cast<Supla::Sensor::ElectricityMeter *>(
           Supla_element))->getRealClient();
 
-      
       case SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT:
-
+        if (local_type == LOCAL_CHANNEL_TYPE_GPIO_HCSR04 ||
+            local_type == LOCAL_CHANNEL_TYPE_GPIO_BH1750)
+          return nullptr;
         return (static_cast<Supla::Sensor::VirtualGeneralPurposeMeasurement *>(
           Supla_element))->getRealClient();
 
-
       case SUPLA_CHANNELTYPE_THERMOMETER:
-
+        if (local_type == LOCAL_CHANNEL_TYPE_GPIO_DS18B20)
+          return nullptr;
         return (static_cast<Supla::Sensor::VirtualThermometerWithActions *>(
           Supla_element))->getRealClient();
 
-
-      /*case SUPLA_CHANNELTYPE_IMPULSE_COUNTER:
-
-        return (static_cast<Supla::Sensor::VirtualImpulseCounter *>(
-          Supla_element))->getRealClient();
-
-      
-      case SUPLA_CHANNELTYPE_GENERAL_PURPOSE_METER:
-
-        return (static_cast<Supla::Sensor::GeneralPurposeMeter *>(
-          Supla_element))->getRealClient();*/
-
-
       default:
-
         return nullptr;
     }
   } 
   else {
-
     return (static_cast<Supla::LocalActionHandler *>(
       Supla_element))->getRealClient();
-  } 
+  }
 }
 
 /*****************************************************************************/

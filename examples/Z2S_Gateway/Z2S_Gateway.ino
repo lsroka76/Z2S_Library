@@ -8,7 +8,6 @@
 #include "multi_heap.h"
 
 #include <esp_task_wdt.h>
-//#include <rtc_wdt.h>
 
 #include <ESPmDNS.h>
 #include <esp_coexist.h>
@@ -53,6 +52,12 @@
 #include <Z2S_control/Z2S_remote_relay.h>
 #include <Z2S_control/Z2S_virtual_relay.h>
 
+#include <Z2S_Lua_Config.h>
+#if Z2S_ENABLE_LUA
+  #include "z2s_lua_bindings.h"
+  #include "z2s_lua_engine.h"
+#endif
+
 #include "z2s_devices_database.h"
 #include "z2s_devices_table.h"
 #include "z2s_device_general_purpose_measurement.h"
@@ -73,7 +78,6 @@
 
 #endif //USE_TELNET_CONSOLE
 
-//#define GATEWAY_ENDPOINT_NUMBER 1
 
 #if CONFIG_IDF_TARGET_ESP32S3
   #define BUTTON_PIN                  0  // Boot button for ESP32-S3
@@ -301,6 +305,11 @@ void supla_callback_bridge(int event, int action) {
         log_i("software reset - closing LittleFs");
 
         _restart_scheduled = true;
+
+#if Z2S_ENABLE_LUA
+        Z2S_LuaEngine::instance().requestStop();
+#endif
+
         Z2S_endLittleFs(true);
         return;
       }
@@ -892,6 +901,7 @@ void setup() {
         handleGatewayEvent(Z2S_SUPLA_EVENT_ON_GUI_NOT_STARTED);
 
         Z2S_initSuplaActions();
+
         Z2S_initPushoverMessages();
         irCodesStorage.loadIndexTable();
 
@@ -1131,14 +1141,22 @@ void setup() {
     SuplaDevice.setAutomaticFirmwareUpdateSupported(true);
   }
 
-  SuplaDevice.begin(28);      
+  SuplaDevice.begin(28);
 
-  if (cfg && cfg->getAutoUpdatePolicy() != 
+  if (cfg && cfg->getAutoUpdatePolicy() !=
           Supla::AutoUpdatePolicy::Disabled) {
-    
     cfg->setAutoUpdatePolicy(Supla::AutoUpdatePolicy::Disabled);
     cfg->commit();
   }
+
+#if Z2S_ENABLE_LUA
+  if (!_forced_config) {
+    Z2S_LuaBridge::instance().begin([](const Z2S_LuaEvent &ev) {
+      Z2S_LuaEngine::instance().enqueueEvent(ev);
+    });
+    Z2S_LuaEngine::instance().begin();
+  }
+#endif
 
   
   refresh_time = millis();
@@ -1257,6 +1275,10 @@ void loop() {
   }
  
   SuplaDevice.iterate();
+
+#if Z2S_ENABLE_LUA
+  Z2S_LuaBridge::instance().drainCommands();
+#endif
   
   vTaskDelay(pdMS_TO_TICKS(10));
 

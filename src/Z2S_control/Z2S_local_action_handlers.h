@@ -285,6 +285,11 @@ class GatewayEvents: public LocalActionHandler {
       _disable_actions = true;
     }
 
+    bool isCyclicEventEnabled() const {
+      
+      return _cyclic_event_enabled;
+    }
+
   protected:
 
     bool      _disable_actions = false;
