@@ -6,6 +6,7 @@
 #include <cmath>
 #include <cstring>
 
+#include <ZigbeeGateway.h>
 #include <SuplaDevice.h>
 #include <supla/auto_lock.h>
 #include <supla/control/hvac_base.h>

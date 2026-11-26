@@ -10,6 +10,7 @@
 #include <freertos/queue.h>
 
 #include <supla/action_handler.h>
+#include <supla/local_action.h>
 #include <Z2S_Lua_API.h>
 
 /*****************************************************************************/
