@@ -3991,9 +3991,34 @@ void Z2S_onSonoffCustomClusterReceive(
           no_channel_found_error_func(short_addr);
           return;
         }
-        else 
-          msgZ2SDeviceVirtualRelayValue(
-            element, VRV_ACTION_ID, Supla::ON_CLICK_1);
+
+        uint16_t action_event = 0xFFFF;
+
+        switch (value) {
+          
+          case 2:
+            action_event = Supla::ON_CLICK_2;
+          break;
+          
+          case 3:
+            action_event = Supla::ON_HOLD;
+          break;
+          
+          case 4:
+            action_event = Supla::ON_CLICK_4;
+          break;
+
+          case 5:
+            action_event = Supla::ON_CLICK_5; 
+          break;
+          
+          default:
+            log_w("Unsupported detached relay event value: %lu", value);
+          return;
+        } 
+        log_i("action_event %u", action_event);
+        msgZ2SDeviceVirtualRelayValue(
+          element, VRV_ACTION_ID, action_event);
     } break;
 
     case SONOFF_CUSTOM_CLUSTER_AC_CURRENT_ID:
@@ -6655,7 +6680,7 @@ bool Z2S_onCustomCmdReceive(
   } break;
 
 
-  case Z2S_DEVICE_DESC_RELAY_1: {
+  case Z2S_DEVICE_DESC_SONOFF_RELAY: {
     
     if ((cluster_id == ESP_ZB_ZCL_CLUSTER_ID_ON_OFF) && 
         (command_id == ESP_ZB_ZCL_CMD_ON_OFF_TOGGLE_ID)) {
@@ -7316,6 +7341,7 @@ uint8_t Z2S_addZ2SDevice(
       case Z2S_DEVICE_DESC_TUYA_RELAY:
       case Z2S_DEVICE_DESC_TUYA_DP_RELAY:
       case Z2S_DEVICE_DESC_TUYA_FINGERBOT_PLUS:
+      case Z2S_DEVICE_DESC_SONOFF_RELAY:
 
         addZ2SDeviceVirtualRelay(
           &zbGateway,device, first_free_slot, NO_CUSTOM_CMD_SID, 

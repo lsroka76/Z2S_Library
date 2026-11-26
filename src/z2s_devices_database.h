@@ -256,6 +256,8 @@
 
 #define Z2S_DEVICE_DESC_TUYA_LCD_3_RELAYS                   0x4030
 
+#define Z2S_DEVICE_DESC_SONOFF_RELAY                        0x4050
+
 #define Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER             0x4100
 #define Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_1           0x4101
 #define Z2S_DEVICE_DESC_RELAY_ELECTRICITY_METER_2           0x4102
@@ -2363,6 +2365,14 @@ inline constexpr z2s_device_desc_t Z2S_DEVICES_DESC[] PROGMEM [[maybe_unused]] =
     .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_ONOFF_300,
     .z2s_device_config_flags = Z2S_DEVICE_DESC_CONFIG_FLAG_TUYA_INIT,
     .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF }},
+
+  {	.z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_RELAY,
+    .z2s_device_clusters_count = 2,
+    .reporting_flags = Z2S_REPORTING_SET_FLAG_STANDARD, 
+    .z2s_reporting_set_id = Z2S_REPORTING_SET_DESC_ONOFF_300,
+    .z2s_device_config_flags = 0x0,
+    .z2s_device_clusters = { ESP_ZB_ZCL_CLUSTER_ID_ON_OFF,
+                             SONOFF_CUSTOM_CLUSTER }},
 
   {	.z2s_device_desc_id = Z2S_DEVICE_DESC_TUYA_DP_RELAY,
     .z2s_device_clusters_count = 1,
@@ -6148,7 +6158,7 @@ inline constexpr z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "SONOFF", .model_name = "ZBMINIR2",
     .z2s_device_uid = 16500,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_RELAY,
 	  .z2s_device_endpoints_count = 1},
 
   {	.manufacturer_name = "SONOFF", .model_name = "MINI-ZBD",

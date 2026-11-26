@@ -3,6 +3,7 @@
 #if Z2S_ENABLE_LUA
 
 #include <Arduino.h>
+#include <Preferences.h>
 #include <cstdio>
 #include <cstring>
 #include <esp_heap_caps.h>
@@ -12,7 +13,7 @@
 #include "z2s_little_fs.h"
 
 /*****************************************************************************/
-// RTC_NOINIT_ATTR Boot-Loop Guard & Protected Dispatch Trampoline
+// RTC_NOINIT_ATTR Boot-Loop Guard, Syntax Validator & Dispatch Trampoline
 /*****************************************************************************/
 
 namespace {
@@ -72,6 +73,57 @@ static int dispatchEventTrampoline(lua_State* L) {
   return 0;
 }
 
+static void* luaSyntaxPsramAlloc(
+    void* ud, void* ptr, size_t osize, size_t nsize) {
+  auto heap = static_cast<multi_heap_handle_t>(ud);
+  if (!heap) return nullptr;
+
+  const size_t old_bytes = (ptr != nullptr) ? osize : 0;
+
+  if (nsize == 0) {
+    if (ptr != nullptr) {
+      multi_heap_free(heap, ptr);
+    }
+    return nullptr;
+  }
+
+  void* new_ptr = (ptr == nullptr)
+                      ? multi_heap_malloc(heap, nsize)
+                      : multi_heap_realloc(heap, ptr, nsize);
+  if (new_ptr == nullptr && ptr != nullptr && nsize <= old_bytes) {
+    return ptr;
+  }
+  return new_ptr;
+}
+
+static void formatSyntaxError(
+    const char* lua_err, char* out, size_t out_cap) {
+  if (!out || out_cap == 0) return;
+  if (!lua_err || lua_err[0] == '\0') {
+    snprintf(out, out_cap, "Syntax error");
+    return;
+  }
+
+  static constexpr char   kPrefix[]  = "z2s_main:";
+  static constexpr size_t kPrefixLen = sizeof(kPrefix) - 1;
+
+  if (strncmp(lua_err, kPrefix, kPrefixLen) == 0) {
+    const char* rest  = lua_err + kPrefixLen;
+    const char* colon = strchr(rest, ':');
+    if (colon && colon > rest) {
+      int line_len    = static_cast<int>(colon - rest);
+      const char* msg = colon + 1;
+      while (*msg == ' ') {
+        ++msg;
+      }
+      snprintf(out, out_cap, "Syntax error (line %.*s): %s",
+               line_len, rest, msg);
+      return;
+    }
+  }
+  snprintf(out, out_cap, "Syntax error: %s", lua_err);
+}
+
 }  // namespace
 
 /*****************************************************************************/
@@ -84,7 +136,7 @@ extern "C" void z2s_lua_write(const char* s, size_t l) {
 }
 
 /*****************************************************************************/
-// RTC Guard Lifecycle
+// RTC Guard & NVS Autostart Lifecycle
 /*****************************************************************************/
 
 void Z2S_LuaEngine::evaluateRtcGuardOnBoot() {
@@ -142,6 +194,32 @@ void Z2S_LuaEngine::maybeHealCrashCounter() {
   }
 }
 
+bool Z2S_LuaEngine::readAutostartPref() {
+  Preferences prefs;
+  if (!prefs.begin(NVS_AUTOSTART_NS, /*readOnly=*/true)) {
+    return true;
+  }
+  bool enabled = prefs.getBool(NVS_AUTOSTART_KEY, true);
+  prefs.end();
+  return enabled;
+}
+
+void Z2S_LuaEngine::writeAutostartPref(bool enabled) {
+  Preferences prefs;
+  if (!prefs.begin(NVS_AUTOSTART_NS, /*readOnly=*/false)) {
+    log_e("[LUA] Failed to open NVS '%s' for autostart write", NVS_AUTOSTART_NS);
+    return;
+  }
+  if (prefs.getBool(NVS_AUTOSTART_KEY, true) != enabled) {
+    prefs.putBool(NVS_AUTOSTART_KEY, enabled);
+  }
+  prefs.end();
+
+  taskENTER_CRITICAL(&_stats_mux);
+  _autostart_enabled = enabled;
+  taskEXIT_CRITICAL(&_stats_mux);
+}
+
 /*****************************************************************************/
 // Private PSRAM TLSF Allocator & Uncatchable Watchdog
 /*****************************************************************************/
@@ -169,7 +247,7 @@ void* Z2S_LuaEngine::luaArenaAlloc(
   if (nsize > old_bytes) {
     const size_t delta = nsize - old_bytes;
     if (delta > (ctx->soft_limit_bytes - ctx->used_bytes)) {
-      return nullptr;  // Triggers Lua 5.4 emergency GC, then LUA_ERRMEM
+      return nullptr;  // Triggers Lua emergency GC, then LUA_ERRMEM
     }
   }
 
@@ -261,6 +339,10 @@ bool Z2S_LuaEngine::begin() {
   if (_started) return true;
 
   evaluateRtcGuardOnBoot();
+  bool autostart = readAutostartPref();
+  taskENTER_CRITICAL(&_stats_mux);
+  _autostart_enabled = autostart;
+  taskEXIT_CRITICAL(&_stats_mux);
 
   _ctx.slab_ptr = heap_caps_aligned_alloc(
       8, ARENA_BYTES, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
@@ -305,7 +387,7 @@ bool Z2S_LuaEngine::begin() {
     return true;
   }
 
-  requestReloadFromFS(false);
+  requestReloadFromFS(/*clear_safe_mode=*/false, /*is_boot=*/true);
   return true;
 }
 
@@ -327,6 +409,85 @@ bool Z2S_LuaEngine::enqueueEvent(const Z2S_LuaEvent& ev) {
   return true;
 }
 
+bool Z2S_LuaEngine::validateSyntax(
+    const char* src, size_t len,
+    char* err_out, size_t err_cap, bool log_to_console) {
+  if (err_out && err_cap > 0) {
+    err_out[0] = '\0';
+  }
+  if (!src || len == 0) {
+    if (err_out && err_cap > 0) {
+      snprintf(err_out, err_cap, "Empty script");
+    }
+    return false;
+  }
+  if (len > MAX_SCRIPT_BYTES) {
+    if (err_out && err_cap > 0) {
+      snprintf(err_out, err_cap, "Script too large (%u / %u B)",
+               static_cast<unsigned>(len),
+               static_cast<unsigned>(MAX_SCRIPT_BYTES));
+    }
+    return false;
+  }
+
+  // Isolated temporary 64 KB PSRAM arena -> 0 internal DRAM, never touches active _lua
+  void* arena = heap_caps_aligned_alloc(
+      8, SYNTAX_CHECK_ARENA_BYTES, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+  if (!arena) {
+    if (err_out && err_cap > 0) {
+      snprintf(err_out, err_cap, "Syntax check OOM (PSRAM)");
+    }
+    return false;
+  }
+
+  multi_heap_handle_t heap = multi_heap_register(arena, SYNTAX_CHECK_ARENA_BYTES);
+  if (!heap) {
+    heap_caps_free(arena);
+    if (err_out && err_cap > 0) {
+      snprintf(err_out, err_cap, "Syntax check heap init failed");
+    }
+    return false;
+  }
+
+  lua_State* checkL = lua_newstate(luaSyntaxPsramAlloc, heap, luaL_makeseed(nullptr));
+  if (!checkL) {
+    heap_caps_free(arena);
+    if (err_out && err_cap > 0) {
+      snprintf(err_out, err_cap, "Syntax check VM init failed");
+    }
+    return false;
+  }
+
+  int status = luaL_loadbufferx(checkL, src, len, "@z2s_main", "t");
+  bool ok    = (status == LUA_OK);
+
+  if (!ok) {
+    const char* raw_err = lua_tostring(checkL, -1);
+    char local_err[192];
+    formatSyntaxError(raw_err, local_err, sizeof(local_err));
+
+    if (err_out && err_cap > 0) {
+      snprintf(err_out, err_cap, "%s", local_err);
+    }
+    if (log_to_console) {
+      char console_msg[224];
+      int n = snprintf(console_msg, sizeof(console_msg),
+                       "[LUA] Save rejected: %s\n", local_err);
+      if (n > 0) {
+        size_t clen = (static_cast<size_t>(n) < sizeof(console_msg))
+                          ? static_cast<size_t>(n)
+                          : (sizeof(console_msg) - 1);
+        appendConsole(console_msg, clen);
+      }
+    }
+    log_w("[LUA] Pre-save syntax check failed: %s", local_err);
+  }
+
+  lua_close(checkL);
+  heap_caps_free(arena);
+  return ok;
+}
+
 bool Z2S_LuaEngine::saveAndReload(const char* src, size_t len) {
   if (!_started || !_msg_queue) return false;
   if (!src && len > 0) return false;
@@ -346,10 +507,10 @@ bool Z2S_LuaEngine::saveAndReload(const char* src, size_t len) {
     return false;
   }
 
-  return requestReloadFromFS(true);
+  return requestReloadFromFS(/*clear_safe_mode=*/true, /*is_boot=*/false);
 }
 
-bool Z2S_LuaEngine::requestReloadFromFS(bool clear_safe_mode) {
+bool Z2S_LuaEngine::requestReloadFromFS(bool clear_safe_mode, bool is_boot) {
   if (!_started || !_msg_queue || _worker_stopped) return false;
 
   if (clear_safe_mode) {
@@ -364,8 +525,19 @@ bool Z2S_LuaEngine::requestReloadFromFS(bool clear_safe_mode) {
   _ctx.force_abort = true;
 
   WorkerMsg msg{};
-  msg.type = MsgType::RELOAD_FS;
+  msg.type  = MsgType::RELOAD_FS;
+  msg.flags = is_boot ? 1 : 0;
   return xQueueSend(_msg_queue, &msg, pdMS_TO_TICKS(100)) == pdTRUE;
+}
+
+bool Z2S_LuaEngine::stopVM() {
+  if (!_started || !_msg_queue || _worker_stopped) return false;
+
+  _ctx.force_abort = true;
+
+  WorkerMsg msg{};
+  msg.type = MsgType::STOP_VM;
+  return xQueueSendToFront(_msg_queue, &msg, pdMS_TO_TICKS(100)) == pdTRUE;
 }
 
 bool Z2S_LuaEngine::deleteScriptAndStop() {
@@ -401,7 +573,7 @@ bool Z2S_LuaEngine::clearSafeMode(bool reload_now) {
   }
   taskEXIT_CRITICAL(&_stats_mux);
 
-  return reload_now ? requestReloadFromFS(false) : true;
+  return reload_now ? requestReloadFromFS(false, false) : true;
 }
 
 bool Z2S_LuaEngine::readStoredScript(
@@ -486,6 +658,7 @@ void Z2S_LuaEngine::getStatus(Z2S_LuaStatus& out) {
   taskENTER_CRITICAL(&_stats_mux);
   out.state              = _state;
   out.safe_mode          = _safe_mode;
+  out.autostart_enabled  = _autostart_enabled;
   out.crash_count        = _crash_count;
   out.arena_bytes        = _ctx.slab_bytes;
   out.used_bytes         = _used_bytes_pub;
@@ -510,13 +683,19 @@ void Z2S_LuaEngine::appendConsole(const char* s, size_t len) {
     _console_head = (_console_head + 1) % CONSOLE_BUF_SIZE;
     if (_console_len < CONSOLE_BUF_SIZE) {
       _console_len++;
+    } else {
+      _console_wrapped = true;
     }
   }
   taskEXIT_CRITICAL(&_stats_mux);
 }
 
-size_t Z2S_LuaEngine::copyConsoleLog(char* dst, size_t dst_cap) {
-  if (!dst || dst_cap == 0) return 0;
+size_t Z2S_LuaEngine::copyConsoleLog(
+    char* dst, size_t dst_cap, bool* out_wrapped) {
+  if (!dst || dst_cap == 0) {
+    if (out_wrapped) *out_wrapped = false;
+    return 0;
+  }
 
   taskENTER_CRITICAL(&_stats_mux);
   size_t to_copy = (_console_len < (dst_cap - 1)) ? _console_len : (dst_cap - 1);
@@ -526,14 +705,18 @@ size_t Z2S_LuaEngine::copyConsoleLog(char* dst, size_t dst_cap) {
     dst[i] = _console_buf[(start + i) % CONSOLE_BUF_SIZE];
   }
   dst[to_copy] = '\0';
+  if (out_wrapped) {
+    *out_wrapped = _console_wrapped;
+  }
   taskEXIT_CRITICAL(&_stats_mux);
   return to_copy;
 }
 
 void Z2S_LuaEngine::clearConsoleLog() {
   taskENTER_CRITICAL(&_stats_mux);
-  _console_head = 0;
-  _console_len  = 0;
+  _console_head    = 0;
+  _console_len     = 0;
+  _console_wrapped = false;
   taskEXIT_CRITICAL(&_stats_mux);
 }
 
@@ -564,7 +747,12 @@ void Z2S_LuaEngine::workerLoop() {
         break;
 
       case MsgType::RELOAD_FS:
-        handleReloadFromFS();
+        handleReloadFromFS((msg.flags & 0x01) != 0);
+        publishHeapSnapshot();
+        break;
+
+      case MsgType::STOP_VM:
+        handleStopVM();
         publishHeapSnapshot();
         break;
 
@@ -627,11 +815,32 @@ void Z2S_LuaEngine::flushStaleEvents() {
   }
 }
 
+void Z2S_LuaEngine::handleStopVM() {
+  Z2S_LuaBridge::instance().enqueueUnwatchAll();
+  flushStaleEvents();
+  _ctx.force_abort = false;
+  closeVM();
+  writeAutostartPref(false);
+
+  taskENTER_CRITICAL(&_stats_mux);
+  _script_loaded_ms = 0;
+  _last_error[0]    = '\0';
+  if (_state != Z2S_LuaState::NO_SCRIPT && _state != Z2S_LuaState::SAFE_MODE) {
+    _state = Z2S_LuaState::STOPPED;
+  }
+  taskEXIT_CRITICAL(&_stats_mux);
+
+  static constexpr char kMsg[] =
+      "[LUA] VM stopped & autostart OFF (script kept on flash)\n";
+  appendConsole(kMsg, sizeof(kMsg) - 1);
+}
+
 void Z2S_LuaEngine::handleClearScript() {
   Z2S_LuaBridge::instance().enqueueUnwatchAll();
   flushStaleEvents();
   _ctx.force_abort = false;
   closeVM();
+  writeAutostartPref(true);
 
   taskENTER_CRITICAL(&_stats_mux);
   _script_size      = 0;
@@ -643,7 +852,7 @@ void Z2S_LuaEngine::handleClearScript() {
   log_i("[LUA] Script cleared and VM stopped");
 }
 
-void Z2S_LuaEngine::handleReloadFromFS() {
+void Z2S_LuaEngine::handleReloadFromFS(bool is_boot) {
   // 1. Disable old watches FIRST (FIFO precedes any z2s.watch() in new script)
   Z2S_LuaBridge::instance().enqueueUnwatchAll();
   flushStaleEvents();
@@ -669,11 +878,40 @@ void Z2S_LuaEngine::handleReloadFromFS() {
   if (!readStoredScript(_script_buf, MAX_SCRIPT_BYTES + 1, script_len) ||
       script_len == 0) {
     closeVM();
+    taskENTER_CRITICAL(&_stats_mux);
+    _script_size      = 0;
+    _script_loaded_ms = 0;
+    taskEXIT_CRITICAL(&_stats_mux);
     setErrorStatus(Z2S_LuaState::ERROR, "failed to load script from LittleFS");
     return;
   }
 
-  // 4. Rebuild pristine VM and execute chunk in text-only mode ("t")
+  // Publish script size immediately so compile/watchdog errors show accurate byte count
+  taskENTER_CRITICAL(&_stats_mux);
+  _script_size = script_len;
+  taskEXIT_CRITICAL(&_stats_mux);
+
+  // 4. Boot-time autostart guard: keep script on flash, leave VM stopped
+  if (is_boot && !readAutostartPref()) {
+    closeVM();
+    taskENTER_CRITICAL(&_stats_mux);
+    _autostart_enabled = false;
+    _script_loaded_ms  = 0;
+    _last_error[0]     = '\0';
+    _state             = Z2S_LuaState::STOPPED;
+    taskEXIT_CRITICAL(&_stats_mux);
+    static constexpr char kMsg[] =
+        "[LUA] Autostart OFF - VM kept stopped (click Reload from Flash to start)\n";
+    appendConsole(kMsg, sizeof(kMsg) - 1);
+    return;
+  }
+
+  // Explicit user reload (Reload from Flash / Save & Reload / Clear Safe Mode & Reload)
+  if (!is_boot) {
+    writeAutostartPref(true);
+  }
+
+  // 5. Rebuild pristine VM and execute chunk in text-only mode ("t")
   if (!resetVM()) {
     return;
   }

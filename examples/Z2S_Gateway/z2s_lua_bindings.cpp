@@ -5,6 +5,7 @@
 #include <Arduino.h>
 #include <cmath>
 #include <cstring>
+#include <ctime>
 
 #include <ZigbeeGateway.h>
 #include <SuplaDevice.h>
@@ -27,6 +28,9 @@
 /*****************************************************************************/
 
 namespace {
+
+// 2024-01-01 00:00:00 UTC — anything older means RTC/clock has not synced yet
+static constexpr time_t Z2S_LUA_MIN_VALID_TIME = 1704067200;
 
 enum class LuaValKind : uint8_t { NIL, BOOL, INT, NUMBER };
 
@@ -133,6 +137,11 @@ static bool isCustomZ2SEventId(uint32_t id) {
 
 static bool fieldEq(const char* field, const char* literal) {
   return field && (strcmp(field, literal) == 0);
+}
+
+static inline void luaSetIntField(lua_State* L, const char* key, lua_Integer val) {
+  lua_pushinteger(L, val);
+  lua_setfield(L, -2, key);
 }
 
 // Pure C++ channel reader: holds TimerAccessMutex strictly inside this scope
@@ -752,6 +761,59 @@ int Z2S_LuaBridge::l_uptime_s(lua_State* L) {
   return 1;
 }
 
+int Z2S_LuaBridge::l_time(lua_State* L) {
+  time_t now = time(nullptr);
+  if (now < Z2S_LUA_MIN_VALID_TIME) {
+    lua_pushnil(L);
+    return 1;
+  }
+
+  struct tm tm_local{};
+  if (localtime_r(&now, &tm_local) == nullptr) {
+    lua_pushnil(L);
+    return 1;
+  }
+
+  // ISO-8601 weekday: 1 = Monday .. 7 = Sunday
+  const int iso_wday = (tm_local.tm_wday == 0) ? 7 : tm_local.tm_wday;
+
+  // Fast path: z2s.time("hour") allocates 0 bytes in Lua PSRAM
+  if (!lua_isnoneornil(L, 1)) {
+    const char* field = luaL_checkstring(L, 1);
+    if (fieldEq(field, "hour")) {
+      lua_pushinteger(L, tm_local.tm_hour);
+    } else if (fieldEq(field, "minute")) {
+      lua_pushinteger(L, tm_local.tm_min);
+    } else if (fieldEq(field, "second")) {
+      lua_pushinteger(L, tm_local.tm_sec);
+    } else if (fieldEq(field, "weekday")) {
+      lua_pushinteger(L, iso_wday);
+    } else if (fieldEq(field, "day")) {
+      lua_pushinteger(L, tm_local.tm_mday);
+    } else if (fieldEq(field, "month")) {
+      lua_pushinteger(L, tm_local.tm_mon + 1);
+    } else if (fieldEq(field, "year")) {
+      lua_pushinteger(L, tm_local.tm_year + 1900);
+    } else if (fieldEq(field, "unix")) {
+      lua_pushinteger(L, static_cast<lua_Integer>(now));
+    } else {
+      lua_pushnil(L);
+    }
+    return 1;
+  }
+
+  lua_createtable(L, 0, 8);
+  luaSetIntField(L, "hour",    tm_local.tm_hour);
+  luaSetIntField(L, "minute",  tm_local.tm_min);
+  luaSetIntField(L, "second",  tm_local.tm_sec);
+  luaSetIntField(L, "weekday", iso_wday);
+  luaSetIntField(L, "day",     tm_local.tm_mday);
+  luaSetIntField(L, "month",   tm_local.tm_mon + 1);
+  luaSetIntField(L, "year",    tm_local.tm_year + 1900);
+  luaSetIntField(L, "unix",    static_cast<lua_Integer>(now));
+  return 1;
+}
+
 int Z2S_LuaBridge::l_tick_ms(lua_State* L) {
   lua_pushinteger(L, static_cast<lua_Integer>(static_cast<int32_t>(millis())));
   return 1;
@@ -775,6 +837,7 @@ void Z2S_LuaBridge::registerBindings(lua_State* L) {
     {"set_position",   l_set_position},
     {"watch",          l_watch},
     {"uptime_s",       l_uptime_s},
+    {"time",           l_time},
     {"tick_ms",        l_tick_ms},
     {"elapsed_ms",     l_elapsed_ms},
     {nullptr,          nullptr}

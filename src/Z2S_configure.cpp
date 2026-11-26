@@ -400,7 +400,8 @@ void Z2S_configureDeviceSpecificReporting(
     case Z2S_DEVICE_DESC_TUYA_3GANG_SWITCH:
     case Z2S_DEVICE_DESC_TUYA_4GANG_SWITCH:
     case Z2S_DEVICE_DESC_RELAY_1:
-    case Z2S_DEVICE_DESC_TUYA_RELAY: {
+    case Z2S_DEVICE_DESC_TUYA_RELAY:
+    case Z2S_DEVICE_DESC_SONOFF_RELAY: {
 
       write_mask = 0xFF;
       zbGateway.sendAttributeWrite(

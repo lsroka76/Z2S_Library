@@ -28,6 +28,7 @@ enum class Z2S_LuaState : uint8_t {
 struct Z2S_LuaStatus {
   Z2S_LuaState state;
   bool         safe_mode;
+  bool         autostart_enabled;
   uint8_t      crash_count;
   size_t       arena_bytes;
   size_t       used_bytes;
@@ -44,13 +45,14 @@ struct Z2S_LuaStatus {
 
 class Z2S_LuaEngine {
  public:
-  static constexpr size_t   ARENA_BYTES      = 128 * 1024;
-  static constexpr size_t   SOFT_LIMIT_BYTES = 112 * 1024;
-  static constexpr size_t   MAX_SCRIPT_BYTES = 16 * 1024;
-  static constexpr size_t   MSG_QUEUE_DEPTH  = 32;
-  static constexpr size_t   CONSOLE_BUF_SIZE = 1024;
-  static constexpr uint32_t TASK_STACK_BYTES = 8192;
-  static constexpr uint32_t TASK_STACK_DEPTH = TASK_STACK_BYTES / sizeof(StackType_t);
+  static constexpr size_t   ARENA_BYTES              = 128 * 1024;
+  static constexpr size_t   SOFT_LIMIT_BYTES         = 112 * 1024;
+  static constexpr size_t   SYNTAX_CHECK_ARENA_BYTES = 64 * 1024;
+  static constexpr size_t   MAX_SCRIPT_BYTES         = 16 * 1024;
+  static constexpr size_t   MSG_QUEUE_DEPTH          = 32;
+  static constexpr size_t   CONSOLE_BUF_SIZE         = 1024;
+  static constexpr uint32_t TASK_STACK_BYTES         = 8192;
+  static constexpr uint32_t TASK_STACK_DEPTH         = TASK_STACK_BYTES / sizeof(StackType_t);
 
   static constexpr uint8_t  MAX_BOOT_CRASHES  = 2;
   static constexpr uint32_t STABILITY_HEAL_MS = 60000;
@@ -75,20 +77,24 @@ class Z2S_LuaEngine {
   bool enqueueEvent(const Z2S_LuaEvent& ev);
 
   // Web GUI / user API (safe to call from AsyncWebServer or loopTask)
+  bool validateSyntax(const char* src, size_t len,
+                      char* err_out, size_t err_cap,
+                      bool log_to_console = true);
   bool saveAndReload(const char* src, size_t len);
-  bool requestReloadFromFS(bool clear_safe_mode = false);
+  bool requestReloadFromFS(bool clear_safe_mode = false, bool is_boot = false);
+  bool stopVM();
   bool deleteScriptAndStop();
   bool clearSafeMode(bool reload_now = false);
 
   // Read stored script from LittleFS into caller buffer for Web GUI editor
   bool readStoredScript(char* dst, size_t dst_cap, size_t& out_len);
 
-  // Call on STATUS_SOFTWARE_RESET before Z2S_endLittleFs(true)
+  // Call on STATUS_SOFTWARE_RESET before Z2S_endLittleFs(true) (terminates worker task)
   void requestStop(uint32_t wait_ms = 200);
 
   // Thread-safe snapshots for Web GUI diagnostics (zero heap, zero multi_heap races)
   void   getStatus(Z2S_LuaStatus& out);
-  size_t copyConsoleLog(char* dst, size_t dst_cap);
+  size_t copyConsoleLog(char* dst, size_t dst_cap, bool* out_wrapped = nullptr);
   void   clearConsoleLog();
 
   // Internal hook called by extern "C" z2s_lua_write()
@@ -97,16 +103,21 @@ class Z2S_LuaEngine {
  private:
   Z2S_LuaEngine() = default;
 
+  static constexpr const char* NVS_AUTOSTART_NS  = "z2s_lua";
+  static constexpr const char* NVS_AUTOSTART_KEY = "autostart";  // <= 15 chars
+
   enum class MsgType : uint8_t {
     EVENT = 0,
     RELOAD_FS,
+    STOP_VM,
     CLEAR_SCRIPT,
     STOP
   };
 
   struct WorkerMsg {
     MsgType      type;
-    uint8_t      reserved[3];
+    uint8_t      flags;        // bit 0: 1 = boot load (respect NVS autostart)
+    uint8_t      reserved[2];
     Z2S_LuaEvent ev;
   };
 
@@ -131,12 +142,17 @@ class Z2S_LuaEngine {
   void markExecExit();
   void maybeHealCrashCounter();
 
-  // Worker-task-only methods (single owner of _L and _ctx.heap)
+  // NVS autostart persistence helpers (worker-task serialized)
+  bool readAutostartPref();
+  void writeAutostartPref(bool enabled);
+
+  // Worker-task-only methods (single owner of _lua and _ctx.heap)
   static void workerEntry(void* arg);
   void        workerLoop();
   bool        resetVM();
   void        closeVM();
-  void        handleReloadFromFS();
+  void        handleReloadFromFS(bool is_boot);
+  void        handleStopVM();
   void        handleClearScript();
   void        handleEvent(const Z2S_LuaEvent& ev);
   void        flushStaleEvents();
@@ -162,6 +178,7 @@ class Z2S_LuaEngine {
   portMUX_TYPE  _stats_mux          = portMUX_INITIALIZER_UNLOCKED;
   Z2S_LuaState  _state              = Z2S_LuaState::UNINITIALIZED;
   bool          _safe_mode          = false;
+  bool          _autostart_enabled  = true;
   uint8_t       _crash_count        = 0;
   size_t        _used_bytes_pub     = 0;
   size_t        _peak_bytes_pub     = 0;
@@ -176,6 +193,7 @@ class Z2S_LuaEngine {
   char          _console_buf[CONSOLE_BUF_SIZE] = {};
   size_t        _console_head       = 0;
   size_t        _console_len        = 0;
+  bool          _console_wrapped    = false;
 
   volatile bool _worker_stopped     = false;
   volatile bool _started            = false;

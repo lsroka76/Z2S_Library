@@ -87,6 +87,7 @@ uint16_t s_btn_clear_safemode = Control::noParent;
 uint16_t s_lbl_telemetry      = Control::noParent;
 uint16_t s_lbl_editor         = Control::noParent;
 uint16_t s_btn_reload_fs      = Control::noParent;
+uint16_t s_btn_stop_vm        = Control::noParent;
 uint16_t s_btn_delete_script  = Control::noParent;
 uint16_t s_lbl_console        = Control::noParent;
 uint16_t s_btn_clear_console  = Control::noParent;
@@ -124,14 +125,15 @@ uint32_t fnv1a32(const char* s, size_t len) {
   return h;
 }
 
-const char* luaStateName(Z2S_LuaState st) {
+const char* luaStateName(Z2S_LuaState st, bool autostart_enabled) {
   switch (st) {
     case Z2S_LuaState::UNINITIALIZED: return "UNINITIALIZED";
     case Z2S_LuaState::NO_SCRIPT:     return "NO SCRIPT";
     case Z2S_LuaState::RUNNING:       return "RUNNING";
     case Z2S_LuaState::ERROR:         return "ERROR";
     case Z2S_LuaState::SAFE_MODE:     return "SAFE MODE";
-    case Z2S_LuaState::STOPPED:       return "STOPPED";
+    case Z2S_LuaState::STOPPED:
+      return autostart_enabled ? "STOPPED" : "STOPPED (autostart OFF)";
     default:                          return "UNKNOWN";
   }
 }
@@ -167,9 +169,11 @@ size_t escapeHtml(const char* src, char* dst, size_t dst_cap) {
 
 // Formats the newest tail of the console ring buffer, HTML-escaped and guaranteed
 // to fit inside max_json_bytes after Z2S_ESPUI's appendEscapedJson() pass.
+// Drops any clipped leading line caused by truncation or ring-buffer wrap.
 void formatConsoleTailForBatch(
     const char* raw, size_t raw_len,
-    char* dst, size_t dst_cap, size_t max_json_bytes) {
+    char* dst, size_t dst_cap, size_t max_json_bytes,
+    bool ring_wrapped = false) {
   if (!dst || dst_cap == 0) return;
   if (!raw || raw_len == 0) {
     snprintf(dst, dst_cap, "(empty)");
@@ -206,6 +210,18 @@ void formatConsoleTailForBatch(
     start--;
   }
 
+  // Advance forward past any clipped leading fragment (only shrinks output)
+  if ((start > 0 && raw[start - 1] != '\n') || (start == 0 && ring_wrapped)) {
+    const void* nl_ptr = memchr(raw + start, '\n', raw_len - start);
+    if (nl_ptr != nullptr) {
+      size_t nl_idx = static_cast<size_t>(
+          static_cast<const char*>(nl_ptr) - raw);
+      if (nl_idx + 1 < raw_len) {
+        start = nl_idx + 1;
+      }
+    }
+  }
+
   size_t w = 0;
   for (size_t i = start; i < raw_len; ++i) {
     char c = raw[i];
@@ -234,7 +250,13 @@ void onClearSafeModeBtn(BasicControl* /*sender*/, int type, void* /*param*/) {
 
 void onReloadFsBtn(BasicControl* /*sender*/, int type, void* /*param*/) {
   if (type != B_UP) return;
-  Z2S_LuaEngine::instance().requestReloadFromFS(false);
+  Z2S_LuaEngine::instance().requestReloadFromFS(false, false);
+  Z2S_loopLuaWebGUI(true);
+}
+
+void onStopVmBtn(BasicControl* /*sender*/, int type, void* /*param*/) {
+  if (type != B_UP) return;
+  Z2S_LuaEngine::instance().stopVM();
   Z2S_loopLuaWebGUI(true);
 }
 
@@ -314,6 +336,10 @@ void Z2S_buildLuaWebGUI() {
       Control::Type::Button, "Reload", "Reload from Flash",
       Control::Color::Peterriver, s_lbl_editor, onReloadFsBtn);
 
+  s_btn_stop_vm = ESPUI.addControl(
+      Control::Type::Button, "Stop", "Stop VM",
+      Control::Color::Carrot, s_lbl_editor, onStopVmBtn);
+
   s_btn_delete_script = ESPUI.addControl(
       Control::Type::Button, "Delete", "Delete Script",
       Control::Color::Alizarin, s_lbl_editor, onDeleteScriptBtn);
@@ -377,7 +403,7 @@ void Z2S_registerLuaHttpEndpoints() {
         request->send(resp);
       });
 
-  // POST /api/lua/script — raw body into PSRAM staging buffer, then save & reload
+  // POST /api/lua/script — raw body into PSRAM staging buffer, validate, then save & reload
   srv->on(
       "/api/lua/script", HTTP_POST,
       [](AsyncWebServerRequest* request) {
@@ -413,6 +439,15 @@ void Z2S_registerLuaHttpEndpoints() {
           bool ok = Z2S_LuaEngine::instance().deleteScriptAndStop();
           request->send(ok ? 200 : 500, "text/plain",
                         ok ? "Script cleared" : "Clear failed");
+          return;
+        }
+
+        // Pre-save syntax gate: rejects broken Lua without touching LittleFS or running VM
+        char err_buf[192];
+        if (!Z2S_LuaEngine::instance().validateSyntax(
+                s_http_post_buf, body_len, err_buf, sizeof(err_buf))) {
+          xSemaphoreGive(s_post_mtx);
+          request->send(400, "text/plain", err_buf);
           return;
         }
 
@@ -518,7 +553,7 @@ void Z2S_loopLuaWebGUI(bool force) {
       "PSRAM:   %u B used | %u B peak | %u B arena (largest free: %u B)\n"
       "Events:  %lu processed | %lu dropped | %lu watchdog trips\n"
       "Error:   %s",
-      luaStateName(st.state),
+      luaStateName(st.state, st.autostart_enabled),
       static_cast<unsigned>(st.script_size),
       static_cast<unsigned>(Z2S_LuaEngine::MAX_SCRIPT_BYTES),
       static_cast<unsigned>(st.used_bytes),
@@ -549,17 +584,19 @@ void Z2S_loopLuaWebGUI(bool force) {
     }
   }
 
-  // 3. Console output (newest tail capped to <= 960 JSON bytes for s_batch_buf)
+  // 3. Console output (newest tail capped to <= 960 JSON bytes, clean top line)
   char raw_log[Z2S_LuaEngine::CONSOLE_BUF_SIZE];
+  bool console_wrapped = false;
   size_t raw_len = Z2S_LuaEngine::instance().copyConsoleLog(
-      raw_log, sizeof(raw_log));
+      raw_log, sizeof(raw_log), &console_wrapped);
   uint32_t chash = fnv1a32(raw_log, raw_len);
 
   if (force || chash != s_last_console_hash) {
     s_last_console_hash = chash;
     char esc_log[1024];
     formatConsoleTailForBatch(
-        raw_log, raw_len, esc_log, sizeof(esc_log), CONSOLE_JSON_CAP);
+        raw_log, raw_len, esc_log, sizeof(esc_log),
+        CONSOLE_JSON_CAP, console_wrapped);
     ESPUI.updateControlValue(s_lbl_console, esc_log);
   }
 }

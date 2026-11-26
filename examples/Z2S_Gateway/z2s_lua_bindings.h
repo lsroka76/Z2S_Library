@@ -101,6 +101,7 @@ class Z2S_LuaBridge {
   static int l_set_position(lua_State* L);
   static int l_watch(lua_State* L);
   static int l_uptime_s(lua_State* L);
+  static int l_time(lua_State* L);
   static int l_tick_ms(lua_State* L);
   static int l_elapsed_ms(lua_State* L);
 

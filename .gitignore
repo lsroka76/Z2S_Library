@@ -2,3 +2,6 @@
 release_bins/
 build_z2s.ps1
 examples/Z2S_Gateway/build/
+examples/Z2S_C6_NCP/build/
+examples/Z2S_C6_NCP/*.cpp
+examples/Z2S_C6_NCP/*.h
