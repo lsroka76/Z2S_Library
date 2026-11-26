@@ -585,9 +585,9 @@ void Z2S_LuaEngine::workerLoop() {
 }
 
 void Z2S_LuaEngine::closeVM() {
-  if (_L) {
-    lua_close(_L);
-    _L = nullptr;
+  if (_lua) {
+    lua_close(_lua);
+    _lua = nullptr;
   }
   _ctx.heap       = nullptr;
   _ctx.used_bytes = 0;
@@ -604,15 +604,15 @@ bool Z2S_LuaEngine::resetVM() {
     return false;
   }
 
-  _L = lua_newstate(luaArenaAlloc, &_ctx, luaL_makeseed(nullptr));
-  if (!_L) {
+  _lua = lua_newstate(luaArenaAlloc, &_ctx, luaL_makeseed(nullptr));
+  if (!_lua) {
     setErrorStatus(Z2S_LuaState::ERROR, "lua_newstate OOM");
     return false;
   }
-  lua_gc(_L, LUA_GCGEN);
+  lua_gc(_lua, LUA_GCGEN);
 
-  openSafeStdlib(_L);
-  Z2S_LuaBridge::registerBindings(_L);
+  openSafeStdlib(_lua);
+  Z2S_LuaBridge::registerBindings(_lua);
   return true;
 }
 
@@ -698,19 +698,19 @@ void Z2S_LuaEngine::handleReloadFromFS() {
 
 bool Z2S_LuaEngine::loadScriptChunk(
     const char* src, size_t len, const char* name) {
-  if (!_L || !src || len == 0) return false;
+  if (!_lua || !src || len == 0) return false;
 
-  int status = luaL_loadbufferx(_L, src, len, name, "t");
+  int status = luaL_loadbufferx(_lua, src, len, name, "t");
   if (status != LUA_OK) {
     captureLuaError("compile");
     return false;
   }
 
-  armWatchdog(_L, _ctx, INIT_MAX_INSTR, INIT_MAX_WALL_US);
+  armWatchdog(_lua, _ctx, INIT_MAX_INSTR, INIT_MAX_WALL_US);
   markExecEnter();
-  status = lua_pcall(_L, 0, 0, 0);
+  status = lua_pcall(_lua, 0, 0, 0);
   markExecExit();
-  lua_sethook(_L, nullptr, 0, 0);
+  lua_sethook(_lua, nullptr, 0, 0);
 
   if (status != LUA_OK) {
     if (_ctx.watchdog_tripped && !_ctx.force_abort) {
@@ -725,20 +725,20 @@ bool Z2S_LuaEngine::loadScriptChunk(
 }
 
 void Z2S_LuaEngine::handleEvent(const Z2S_LuaEvent& ev) {
-  if (!_L || _state != Z2S_LuaState::RUNNING || _ctx.force_abort) {
+  if (!_lua || _state != Z2S_LuaState::RUNNING || _ctx.force_abort) {
     return;
   }
 
   DispatchArgs args{&ev, false};
 
-  lua_pushcfunction(_L, dispatchEventTrampoline);
-  lua_pushlightuserdata(_L, &args);
+  lua_pushcfunction(_lua, dispatchEventTrampoline);
+  lua_pushlightuserdata(_lua, &args);
 
-  armWatchdog(_L, _ctx, EVENT_MAX_INSTR, EVENT_MAX_WALL_US);
+  armWatchdog(_lua, _ctx, EVENT_MAX_INSTR, EVENT_MAX_WALL_US);
   markExecEnter();
-  int status = lua_pcall(_L, 1, 0, 0);
+  int status = lua_pcall(_lua, 1, 0, 0);
   markExecExit();
-  lua_sethook(_L, nullptr, 0, 0);
+  lua_sethook(_lua, nullptr, 0, 0);
 
   if (status != LUA_OK) {
     if (_ctx.watchdog_tripped && !_ctx.force_abort) {
@@ -749,7 +749,7 @@ void Z2S_LuaEngine::handleEvent(const Z2S_LuaEvent& ev) {
     captureLuaError("runtime");
 
     if (status == LUA_ERRMEM) {
-      lua_gc(_L, LUA_GCCOLLECT, 0);
+      lua_gc(_lua, LUA_GCCOLLECT, 0);
     }
     return;
   }
@@ -762,10 +762,10 @@ void Z2S_LuaEngine::handleEvent(const Z2S_LuaEvent& ev) {
 }
 
 void Z2S_LuaEngine::captureLuaError(const char* stage) {
-  const char* msg = lua_tostring(_L, -1);
+  const char* msg = lua_tostring(_lua, -1);
   char buf[128];
   snprintf(buf, sizeof(buf), "[%s] %s", stage, msg ? msg : "unknown");
-  lua_pop(_L, 1);
+  lua_pop(_lua, 1);
 
   log_e("[LUA] %s", buf);
 

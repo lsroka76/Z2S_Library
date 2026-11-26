@@ -180,7 +180,6 @@ static void onZigbeeSubsystemStarted() {
 
 SemaphoreHandle_t saveMutex;
 
-//lua_State *LuaState = nullptr;
 
 /*inline bool is_in_custom_heap(void* ptr) {
     
@@ -1190,12 +1189,6 @@ void setup() {
 #endif
   disableLoopWDT();
 
-  /*LuaState = luaL_newstate();
-  //luaL_openlibs(LuaState);
-  lua_pushcfunction(LuaState, luaopen_base); lua_call(LuaState, 0, 0); 
-  lua_pushcfunction(LuaState, luaopen_math); lua_call(LuaState, 0, 0); 
-  lua_pushcfunction(LuaState, luaopen_string); lua_call(LuaState, 0, 0); 
-  lua_pushcfunction(LuaState, luaopen_table); lua_call(LuaState, 0, 0);*/
 }
 
 zbg_device_params_t *gateway_device;
@@ -1446,16 +1439,6 @@ void loop() {
 
     
   }
-
-  /*if (LuaState) {
-
-    if (luaL_dostring(LuaState, "print('Hello from Lua')") != LUA_OK) {
-        
-      Serial.println(lua_tostring(LuaState, -1));
-      lua_pop(LuaState, 1);
-    }
-    lua_gc(LuaState, LUA_GCSTEP, 1);
-  }*/
 
   if (millis() - refresh_time > REFRESH_PERIOD) {
 

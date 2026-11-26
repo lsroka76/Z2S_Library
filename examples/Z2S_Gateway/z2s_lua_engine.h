@@ -154,7 +154,7 @@ class Z2S_LuaEngine {
   static void  openSafeStdlib(lua_State* L);
 
   // Worker-owned VM state
-  lua_State* _L          = nullptr;
+  lua_State* _lua        = nullptr;
   SandboxCtx _ctx        = {};
   char*      _script_buf = nullptr;  // 16 KB + 1 in PSRAM, allocated once
 
