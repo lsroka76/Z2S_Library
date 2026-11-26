@@ -60,23 +60,23 @@ static constexpr const char* STYLE_CONSOLE =
 // Single-quoted HTML (0 double quotes / 0 newlines => 0 JSON escape expansion).
 // Size: ~1,064 B -> ~1,210 B with /api/ui JSON envelope (< 1,360 B s_batch_buf).
 static const char LUA_EDITOR_HTML[] PROGMEM =
-    "<textarea id='lua-ed' rows='14' maxlength='16384' spellcheck='false' "
-    "placeholder='Click Load or focus...' "
-    "onfocus='if(!this.dataset.l)document.getElementById(`lua-ld`).click()' "
-    "oninput='document.getElementById(`lua-st`).textContent=this.value.length+`/16384 B`'>"
+    "<textarea id='le' rows='14' maxlength='16384' spellcheck='false' "
+    "placeholder='Lua script...' "
+    "onfocus='if(!this.dataset.l){this.dataset.l=1;if(!this.value)document.getElementById(`ll`).click()}' "
+    "oninput='document.getElementById(`ls`).textContent=this.value.length+`/16384 B`'>"
     "</textarea>"
     "<div style='display:flex;gap:8px;align-items:center;margin-top:8px'>"
     "<button type='button' class='z2s-btn emerald' style='width:auto' "
-    "onclick='let g=i=>document.getElementById(i),s=g(`lua-st`);s.textContent=`Saving...`;"
-    "fetch(`/api/lua/script`,{method:`POST`,body:g(`lua-ed`).value})"
+    "onclick='let g=i=>document.getElementById(i),s=g(`ls`);s.textContent=`Saving...`;"
+    "fetch(`/api/lua/script`,{method:`POST`,headers:{`Content-Type`:`text/x-lua`},body:g(`le`).value})"
     ".then(r=>r.text()).then(t=>s.textContent=t).catch(()=>s.textContent=`Err`)'>"
     "Save &" "amp; Reload</button>"
-    "<button id='lua-ld' type='button' class='z2s-btn' style='width:auto' "
-    "onclick='let g=i=>document.getElementById(i),s=g(`lua-st`);s.textContent=`Loading...`;"
-    "fetch(`/api/lua/script`).then(r=>r.text()).then(t=>{let e=g(`lua-ed`);"
+    "<button id='ll' type='button' class='z2s-btn' style='width:auto' "
+    "onclick='let g=i=>document.getElementById(i),s=g(`ls`);s.textContent=`Loading...`;"
+    "fetch(`/api/lua/script`).then(r=>r.text()).then(t=>{let e=g(`le`);"
     "e.value=t;e.dataset.l=1;s.textContent=t.length+` B`}).catch(()=>s.textContent=`Err`)'>"
     "Load</button>"
-    "<span id='lua-st' style='font-size:12px;font-family:monospace'>Ready</span></div>";
+    "<span id='ls' style='font:12px monospace'>Ready</span></div>";
 
 static_assert(sizeof(LUA_EDITOR_HTML) < 1120,
               "LUA_EDITOR_HTML must fit inside Z2S_ESPUI s_batch_buf[1360] with JSON envelope");
@@ -403,6 +403,13 @@ void Z2S_registerLuaHttpEndpoints() {
 
         if (body_len == 0) {
           xSemaphoreGive(s_post_mtx);
+          if (request->contentLength() > 0) {
+            log_e("[LUA] POST body missing (Content-Length=%u, Content-Type=%s)",
+                  static_cast<unsigned>(request->contentLength()),
+                  request->contentType().c_str());
+            request->send(400, "text/plain", "Error: body not received");
+            return;
+          }
           bool ok = Z2S_LuaEngine::instance().deleteScriptAndStop();
           request->send(ok ? 200 : 500, "text/plain",
                         ok ? "Script cleared" : "Clear failed");
