@@ -68,7 +68,7 @@ static const char LUA_EDITOR_HTML[] PROGMEM =
     "<div style='display:flex;gap:8px;align-items:center;margin-top:8px'>"
     "<button type='button' class='z2s-btn emerald' style='width:auto' "
     "onclick='let g=i=>document.getElementById(i),s=g(`ls`);s.textContent=`Saving...`;"
-    "fetch(`/api/lua/script`,{method:`POST`,headers:{`Content-Type`:`text/x-lua`},body:g(`le`).value})"
+    "fetch(`/api/lua/script`,{method:`POST`,headers:{[`Content-Type`]:`text/x-lua`},body:g(`le`).value})"
     ".then(r=>r.text()).then(t=>s.textContent=t).catch(()=>s.textContent=`Err`)'>"
     "Save &" "amp; Reload</button>"
     "<button id='ll' type='button' class='z2s-btn' style='width:auto' "
