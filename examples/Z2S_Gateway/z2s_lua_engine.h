@@ -83,6 +83,7 @@ class Z2S_LuaEngine {
   bool saveAndReload(const char* src, size_t len);
   bool requestReloadFromFS(bool clear_safe_mode = false, bool is_boot = false);
   bool stopVM();
+  bool setAutostart(bool enabled);
   bool deleteScriptAndStop();
   bool clearSafeMode(bool reload_now = false);
 
@@ -110,6 +111,7 @@ class Z2S_LuaEngine {
     EVENT = 0,
     RELOAD_FS,
     STOP_VM,
+    SET_AUTOSTART,
     CLEAR_SCRIPT,
     STOP
   };
@@ -153,6 +155,7 @@ class Z2S_LuaEngine {
   void        closeVM();
   void        handleReloadFromFS(bool is_boot);
   void        handleStopVM();
+  void        handleSetAutostart(bool enabled);
   void        handleClearScript();
   void        handleEvent(const Z2S_LuaEvent& ev);
   void        flushStaleEvents();

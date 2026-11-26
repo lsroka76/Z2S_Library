@@ -540,6 +540,19 @@ bool Z2S_LuaEngine::stopVM() {
   return xQueueSendToFront(_msg_queue, &msg, pdMS_TO_TICKS(100)) == pdTRUE;
 }
 
+bool Z2S_LuaEngine::setAutostart(bool enabled) {
+  if (!_started || !_msg_queue || _worker_stopped) return false;
+
+  taskENTER_CRITICAL(&_stats_mux);
+  _autostart_enabled = enabled;
+  taskEXIT_CRITICAL(&_stats_mux);
+
+  WorkerMsg msg{};
+  msg.type  = MsgType::SET_AUTOSTART;
+  msg.flags = enabled ? 1 : 0;
+  return xQueueSend(_msg_queue, &msg, pdMS_TO_TICKS(100)) == pdTRUE;
+}
+
 bool Z2S_LuaEngine::deleteScriptAndStop() {
   if (!_started || !_msg_queue) return false;
 
@@ -756,6 +769,10 @@ void Z2S_LuaEngine::workerLoop() {
         publishHeapSnapshot();
         break;
 
+      case MsgType::SET_AUTOSTART:
+        handleSetAutostart((msg.flags & 0x01) != 0);
+        break;
+
       case MsgType::CLEAR_SCRIPT:
         handleClearScript();
         publishHeapSnapshot();
@@ -820,7 +837,6 @@ void Z2S_LuaEngine::handleStopVM() {
   flushStaleEvents();
   _ctx.force_abort = false;
   closeVM();
-  writeAutostartPref(false);
 
   taskENTER_CRITICAL(&_stats_mux);
   _script_loaded_ms = 0;
@@ -831,8 +847,14 @@ void Z2S_LuaEngine::handleStopVM() {
   taskEXIT_CRITICAL(&_stats_mux);
 
   static constexpr char kMsg[] =
-      "[LUA] VM stopped & autostart OFF (script kept on flash)\n";
+      "[LUA] VM stopped (script kept on flash)\n";
   appendConsole(kMsg, sizeof(kMsg) - 1);
+}
+
+void Z2S_LuaEngine::handleSetAutostart(bool enabled) {
+  writeAutostartPref(enabled);
+  log_i("[LUA] Boot autostart %s (saved to NVS)",
+        enabled ? "ENABLED" : "DISABLED");
 }
 
 void Z2S_LuaEngine::handleClearScript() {
@@ -840,7 +862,6 @@ void Z2S_LuaEngine::handleClearScript() {
   flushStaleEvents();
   _ctx.force_abort = false;
   closeVM();
-  writeAutostartPref(true);
 
   taskENTER_CRITICAL(&_stats_mux);
   _script_size      = 0;
@@ -904,11 +925,6 @@ void Z2S_LuaEngine::handleReloadFromFS(bool is_boot) {
         "[LUA] Autostart OFF - VM kept stopped (click Reload from Flash to start)\n";
     appendConsole(kMsg, sizeof(kMsg) - 1);
     return;
-  }
-
-  // Explicit user reload (Reload from Flash / Save & Reload / Clear Safe Mode & Reload)
-  if (!is_boot) {
-    writeAutostartPref(true);
   }
 
   // 5. Rebuild pristine VM and execute chunk in text-only mode ("t")

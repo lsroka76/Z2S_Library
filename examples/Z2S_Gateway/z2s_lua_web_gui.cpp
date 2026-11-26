@@ -100,6 +100,8 @@ uint32_t s_delete_armed_ms    = 0;
 uint32_t s_last_status_hash   = 0;
 uint32_t s_last_console_hash  = 0;
 bool     s_last_safemode_ui   = false;
+uint16_t s_sw_autostart       = Control::noParent;
+bool     s_last_autostart_ui  = true;
 
 // Dedicated PSRAM buffers for /api/lua/script HTTP GET/POST (allocated once)
 char*             s_http_get_buf  = nullptr;
@@ -125,15 +127,14 @@ uint32_t fnv1a32(const char* s, size_t len) {
   return h;
 }
 
-const char* luaStateName(Z2S_LuaState st, bool autostart_enabled) {
+const char* luaStateName(Z2S_LuaState st) {
   switch (st) {
     case Z2S_LuaState::UNINITIALIZED: return "UNINITIALIZED";
     case Z2S_LuaState::NO_SCRIPT:     return "NO SCRIPT";
     case Z2S_LuaState::RUNNING:       return "RUNNING";
     case Z2S_LuaState::ERROR:         return "ERROR";
     case Z2S_LuaState::SAFE_MODE:     return "SAFE MODE";
-    case Z2S_LuaState::STOPPED:
-      return autostart_enabled ? "STOPPED" : "STOPPED (autostart OFF)";
+    case Z2S_LuaState::STOPPED:       return "STOPPED";
     default:                          return "UNKNOWN";
   }
 }
@@ -260,6 +261,14 @@ void onStopVmBtn(BasicControl* /*sender*/, int type, void* /*param*/) {
   Z2S_loopLuaWebGUI(true);
 }
 
+void onAutostartSwitch(BasicControl* /*sender*/, int type, void* /*param*/) {
+  if (type != S_ACTIVE && type != S_INACTIVE) return;
+  bool enabled = (type == S_ACTIVE);
+  s_last_autostart_ui = enabled;
+  Z2S_LuaEngine::instance().setAutostart(enabled);
+  Z2S_loopLuaWebGUI(true);
+}
+
 void onDeleteScriptBtn(BasicControl* /*sender*/, int type, void* /*param*/) {
   if (type != B_UP) return;
 
@@ -339,6 +348,15 @@ void Z2S_buildLuaWebGUI() {
   s_btn_stop_vm = ESPUI.addControl(
       Control::Type::Button, "Stop", "Stop VM",
       Control::Color::Carrot, s_lbl_editor, onStopVmBtn);
+
+  Z2S_LuaStatus init_st{};
+  Z2S_LuaEngine::instance().getStatus(init_st);
+  s_last_autostart_ui = init_st.autostart_enabled;
+
+  s_sw_autostart = ESPUI.addControl(
+      Control::Type::Switcher, "Autostart on Boot",
+      init_st.autostart_enabled ? 1L : 0L,
+      Control::Color::Emerald, s_lbl_editor, onAutostartSwitch);
 
   s_btn_delete_script = ESPUI.addControl(
       Control::Type::Button, "Delete", "Delete Script",
@@ -540,7 +558,13 @@ void Z2S_loopLuaWebGUI(bool force) {
     }
   }
 
-  // 2. Telemetry (hash-gated, zero String, guaranteed < 550 B)
+  // 2. Autostart on Boot switcher sync
+  if (force || st.autostart_enabled != s_last_autostart_ui) {
+    s_last_autostart_ui = st.autostart_enabled;
+    ESPUI.updateSwitcher(s_sw_autostart, st.autostart_enabled);
+  }
+
+  // 3. Telemetry (hash-gated, zero String, guaranteed < 550 B)
   char err_esc[192];
   escapeHtml(st.last_error[0] ? st.last_error : "none",
              err_esc, sizeof(err_esc));
@@ -548,12 +572,13 @@ void Z2S_loopLuaWebGUI(bool force) {
   char tel_buf[448];
   int tel_len = snprintf(
       tel_buf, sizeof(tel_buf),
-      "State:   %s\n"
+      "State:   %s | Autostart: %s\n"
       "Script:  %u / %u B\n"
       "PSRAM:   %u B used | %u B peak | %u B arena (largest free: %u B)\n"
       "Events:  %lu processed | %lu dropped | %lu watchdog trips\n"
       "Error:   %s",
-      luaStateName(st.state, st.autostart_enabled),
+      luaStateName(st.state),
+      st.autostart_enabled ? "ON" : "OFF",
       static_cast<unsigned>(st.script_size),
       static_cast<unsigned>(Z2S_LuaEngine::MAX_SCRIPT_BYTES),
       static_cast<unsigned>(st.used_bytes),
@@ -584,7 +609,7 @@ void Z2S_loopLuaWebGUI(bool force) {
     }
   }
 
-  // 3. Console output (newest tail capped to <= 960 JSON bytes, clean top line)
+  // 4. Console output (newest tail capped to <= 960 JSON bytes, clean top line)
   char raw_log[Z2S_LuaEngine::CONSOLE_BUF_SIZE];
   bool console_wrapped = false;
   size_t raw_len = Z2S_LuaEngine::instance().copyConsoleLog(
