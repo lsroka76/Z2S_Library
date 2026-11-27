@@ -292,8 +292,6 @@ class GatewayEvents: public LocalActionHandler {
 
   protected:
 
-    protected:
-
     bool      _disable_actions = false;
     bool      _cyclic_event_enabled = false;
     uint32_t  _cyclic_event_ms = 0;

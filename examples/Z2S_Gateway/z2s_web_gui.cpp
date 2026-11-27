@@ -11030,16 +11030,22 @@ void gatewayCallback(BasicControl *sender, int type, void *param) {
 					Z2S_Solar::formatCsv(norm, sizeof(norm));
 				}
 				auto cfg = Supla::Storage::ConfigInstance();
-				if (cfg && cfg->setString(Z2S_SOLAR_LOCATION, norm)) {
+				if (cfg) {
+					if (cleared) {
+						cfg->eraseKey(Z2S_SOLAR_LOCATION);
+					} else {
+						cfg->setString(Z2S_SOLAR_LOCATION, norm);
+					}
 					cfg->commit();
 				}
 				ESPUI.updateText(gateway_solar_location_text, norm);
-				Z2S_updateWebGUI();
-			} 
+
+				Z2S_LOCAL_BUF(char, solar_mem_buf, 1024, 768);
+				fillMemoryUptimeInformation(solar_mem_buf, 768);
+				updateLabel_P(gateway_memory_info, solar_mem_buf);
+			}
 			else {
-				
 				log_w("Invalid solar location CSV: '%s'", raw ? raw : "");
-				
 				char prev[40] = {};
 				Z2S_Solar::formatCsv(prev, sizeof(prev));
 				ESPUI.updateText(gateway_solar_location_text, prev);

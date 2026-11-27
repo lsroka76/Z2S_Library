@@ -1390,6 +1390,24 @@ bool Z2S_LuaEngine::loadScriptChunk(
     return false;
   }
 
+  // 1. Execute user script top-level chunk
+  armWatchdog(_lua, _ctx, INIT_MAX_INSTR, INIT_MAX_WALL_US);
+  markExecEnter();
+  status = lua_pcall(_lua, 0, 0, 0);
+  markExecExit();
+  lua_sethook(_lua, nullptr, 0, 0);
+
+  if (status != LUA_OK) {
+    if (_ctx.watchdog_tripped && !_ctx.force_abort) {
+      taskENTER_CRITICAL(&_stats_mux);
+      _watchdog_trips++;
+      taskEXIT_CRITICAL(&_stats_mux);
+    }
+    captureLuaError("init");
+    return false;
+  }
+
+  // 2. Immediately sync any declared z2s.window() rules if clock is ready
   lua_pushcfunction(_lua, syncWindowsTrampoline);
   armWatchdog(_lua, _ctx, EVENT_MAX_INSTR, EVENT_MAX_WALL_US);
   markExecEnter();
@@ -1456,7 +1474,9 @@ void Z2S_LuaEngine::captureLuaError(const char* stage) {
 
   taskENTER_CRITICAL(&_stats_mux);
   memcpy(_last_error, buf, sizeof(_last_error));
-  if (strcmp(stage, "compile") == 0 || strcmp(stage, "init") == 0) {
+  if (strcmp(stage, "compile") == 0 || strcmp(stage, "init") == 0 ||
+      strcmp(stage, "prelude") == 0) {
+    
     _state = Z2S_LuaState::ERROR;
   }
   taskEXIT_CRITICAL(&_stats_mux);
