@@ -112,7 +112,7 @@ static int syncWindowsTrampoline(lua_State* L) {
 // Auto-loaded into every fresh VM from Flash DROM (0 B user script budget, 0 B DRAM).
 // Exposes z2s.on(), z2s.window(), and z2s.at() backed by C++ z2s.sun() & "minute".
 static const char Z2S_LUA_PRELUDE[] PROGMEM = R"z2slua(
-local routes, windows, events, watched = {}, {}, {}, {}
+local routes, windows, events, watched, ch_want = {}, {}, {}, {}, {}
 local sched_armed = false
 
 local function watch_once(ch, evt)
@@ -234,6 +234,8 @@ local function in_window(now_m, s_m, e_m, ov)
 end
 
 local function eval_windows(t, sun, now_m)
+  for k in pairs(ch_want) do ch_want[k] = nil end
+
   for i = 1, #windows do
     local w = windows[i]
     local s_m = resolve_min(w.start, t, sun)
@@ -246,15 +248,20 @@ local function eval_windows(t, sun, now_m)
       w._active = active
 
       if w.ch then
-        local cur = z2s.get(w.ch)
-        if cur ~= nil and cur ~= active then
-          z2s.action(w.ch, active and "on" or "off")
-        end
+        ch_want[w.ch] = ch_want[w.ch] or active
       elseif w.apply then
         local ok, err = pcall(w.apply, active, changed, t, sun)
         if not ok then print("[ERR " .. w.name .. "] " .. tostring(err)) end
       end
     end
+  end
+
+  for ch, want in pairs(ch_want) do
+    local cur = z2s.get(ch)
+    if cur ~= nil and cur ~= want then
+      z2s.action(ch, want and "on" or "off")
+    end
+    ch_want[ch] = nil
   end
 end
 
