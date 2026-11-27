@@ -292,10 +292,17 @@ class GatewayEvents: public LocalActionHandler {
 
   protected:
 
+    protected:
+
     bool      _disable_actions = false;
     bool      _cyclic_event_enabled = false;
     uint32_t  _cyclic_event_ms = 0;
     uint32_t  _cyclic_event_counter = 0;
+    uint32_t  _wall_clock_ms = 0;
+    uint32_t  _last_wall_ymd = 0;
+    uint32_t  _last_sunrise_ymd = 0;
+    uint32_t  _last_sunset_ymd = 0;
+    int16_t   _last_wall_min = -1;
     int32_t   _action = -1;
     
     _actionhandler_callback actionhandler_callback = nullptr;

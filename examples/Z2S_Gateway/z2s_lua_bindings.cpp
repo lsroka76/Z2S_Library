@@ -20,6 +20,7 @@
 #include <Z2S_control/Z2S_local_action_handlers.h>
 #include <Z2S_control/Z2S_dimmer_interface.h>
 #include <Z2S_control/Z2S_rgbcct_interface.h>
+#include <Z2S_solar.h>
 
 #include "z2s_devices_table.h"
 
@@ -105,6 +106,11 @@ static constexpr NameIdEntry EVENT_ALIASES[] = {
   {"tick30",        Z2S_SUPLA_EVENT_ON_EVERY_30_SECONDS},
   {"tick60",        Z2S_SUPLA_EVENT_ON_EVERY_60_SECONDS},
   {"tick24h",       Z2S_SUPLA_EVENT_ON_EVERY_24_HOURS},
+  {"minute",        Z2S_SUPLA_EVENT_ON_EVERY_MINUTE},
+  {"hour",          Z2S_SUPLA_EVENT_ON_EVERY_HOUR},
+  {"midnight",      Z2S_SUPLA_EVENT_ON_MIDNIGHT},
+  {"sunrise",       Z2S_SUPLA_EVENT_ON_SUNRISE},
+  {"sunset",        Z2S_SUPLA_EVENT_ON_SUNSET},
 };
 
 static bool lookupAlias(const NameIdEntry* table, size_t count,
@@ -814,6 +820,95 @@ int Z2S_LuaBridge::l_time(lua_State* L) {
   return 1;
 }
 
+int Z2S_LuaBridge::l_sun(lua_State* L) {
+  time_t now = time(nullptr);
+  if (now < Z2S_LUA_MIN_VALID_TIME) {
+    lua_pushnil(L);
+    return 1;
+  }
+
+  struct tm tm_local{};
+  if (localtime_r(&now, &tm_local) == nullptr) {
+    lua_pushnil(L);
+    return 1;
+  }
+
+  Z2S_SunTimes sun{};
+  if (!Z2S_Solar::getToday(tm_local, sun, /*use_lua_override=*/true)) {
+    lua_pushnil(L);
+    return 1;
+  }
+
+  const int now_min = tm_local.tm_hour * 60 + tm_local.tm_min;
+  const bool is_day = sun.has_rise_set
+                          ? (now_min >= sun.rise_min && now_min < sun.set_min)
+                          : sun.polar_day;
+
+  auto pushHhmm = [L](uint16_t m) {
+    char buf[6];
+    snprintf(buf, sizeof(buf), "%02u:%02u",
+             static_cast<unsigned>(m / 60),
+             static_cast<unsigned>(m % 60));
+    lua_pushstring(L, buf);
+  };
+
+  // Fast path: z2s.sun("sunset") allocates 0 bytes in Lua PSRAM
+  if (!lua_isnoneornil(L, 1)) {
+    const char* field = luaL_checkstring(L, 1);
+    if (fieldEq(field, "sunrise") || fieldEq(field, "rise")) {
+      if (sun.has_rise_set) lua_pushinteger(L, sun.rise_min);
+      else lua_pushnil(L);
+    } else if (fieldEq(field, "sunset") || fieldEq(field, "set")) {
+      if (sun.has_rise_set) lua_pushinteger(L, sun.set_min);
+      else lua_pushnil(L);
+    } else if (fieldEq(field, "is_day") || fieldEq(field, "day")) {
+      lua_pushboolean(L, is_day ? 1 : 0);
+    } else if (fieldEq(field, "rise_str") || fieldEq(field, "sunrise_str")) {
+      if (sun.has_rise_set) pushHhmm(sun.rise_min);
+      else lua_pushnil(L);
+    } else if (fieldEq(field, "set_str") || fieldEq(field, "sunset_str")) {
+      if (sun.has_rise_set) pushHhmm(sun.set_min);
+      else lua_pushnil(L);
+    } else {
+      lua_pushnil(L);
+    }
+    return 1;
+  }
+
+  lua_createtable(L, 0, 7);
+  if (sun.has_rise_set) {
+    luaSetIntField(L, "sunrise", sun.rise_min);
+    luaSetIntField(L, "rise",    sun.rise_min);
+    luaSetIntField(L, "sunset",  sun.set_min);
+    luaSetIntField(L, "set",     sun.set_min);
+    pushHhmm(sun.rise_min);
+    lua_setfield(L, -2, "rise_str");
+    pushHhmm(sun.set_min);
+    lua_setfield(L, -2, "set_str");
+  }
+  lua_pushboolean(L, is_day ? 1 : 0);
+  lua_setfield(L, -2, "is_day");
+  return 1;
+}
+
+int Z2S_LuaBridge::l_set_location(lua_State* L) {
+  if (lua_isnoneornil(L, 1)) {
+    Z2S_Solar::clearLuaOverride();
+    lua_pushboolean(L, 1);
+    return 1;
+  }
+
+  const float lat  = static_cast<float>(luaL_checknumber(L, 1));
+  const float lon  = static_cast<float>(luaL_checknumber(L, 2));
+  const bool  has3 = !lua_isnoneornil(L, 3);
+  const float tz_h = has3 ? static_cast<float>(luaL_checknumber(L, 3)) : 1.0f;
+  const bool  dst  = lua_isnoneornil(L, 4) ? (!has3) : (lua_toboolean(L, 4) != 0);
+
+  const bool ok = Z2S_Solar::setLuaOverride(lat, lon, tz_h, dst);
+  lua_pushboolean(L, ok ? 1 : 0);
+  return 1;
+}
+
 int Z2S_LuaBridge::l_tick_ms(lua_State* L) {
   lua_pushinteger(L, static_cast<lua_Integer>(static_cast<int32_t>(millis())));
   return 1;
@@ -838,6 +933,8 @@ void Z2S_LuaBridge::registerBindings(lua_State* L) {
     {"watch",          l_watch},
     {"uptime_s",       l_uptime_s},
     {"time",           l_time},
+    {"sun",            l_sun},
+    {"set_location",   l_set_location},
     {"tick_ms",        l_tick_ms},
     {"elapsed_ms",     l_elapsed_ms},
     {nullptr,          nullptr}

@@ -14,6 +14,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
+#include <supla/clock/clock.h>
+#include "Z2S_solar.h"
 
 #include "Z2S_local_action_handlers.h"
 
@@ -22,14 +24,9 @@
 
 #include <ESP_SSLClient.h>
 #include <WiFiClient.h>
-//#include <HTTPClient.h>
 
 ESP_SSLClient ssl_client;
 WiFiClient basic_client;
-
-//HTTPClient https;
-
-//WiFiClientSecure clientSec;
 
 
 extern bool force_leave_global_flag;
@@ -765,12 +762,79 @@ void GatewayEvents::iterateAlways() {
     _action = -1;
   }
 
+  // Wall-clock & solar events (auto-active once clock is synced, 1 Hz check)
+  if (!_disable_actions && ((millis_ms - _wall_clock_ms) >= 1000)) {
+    _wall_clock_ms = millis_ms;
+
+    if (Supla::Clock::IsReady()) {
+      time_t now = time(nullptr);
+      if (now >= Z2S_SOLAR_MIN_VALID_TIME) {
+        struct tm tm_now = {};
+        if (localtime_r(&now, &tm_now) != nullptr) {
+          const uint32_t ymd = static_cast<uint32_t>(
+              (tm_now.tm_year + 1900) * 10000 +
+              (tm_now.tm_mon + 1) * 100 +
+              tm_now.tm_mday);
+          const int16_t min_of_day =
+              static_cast<int16_t>(tm_now.tm_hour * 60 + tm_now.tm_min);
+
+          if (_last_wall_ymd == 0) {
+            // Seed silently on first synced boot so stale events never fire
+            _last_wall_ymd = ymd;
+            _last_wall_min = min_of_day;
+            Z2S_SunTimes sun = {};
+            if (Z2S_Solar::getToday(tm_now, sun) && sun.has_rise_set) {
+              if (min_of_day >= static_cast<int16_t>(sun.rise_min)) {
+                _last_sunrise_ymd = ymd;
+              }
+              if (min_of_day >= static_cast<int16_t>(sun.set_min)) {
+                _last_sunset_ymd = ymd;
+              }
+            }
+          } else if (ymd != _last_wall_ymd || min_of_day != _last_wall_min) {
+            const bool new_day  = (ymd > _last_wall_ymd);
+            const bool new_hour =
+                new_day || (tm_now.tm_min == 0) ||
+                (tm_now.tm_hour != (_last_wall_min / 60));
+
+            _last_wall_ymd = ymd;
+            _last_wall_min = min_of_day;
+
+            runAction(Z2S_SUPLA_EVENT_ON_EVERY_MINUTE);
+
+            if (new_hour) {
+              runAction(Z2S_SUPLA_EVENT_ON_EVERY_HOUR);
+            }
+            if (new_day) {
+              runAction(Z2S_SUPLA_EVENT_ON_MIDNIGHT);
+            }
+
+            Z2S_SunTimes sun = {};
+            if (Z2S_Solar::getToday(tm_now, sun) && sun.has_rise_set) {
+              if (_last_sunrise_ymd != ymd &&
+                  min_of_day >= static_cast<int16_t>(sun.rise_min) &&
+                  min_of_day <= static_cast<int16_t>(sun.rise_min + 1)) {
+                _last_sunrise_ymd = ymd;
+                runAction(Z2S_SUPLA_EVENT_ON_SUNRISE);
+              }
+              if (_last_sunset_ymd != ymd &&
+                  min_of_day >= static_cast<int16_t>(sun.set_min) &&
+                  min_of_day <= static_cast<int16_t>(sun.set_min + 1)) {
+                _last_sunset_ymd = ymd;
+                runAction(Z2S_SUPLA_EVENT_ON_SUNSET);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
   if (!_cyclic_event_enabled)
     return;
 
   if (millis_ms - _cyclic_event_ms < 5000)
     return;
-
 
   if (millis_ms - _cyclic_event_ms >= 10000) {
     

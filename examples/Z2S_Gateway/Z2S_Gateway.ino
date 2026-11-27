@@ -52,6 +52,8 @@
 #include <Z2S_control/Z2S_remote_relay.h>
 #include <Z2S_control/Z2S_virtual_relay.h>
 
+#include <Z2S_solar.h>
+
 #include <Z2S_Lua_Config.h>
 #if Z2S_ENABLE_LUA
   #include "z2s_lua_bindings.h"
@@ -1048,6 +1050,16 @@ void setup() {
 
     log_i("Z2S_GATEWAY_MDNS_LOCAL_NAME not configured - using default");
     //GatewayMDNSLocalName = "Z2S_gateway";
+  }
+
+  char solar_cfg_buf[40] = {};
+  
+  if (Supla::Storage::ConfigInstance()->getString(
+        Z2S_SOLAR_LOCATION, solar_cfg_buf, sizeof(solar_cfg_buf))) {
+    
+    if (Z2S_Solar::parseCsv(solar_cfg_buf)) {
+      log_i("Z2S_SOLAR_LOCATION = %s", solar_cfg_buf);
+    }
   }
 
   if (Supla::Storage::ConfigInstance()->getUInt8(

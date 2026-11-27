@@ -787,6 +787,21 @@ inline constexpr Supla_event_type_t Supla_events [] PROGMEM = {
 	{ .Supla_event_id = Z2S_SUPLA_EVENT_ON_EVERY_24_HOURS,
 		.Supla_event_name =  "ON EVERY 24 HOURS" },
 
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_ON_EVERY_MINUTE,
+		.Supla_event_name =  "ON EVERY MINUTE" },
+
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_ON_EVERY_HOUR,
+		.Supla_event_name =  "ON EVERY HOUR" },
+
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_ON_MIDNIGHT,
+		.Supla_event_name =  "ON MIDNIGHT" },
+
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_ON_SUNRISE,
+		.Supla_event_name =  "ON SUNRISE" },
+
+	{ .Supla_event_id = Z2S_SUPLA_EVENT_ON_SUNSET,
+		.Supla_event_name =  "ON SUNSET" },
+
 	{ .Supla_event_id = Z2S_SUPLA_EVENT_ON_COPY_ON_STATE,
 		.Supla_event_name =  "ON COPY ON STATE" },
 

@@ -28,6 +28,9 @@
 
 #include <supla/device/register_device.h>
 #include <supla/version.h>
+#include <supla/clock/clock.h>
+
+#include <Z2S_solar.h>
 
 #include "web_gui_templates.h"
 
@@ -72,7 +75,7 @@ uint16_t force_config_switcher;
 uint16_t gui_start_delay_number;
 uint16_t auto_connection_reset_timeout_number;
 uint16_t gateway_mdns_name_text;
-//uint16_t rebuild_Supla_channels_switcher;
+uint16_t gateway_solar_location_text;
 uint16_t use_new_at_model_switcher;
 uint16_t github_ota_button;
 uint16_t github_ota_info_label;
@@ -476,6 +479,7 @@ volatile PushoverMessageGUIState previous_pushover_message_gui_state =
 #define GUI_CB_GUI_CHECK_GITHUB_OTA_FLAG 0x0108
 #define GUI_CB_GUI_PERFORM_GITHUB_OTA_FLAG 0x0109
 #define GUI_CB_ENABLE_CLOUD_OTA_FLAG 0x010A
+#define GUI_CB_SAVE_SOLAR_LOCATION_FLAG 0x010B
 
 #define GUI_CB_SAVE_FLAG 0x1000
 #define GUI_CB_RESTART_FLAG 0x1001
@@ -1278,11 +1282,36 @@ void fillMemoryUptimeInformation(char *buf, uint16_t buf_max_len) {
 		time_t local_time_info;
 		time(&local_time_info);
 
+		struct tm tm_local = {};
+		localtime_r(&local_time_info, &tm_local);
+
 		char current_time_buffer[25];
 
 		strftime(
-		  current_time_buffer, 25, "%H:%M [%d.%m.%Y]%t",
-		  localtime(&local_time_info));
+		  current_time_buffer, sizeof(current_time_buffer), "%H:%M [%d.%m.%Y]%t",
+		  &tm_local);
+
+		char solar_info_buffer[72] = {};
+		if (Supla::Clock::IsReady() &&
+		    local_time_info >= Z2S_SOLAR_MIN_VALID_TIME) {
+			Z2S_SunTimes sun = {};
+			if (Z2S_Solar::getToday(tm_local, sun)) {
+				if (sun.has_rise_set) {
+					snprintf(
+					  solar_info_buffer, sizeof(solar_info_buffer),
+					  "<br><b><i>Solar:</i></b> Sunrise %02u:%02u | Sunset %02u:%02u",
+					  static_cast<unsigned>(sun.rise_min / 60),
+					  static_cast<unsigned>(sun.rise_min % 60),
+					  static_cast<unsigned>(sun.set_min / 60),
+					  static_cast<unsigned>(sun.set_min % 60));
+				} else {
+					snprintf(
+					  solar_info_buffer, sizeof(solar_info_buffer),
+					  "<br><b><i>Solar:</i></b> %s",
+					  sun.polar_day ? "Polar day" : "Polar night");
+				}
+			}
+		}
 
 		uint32_t Supla_uptime_s = SuplaDevice.uptime.getUptime();
 
@@ -1291,46 +1320,38 @@ void fillMemoryUptimeInformation(char *buf, uint16_t buf_max_len) {
 		uint32_t Supla_uptime_m = (Supla_uptime_s % 3600) / 60;
 		uint32_t Supla_uptime_ss = Supla_uptime_s % 60;
 
-		#if defined(USE_GEMINI_PROTOCOL_HOST)
-    uint32_t c6_uptime_s  = GeminiBridge::getC6Millis() / 1000;
-    uint32_t c6_uptime_d  = c6_uptime_s / 86400;
-    uint32_t c6_uptime_h  = (c6_uptime_s % 86400) / 3600;
-    uint32_t c6_uptime_m  = (c6_uptime_s % 3600) / 60;
-    uint32_t c6_uptime_ss = c6_uptime_s % 60;
+#if defined(USE_GEMINI_PROTOCOL_HOST)
+		uint32_t c6_uptime_s  = GeminiBridge::getC6Millis() / 1000;
+		uint32_t c6_uptime_d  = c6_uptime_s / 86400;
+		uint32_t c6_uptime_h  = (c6_uptime_s % 86400) / 3600;
+		uint32_t c6_uptime_m  = (c6_uptime_s % 3600) / 60;
+		uint32_t c6_uptime_ss = c6_uptime_s % 60;
 #endif
 
 		log_i("\n\rcurrent time %s\n\r", current_time_buffer);
 
-		//multi_heap_info_t multi_heap_info;
-    //multi_heap_get_info(_z2s_custom_heap, &multi_heap_info);
-
-		uint16_t meminfbuf_size = snprintf_P(
-		  buf, buf_max_len, "<b><i>FreeHeap:</b></i> %u B <b>| <i>MinimalFreeHeap"
+		snprintf_P(
+		  buf, buf_max_len,
+		  "<b><i>FreeHeap:</b></i> %u B <b>| <i>MinimalFreeHeap"
 		  ":</b></i> %u B <b>| <i>MaxAllocHeap:</b></i> %u B<b>| <i>CPU usage:"
-	   	"</b></i> %4.1f %%<br><br>"
-			//"<b><i>Custom FreeHeap:</b></i> %u B <b>| <i>Custom MinimalFreeHeap"
-		  //":</b></i> %u B <b>| <i>CustomMaxAllocHeap:</b></i> %u B<br><br>"
-		  //"<b><i>uxTaskGetStackHighWaterMark (main):</b></i> %u B <b>| <i>"
-		  //"uxTaskGetStackHighWaterMark (ZigBee):</b></i> %u B <br><br>"
+		  "</b></i> %4.1f %%<br><br>"
 		  "<b><i>Total PSRAM:</b></i> %u B <b>| <i>Free PSRAM:</b></i> %u B<br>"
 		  "<b><i>Local time:</i></b> %s<b><i>Supla uptime:</i></b> "
 		  "%lu dni %02lu:%02lu:%02lu (%lu seconds)"
 #if defined(USE_GEMINI_PROTOCOL_HOST)
-      "<br><b><i>C6 NCP uptime:</i></b> %lu dni %02lu:%02lu:%02lu (%lu seconds)"
+		  "<br><b><i>C6 NCP uptime:</i></b> %lu dni %02lu:%02lu:%02lu (%lu seconds)"
 #endif
-		  ,ESP.getFreeHeap(), ESP.getMinFreeHeap(),
+		  "%s",
+		  ESP.getFreeHeap(), ESP.getMinFreeHeap(),
 		  ESP.getMaxAllocHeap(), GatewayTaskInfo.getCpuUsage(),
-			//multi_heap_info.total_free_bytes, multi_heap_info.minimum_free_bytes, 
-			//multi_heap_info.largest_free_block,
-		  //uxTaskGetStackHighWaterMark(NULL),
-		  //uxTaskGetStackHighWaterMark(Zigbee.getZigbeeTaskHandle()),
 		  ESP.getPsramSize(), ESP.getFreePsram(),
 		  current_time_buffer,
 		  Supla_uptime_d, Supla_uptime_h, Supla_uptime_m, Supla_uptime_ss,
 		  Supla_uptime_s
 #if defined(USE_GEMINI_PROTOCOL_HOST)
-			,c6_uptime_d, c6_uptime_h, c6_uptime_m, c6_uptime_ss, c6_uptime_s
+		  , c6_uptime_d, c6_uptime_h, c6_uptime_m, c6_uptime_ss, c6_uptime_s
 #endif
+		  , solar_info_buffer
 		);
 	}
 }
@@ -1457,6 +1478,24 @@ void buildGatewayTabGUI() {
 	  auto_connection_reset_timeout_save_button,
 	  "width: calc(13% - 10px); min-width: 75px; margin: 0 5px 10px 5px;");
 
+	gateway_solar_location_text = ESPUI.addControl(
+	  Control::Type::Text,
+	  "Solar location: Lat,Lon,TzH,EuDst (e.g. 52.41,16.93,1,1; empty = off)",
+	  empty_str, Control::Color::Dark, gateway_settings_label, generalCallback);
+
+	ESPUI.setElementStyle(
+	  gateway_solar_location_text,
+	  "width: calc(84% - 10px); min-width: 220px; margin: 0 5px 10px 5px;");
+
+	auto gateway_solar_location_save_button = ESPUI.addControl(
+	  Control::Type::Button, empty_str, "Save", Control::Color::Dark,
+	  gateway_settings_label, gatewayCallback,
+	  (void *)GUI_CB_SAVE_SOLAR_LOCATION_FLAG);
+
+	ESPUI.setElementStyle(
+	  gateway_solar_location_save_button,
+	  "width: calc(16% - 10px); min-width: 75px; margin: 0 5px 10px 5px;");
+
 	force_config_switcher = ESPUI.addControl(
 	  Control::Type::Switcher, "Force config mode on next gateway restart.",
 	  (long int)0, Control::Color::Dark, gateway_settings_label,
@@ -1559,6 +1598,11 @@ void buildGatewayTabGUI() {
 	ESPUI.updateNumber(
 	  auto_connection_reset_timeout_number, _auto_connection_reset_timeout);
 	ESPUI.updateText(gateway_mdns_name_text, GatewayMDNSLocalName);
+	
+	char solar_csv_buf[40] = {};
+	Z2S_Solar::formatCsv(solar_csv_buf, sizeof(solar_csv_buf));
+	ESPUI.updateText(gateway_solar_location_text, solar_csv_buf);
+	
 	ESPUI.updateNumber(force_config_switcher, _force_config_on_start);
 	ESPUI.updateNumber(use_new_at_model_switcher, _use_new_at_model);
 	enableControlStyle(github_ota_button, false);
@@ -10970,6 +11014,37 @@ void gatewayCallback(BasicControl *sender, int type, void *param) {
 
 			addGUICommand(gui_cmd_enable_cloud_ota);
 		break;
+
+
+		case GUI_CB_SAVE_SOLAR_LOCATION_FLAG: {
+
+			if (type != B_UP) break;
+
+			const char *raw = ESPUI.getControl(
+			  gateway_solar_location_text)->getValueCstr();
+			bool cleared = false;
+
+			if (Z2S_Solar::parseCsv(raw, &cleared)) {
+				char norm[40] = {};
+				if (!cleared) {
+					Z2S_Solar::formatCsv(norm, sizeof(norm));
+				}
+				auto cfg = Supla::Storage::ConfigInstance();
+				if (cfg && cfg->setString(Z2S_SOLAR_LOCATION, norm)) {
+					cfg->commit();
+				}
+				ESPUI.updateText(gateway_solar_location_text, norm);
+				Z2S_updateWebGUI();
+			} 
+			else {
+				
+				log_w("Invalid solar location CSV: '%s'", raw ? raw : "");
+				
+				char prev[40] = {};
+				Z2S_Solar::formatCsv(prev, sizeof(prev));
+				ESPUI.updateText(gateway_solar_location_text, prev);
+			}
+		} break;
 	}
 }
 

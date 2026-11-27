@@ -237,6 +237,11 @@
 #define Z2S_SUPLA_EVENT_ON_EVERY_5_SECONDS                                    0x4100
 #define Z2S_SUPLA_EVENT_ON_EVERY_30_SECONDS                                   0x4101
 #define Z2S_SUPLA_EVENT_ON_EVERY_60_SECONDS                                   0x4102
+#define Z2S_SUPLA_EVENT_ON_EVERY_MINUTE                                       0x4110
+#define Z2S_SUPLA_EVENT_ON_EVERY_HOUR                                         0x4111
+#define Z2S_SUPLA_EVENT_ON_MIDNIGHT                                           0x4112
+#define Z2S_SUPLA_EVENT_ON_SUNRISE                                            0x4120
+#define Z2S_SUPLA_EVENT_ON_SUNSET                                             0x4121
 #define Z2S_SUPLA_EVENT_ON_EVERY_24_HOURS                                     0x4150
 
 #define Z2S_SUPLA_EVENT_ON_GUI_MODE_SELECT                                    0x4200

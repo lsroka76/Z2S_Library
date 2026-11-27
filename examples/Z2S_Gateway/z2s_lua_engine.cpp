@@ -10,6 +10,8 @@
 #include <esp_system.h>
 #include <esp_timer.h>
 
+#include <Z2S_solar.h>
+
 #include "z2s_little_fs.h"
 
 /*****************************************************************************/
@@ -49,29 +51,297 @@ struct DispatchArgs {
   bool                invoked;
 };
 
+static void pushEventArgs(lua_State* L, const Z2S_LuaEvent* ev) {
+  lua_pushinteger(L, ev->channel);
+  if (const char* evt_name = Z2S_LuaBridge::eventAlias(ev->event_id)) {
+    lua_pushstring(L, evt_name);
+  } else {
+    lua_pushinteger(L, ev->event_id);
+  }
+}
+
 // Runs inside lua_pcall() so lua_getglobal() and lua_pushstring() can never
 // trigger an unprotected LUA_ERRMEM panic if the PSRAM arena is full.
 static int dispatchEventTrampoline(lua_State* L) {
   auto* args = static_cast<DispatchArgs*>(lua_touserdata(L, 1));
   if (!args || !args->ev) return 0;
 
+  // 1. Built-in prelude router (z2s.on / z2s.window / z2s.at)
+  lua_getglobal(L, "z2s");
+  if (lua_istable(L, -1)) {
+    lua_getfield(L, -1, "_dispatch");
+    if (lua_isfunction(L, -1)) {
+      pushEventArgs(L, args->ev);
+      lua_call(L, 2, 1);
+      if (lua_toboolean(L, -1)) {
+        args->invoked = true;
+      }
+      lua_pop(L, 1);
+    } else {
+      lua_pop(L, 1);
+    }
+  }
+  lua_pop(L, 1);
+
+  // 2. Optional raw user callback function on_event(ch, evt)
   lua_getglobal(L, "on_event");
-  if (!lua_isfunction(L, -1)) {
-    lua_pop(L, 1);
-    return 0;
-  }
-
-  args->invoked = true;
-  lua_pushinteger(L, args->ev->channel);
-  if (const char* evt_name = Z2S_LuaBridge::eventAlias(args->ev->event_id)) {
-    lua_pushstring(L, evt_name);
+  if (lua_isfunction(L, -1)) {
+    args->invoked = true;
+    pushEventArgs(L, args->ev);
+    lua_call(L, 2, 0);
   } else {
-    lua_pushinteger(L, args->ev->event_id);
+    lua_pop(L, 1);
   }
-
-  lua_call(L, 2, 0);
   return 0;
 }
+
+static int syncWindowsTrampoline(lua_State* L) {
+  lua_getglobal(L, "z2s");
+  if (lua_istable(L, -1)) {
+    lua_getfield(L, -1, "_sync_windows");
+    if (lua_isfunction(L, -1)) {
+      lua_call(L, 0, 0);
+    } else {
+      lua_pop(L, 1);
+    }
+  }
+  lua_pop(L, 1);
+  return 0;
+}
+
+// Auto-loaded into every fresh VM from Flash DROM (0 B user script budget, 0 B DRAM).
+// Exposes z2s.on(), z2s.window(), and z2s.at() backed by C++ z2s.sun() & "minute".
+static const char Z2S_LUA_PRELUDE[] PROGMEM = R"z2slua(
+local routes, windows, events, watched = {}, {}, {}, {}
+local sched_armed = false
+
+local function watch_once(ch, evt)
+  local k = tostring(ch) .. ":" .. tostring(evt)
+  if not watched[k] then
+    watched[k] = true
+    z2s.watch(ch, evt)
+  end
+end
+
+local function ensure_sched()
+  if not sched_armed then
+    sched_armed = true
+    watch_once(z2s.GATEWAY, "minute")
+  end
+end
+
+local function clamp(v, lo, hi)
+  if v < lo then return lo end
+  if v > hi then return hi end
+  return v
+end
+
+local function parse_hhmm(s)
+  local h, m = string.match(s, "^(%d+):(%d+)$")
+  h, m = tonumber(h), tonumber(m)
+  if not h or not m then return nil end
+  return clamp(h * 60 + m, 0, 1439)
+end
+
+local function resolve_min(spec, t, sun)
+  local tp = type(spec)
+  if tp == "number" then return clamp(spec, 0, 1439) end
+  if tp == "function" then
+    local v = spec(t, sun)
+    return v and clamp(v, 0, 1439) or nil
+  end
+  if tp == "string" then
+    if spec == "sunrise" then return sun and sun.sunrise or nil end
+    if spec == "sunset"  then return sun and sun.sunset  or nil end
+    return parse_hhmm(spec)
+  end
+  if tp == "table" then
+    local base = resolve_min(spec.ref, t, sun)
+    if not base then return nil end
+    local v = base + (spec.offset or 0)
+    if spec.min then
+      local lo = resolve_min(spec.min, t, sun)
+      if lo then v = math.max(v, lo) end
+    end
+    if spec.max then
+      local hi = resolve_min(spec.max, t, sun)
+      if hi then v = math.min(v, hi) end
+    end
+    return clamp(v, 0, 1439)
+  end
+  return nil
+end
+
+local function spec_kind(s)
+  local tp = type(s)
+  if tp == "number" then return "fixed" end
+  if tp == "string" then
+    if s == "sunrise" or s == "sunset" then return s end
+    return "fixed"
+  end
+  if tp == "table" then
+    if s.ref == "sunrise" or s.ref == "sunset" then return s.ref end
+    return "fixed"
+  end
+  return "other"
+end
+
+local function auto_overnight(s1, s2)
+  local k1, k2 = spec_kind(s1), spec_kind(s2)
+  return (k1 == "fixed" and k2 == "fixed") or (k1 == "sunset" and k2 == "sunrise")
+end
+
+local function match_wday(f, val)
+  if f == nil then return true end
+  if f == "workdays" then return val >= 1 and val <= 5 end
+  if f == "weekend"  then return val >= 6 end
+  if type(f) == "table" then
+    for i = 1, #f do if f[i] == val then return true end end
+    return false
+  end
+  return f == val
+end
+
+local function match_num(f, val)
+  if f == nil then return true end
+  if type(f) == "table" then
+    for i = 1, #f do if f[i] == val then return true end end
+    return false
+  end
+  return f == val
+end
+
+local function match_date(r, t)
+  if not match_num(r.year, t.year) then return false end
+  if not match_num(r.month, t.month) then return false end
+  if not match_num(r.day, t.day) then return false end
+  if not match_wday(r.weekday, t.weekday) then return false end
+  if r.date_from and r.date_to then
+    local mmdd = t.month * 100 + t.day
+    if r.date_from <= r.date_to then
+      if mmdd < r.date_from or mmdd > r.date_to then return false end
+    else
+      if mmdd < r.date_from and mmdd > r.date_to then return false end
+    end
+  end
+  return true
+end
+
+local function in_window(now_m, s_m, e_m, ov)
+  if s_m < e_m then return now_m >= s_m and now_m < e_m end
+  if ov and s_m > e_m then return now_m >= s_m or now_m < e_m end
+  return false
+end
+
+local function eval_windows(t, sun, now_m)
+  for i = 1, #windows do
+    local w = windows[i]
+    local s_m = resolve_min(w.start, t, sun)
+    local e_m = resolve_min(w.stop, t, sun)
+    if s_m and e_m then
+      local ov = w.overnight
+      if ov == nil then ov = auto_overnight(w.start, w.stop) end
+      local active  = match_date(w, t) and in_window(now_m, s_m, e_m, ov)
+      local changed = (w._active ~= active)
+      w._active = active
+
+      if w.ch then
+        local cur = z2s.get(w.ch)
+        if cur ~= nil and cur ~= active then
+          z2s.action(w.ch, active and "on" or "off")
+        end
+      elseif w.apply then
+        local ok, err = pcall(w.apply, active, changed, t, sun)
+        if not ok then print("[ERR " .. w.name .. "] " .. tostring(err)) end
+      end
+    end
+  end
+end
+
+function z2s.on(ch, evt, fn, name)
+  if type(evt) == "function" then
+    name, fn, evt = fn, evt, "change"
+  end
+  if type(fn) ~= "function" then error("z2s.on: callback must be a function") end
+  watch_once(ch, evt)
+  routes[#routes + 1] = {
+    ch = ch, evt = evt, fn = fn,
+    name = name or (tostring(ch) .. ":" .. tostring(evt)),
+  }
+end
+
+function z2s.window(target, start_spec, stop_spec, opts)
+  local tp = type(target)
+  if tp ~= "number" and tp ~= "function" then
+    error("z2s.window: target must be channel # or function")
+  end
+  opts = opts or {}
+  ensure_sched()
+  windows[#windows + 1] = {
+    ch        = (tp == "number") and target or nil,
+    apply     = (tp == "function") and target or nil,
+    start     = start_spec,
+    stop      = stop_spec,
+    overnight = opts.overnight,
+    name      = opts.name or (tp == "number" and ("win_ch" .. target) or ("win#" .. (#windows + 1))),
+    year      = opts.year, month = opts.month, day = opts.day, weekday = opts.weekday,
+    date_from = opts.date_from, date_to = opts.date_to,
+  }
+end
+
+function z2s.at(spec, a, b)
+  local opts, fn
+  if type(a) == "function" then opts, fn = {}, a else opts, fn = (a or {}), b end
+  if type(fn) ~= "function" then error("z2s.at: callback must be a function") end
+  ensure_sched()
+  events[#events + 1] = {
+    at = spec, fn = fn, name = opts.name or ("at#" .. (#events + 1)),
+    year = opts.year, month = opts.month, day = opts.day, weekday = opts.weekday,
+    date_from = opts.date_from, date_to = opts.date_to,
+  }
+end
+
+function z2s._sync_windows()
+  if #windows == 0 then return end
+  local t = z2s.time()
+  if not t then return end
+  eval_windows(t, z2s.sun(), t.hour * 60 + t.minute)
+end
+
+function z2s._dispatch(ch, evt)
+  local handled = false
+  for i = 1, #routes do
+    local r = routes[i]
+    if r.ch == ch and r.evt == evt then
+      handled = true
+      local ok, err = pcall(r.fn, ch, evt)
+      if not ok then print("[ERR " .. r.name .. "] " .. tostring(err)) end
+    end
+  end
+  if sched_armed and ch == z2s.GATEWAY and evt == "minute" then
+    local t = z2s.time()
+    if t then
+      handled = true
+      local sun   = z2s.sun()
+      local today = t.year * 10000 + t.month * 100 + t.day
+      local now_m = t.hour * 60 + t.minute
+      eval_windows(t, sun, now_m)
+      for i = 1, #events do
+        local e = events[i]
+        if e._last_day ~= today and match_date(e, t) then
+          local target_m = resolve_min(e.at, t, sun)
+          if target_m and now_m >= target_m and now_m <= (target_m + 1) then
+            e._last_day = today
+            local ok, err = pcall(e.fn, t, sun)
+            if not ok then print("[ERR " .. e.name .. "] " .. tostring(err)) end
+          end
+        end
+      end
+    end
+  end
+  return handled
+end
+)z2slua";
 
 static void* luaSyntaxPsramAlloc(
     void* ud, void* ptr, size_t osize, size_t nsize) {
@@ -946,6 +1216,7 @@ void Z2S_LuaEngine::closeVM() {
 
 bool Z2S_LuaEngine::resetVM() {
   closeVM();
+  Z2S_Solar::clearLuaOverride();
 
   _ctx.used_bytes = 0;
   _ctx.peak_bytes = 0;
@@ -964,6 +1235,19 @@ bool Z2S_LuaEngine::resetVM() {
 
   openSafeStdlib(_lua);
   Z2S_LuaBridge::registerBindings(_lua);
+
+  // Load built-in Flash prelude (z2s.on / z2s.window / z2s.at)
+  int st = luaL_loadbufferx(
+      _lua, Z2S_LUA_PRELUDE, sizeof(Z2S_LUA_PRELUDE) - 1, "@z2s_prelude", "t");
+  if (st == LUA_OK) {
+    st = lua_pcall(_lua, 0, 0, 0);
+  }
+  if (st != LUA_OK) {
+    captureLuaError("prelude");
+    closeVM();
+    return false;
+  }
+
   return true;
 }
 
@@ -1106,7 +1390,8 @@ bool Z2S_LuaEngine::loadScriptChunk(
     return false;
   }
 
-  armWatchdog(_lua, _ctx, INIT_MAX_INSTR, INIT_MAX_WALL_US);
+  lua_pushcfunction(_lua, syncWindowsTrampoline);
+  armWatchdog(_lua, _ctx, EVENT_MAX_INSTR, EVENT_MAX_WALL_US);
   markExecEnter();
   status = lua_pcall(_lua, 0, 0, 0);
   markExecExit();
