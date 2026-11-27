@@ -6168,11 +6168,11 @@ inline constexpr z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
 
   {	.manufacturer_name = "SONOFF", .model_name = "MINI-ZB2GS",
     .z2s_device_uid = 16550,
-	  .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1,
+	  .z2s_device_desc_id = Z2S_DEVICE_DESC_SONOFF_RELAY,
 	  .z2s_device_endpoints_count = 2,
     .z2s_device_endpoints = {
-      { 1, 0, 0, Z2S_DEVICE_DESC_RELAY_1 },
-      { 2, 0, 0, Z2S_DEVICE_DESC_RELAY_1 }}},
+      { 1, 0, 0, Z2S_DEVICE_DESC_SONOFF_RELAY },
+      { 2, 0, 0, Z2S_DEVICE_DESC_SONOFF_RELAY }}},
 
   {	.manufacturer_name = "SONOFF", .model_name = "MINI-ZB2GS-L",
     .z2s_device_uid = 16575,
