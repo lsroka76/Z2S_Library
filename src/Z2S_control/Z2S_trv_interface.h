@@ -1941,6 +1941,8 @@ protected:
   int32_t _trv_temperature_calibration          = 0; //INT32_MIN;
   int32_t _trv_last_temperature_calibration     = INT32_MIN;
   bool _trv_fixed_temperature_calibration_updated = false;
+  bool _calibration_write_pending = false;
+  uint32_t _last_calibration_sent_ms = 0;
 
   uint8_t _trv_child_lock = 0xFF;
   bool _trv_child_lock_changed = false;
