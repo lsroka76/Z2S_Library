@@ -367,6 +367,13 @@ bool Z2S_LuaEngine::begin() {
     return false;
   }
 
+  _syntax_mtx      = xSemaphoreCreateMutexStatic(&_syntax_mtx_buf);
+  _syntax_done_sem = xSemaphoreCreateBinaryStatic(&_syntax_done_buf);
+  if (!_syntax_mtx || !_syntax_done_sem) {
+    setErrorStatus(Z2S_LuaState::ERROR, "syntax semaphore init failed");
+    return false;
+  }
+
   _worker_stopped = false;
   _task = xTaskCreateStaticPinnedToCore(
       workerEntry, "z2s_lua", TASK_STACK_DEPTH, this,
@@ -416,9 +423,7 @@ bool Z2S_LuaEngine::validateSyntax(
     err_out[0] = '\0';
   }
   if (!src || len == 0) {
-    if (err_out && err_cap > 0) {
-      snprintf(err_out, err_cap, "Empty script");
-    }
+    if (err_out && err_cap > 0) snprintf(err_out, err_cap, "Empty script");
     return false;
   }
   if (len > MAX_SCRIPT_BYTES) {
@@ -429,8 +434,93 @@ bool Z2S_LuaEngine::validateSyntax(
     }
     return false;
   }
+  if (!_started || !_msg_queue || _worker_stopped ||
+      !_syntax_mtx || !_syntax_done_sem) {
+    if (err_out && err_cap > 0) snprintf(err_out, err_cap, "Lua engine not ready");
+    return false;
+  }
 
-  // Isolated temporary 64 KB PSRAM arena -> 0 internal DRAM, never touches active _lua
+  // Direct execution if already running on the z2s_lua worker task
+  if (xTaskGetCurrentTaskHandle() == _task) {
+    return runValidateSyntax(src, len, err_out, err_cap, log_to_console);
+  }
+
+  // Offload parsing to z2s_lua (8 KB stack) so async_tcp (4 KB stack) never overflows
+  if (xSemaphoreTake(_syntax_mtx, pdMS_TO_TICKS(1500)) != pdTRUE) {
+    if (err_out && err_cap > 0) snprintf(err_out, err_cap, "Syntax check busy");
+    return false;
+  }
+
+  taskENTER_CRITICAL(&_stats_mux);
+  bool already_busy = _syntax_busy;
+  taskEXIT_CRITICAL(&_stats_mux);
+  if (already_busy) {
+    xSemaphoreGive(_syntax_mtx);
+    if (err_out && err_cap > 0) snprintf(err_out, err_cap, "Syntax check busy");
+    return false;
+  }
+
+  char* src_copy = static_cast<char*>(
+      heap_caps_malloc(len + 1, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT));
+  if (!src_copy) {
+    xSemaphoreGive(_syntax_mtx);
+    if (err_out && err_cap > 0) snprintf(err_out, err_cap, "Syntax check OOM (PSRAM)");
+    return false;
+  }
+  memcpy(src_copy, src, len);
+  src_copy[len] = '\0';
+
+  // Drain any stale completion signal before queueing
+  xSemaphoreTake(_syntax_done_sem, 0);
+
+  taskENTER_CRITICAL(&_stats_mux);
+  _syntax_req.src_copy       = src_copy;
+  _syntax_req.len            = len;
+  _syntax_req.log_to_console = log_to_console;
+  _syntax_ok                 = false;
+  _syntax_err[0]             = '\0';
+  _syntax_busy               = true;
+  taskEXIT_CRITICAL(&_stats_mux);
+
+  WorkerMsg msg{};
+  msg.type = MsgType::VALIDATE_SYNTAX;
+  if (xQueueSendToFront(_msg_queue, &msg, pdMS_TO_TICKS(100)) != pdTRUE) {
+    taskENTER_CRITICAL(&_stats_mux);
+    _syntax_req.src_copy = nullptr;
+    _syntax_busy         = false;
+    taskEXIT_CRITICAL(&_stats_mux);
+    heap_caps_free(src_copy);
+    xSemaphoreGive(_syntax_mtx);
+    if (err_out && err_cap > 0) snprintf(err_out, err_cap, "Lua queue busy");
+    return false;
+  }
+
+  if (xSemaphoreTake(_syntax_done_sem, pdMS_TO_TICKS(2000)) != pdTRUE) {
+    // Do NOT free src_copy here — worker owns it until _syntax_busy clears
+    xSemaphoreGive(_syntax_mtx);
+    if (err_out && err_cap > 0) snprintf(err_out, err_cap, "Syntax check timeout");
+    return false;
+  }
+
+  bool ok = false;
+  taskENTER_CRITICAL(&_stats_mux);
+  ok = _syntax_ok;
+  if (!ok && err_out && err_cap > 0) {
+    snprintf(err_out, err_cap, "%s", _syntax_err);
+  }
+  taskEXIT_CRITICAL(&_stats_mux);
+
+  xSemaphoreGive(_syntax_mtx);
+  return ok;
+}
+
+bool Z2S_LuaEngine::runValidateSyntax(
+    const char* src, size_t len,
+    char* err_out, size_t err_cap, bool log_to_console) {
+  if (err_out && err_cap > 0) {
+    err_out[0] = '\0';
+  }
+
   void* arena = heap_caps_aligned_alloc(
       8, SYNTAX_CHECK_ARENA_BYTES, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
   if (!arena) {
@@ -486,6 +576,41 @@ bool Z2S_LuaEngine::validateSyntax(
   lua_close(checkL);
   heap_caps_free(arena);
   return ok;
+}
+
+void Z2S_LuaEngine::handleValidateSyntax() {
+  taskENTER_CRITICAL(&_stats_mux);
+  char*  src_copy = _syntax_req.src_copy;
+  size_t len      = _syntax_req.len;
+  bool   log_cons = _syntax_req.log_to_console;
+  _syntax_req.src_copy = nullptr;
+  taskEXIT_CRITICAL(&_stats_mux);
+
+  if (!src_copy) {
+    taskENTER_CRITICAL(&_stats_mux);
+    _syntax_busy = false;
+    taskEXIT_CRITICAL(&_stats_mux);
+    if (_syntax_done_sem) xSemaphoreGive(_syntax_done_sem);
+    return;
+  }
+
+  char err_buf[sizeof(_syntax_err)];
+  bool ok = runValidateSyntax(src_copy, len, err_buf, sizeof(err_buf), log_cons);
+  heap_caps_free(src_copy);
+
+  taskENTER_CRITICAL(&_stats_mux);
+  _syntax_ok = ok;
+  if (ok) {
+    _syntax_err[0] = '\0';
+  } else {
+    snprintf(_syntax_err, sizeof(_syntax_err), "%s", err_buf);
+  }
+  _syntax_busy = false;
+  taskEXIT_CRITICAL(&_stats_mux);
+
+  if (_syntax_done_sem) {
+    xSemaphoreGive(_syntax_done_sem);
+  }
 }
 
 bool Z2S_LuaEngine::saveAndReload(const char* src, size_t len) {
@@ -773,19 +898,40 @@ void Z2S_LuaEngine::workerLoop() {
         handleSetAutostart((msg.flags & 0x01) != 0);
         break;
 
+      case MsgType::VALIDATE_SYNTAX:
+        handleValidateSyntax();
+        break;
+
       case MsgType::CLEAR_SCRIPT:
         handleClearScript();
         publishHeapSnapshot();
         break;
 
-      case MsgType::STOP:
+      case MsgType::STOP: {
+        // Unblock any pending HTTP syntax-check waiter before shutting down
+        char* orphan_src = nullptr;
+        bool  had_syntax = false;
+        taskENTER_CRITICAL(&_stats_mux);
+        if (_syntax_busy) {
+          orphan_src           = _syntax_req.src_copy;
+          _syntax_req.src_copy = nullptr;
+          _syntax_ok           = false;
+          snprintf(_syntax_err, sizeof(_syntax_err), "Engine stopping");
+          _syntax_busy         = false;
+          had_syntax           = true;
+        }
+        taskEXIT_CRITICAL(&_stats_mux);
+        if (orphan_src) heap_caps_free(orphan_src);
+        if (had_syntax && _syntax_done_sem) xSemaphoreGive(_syntax_done_sem);
+
         Z2S_LuaBridge::instance().enqueueUnwatchAll();
         closeVM();
         publishHeapSnapshot();
         publishState(Z2S_LuaState::STOPPED);
         _worker_stopped = true;
         return;
-    }
+      }
+    } //msg.type
   }
 }
 

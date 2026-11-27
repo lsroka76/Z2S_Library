@@ -454,9 +454,24 @@ void Z2S_registerLuaHttpEndpoints() {
             request->send(400, "text/plain", "Error: body not received");
             return;
           }
-          bool ok = Z2S_LuaEngine::instance().deleteScriptAndStop();
-          request->send(ok ? 200 : 500, "text/plain",
-                        ok ? "Script cleared" : "Clear failed");
+          request->send(400, "text/plain",
+                        "Empty script (use Delete Script to clear)");
+          return;
+        }
+
+        // Also reject whitespace-only submissions (valid Lua chunk, but wipes script)
+        bool has_code = false;
+        for (size_t i = 0; i < body_len; ++i) {
+          char c = s_http_post_buf[i];
+          if (c != ' ' && c != '\t' && c != '\r' && c != '\n') {
+            has_code = true;
+            break;
+          }
+        }
+        if (!has_code) {
+          xSemaphoreGive(s_post_mtx);
+          request->send(400, "text/plain",
+                        "Empty script (use Delete Script to clear)");
           return;
         }
 
@@ -564,65 +579,74 @@ void Z2S_loopLuaWebGUI(bool force) {
     ESPUI.updateSwitcher(s_sw_autostart, st.autostart_enabled);
   }
 
-  // 3. Telemetry (hash-gated, zero String, guaranteed < 550 B)
-  char err_esc[192];
-  escapeHtml(st.last_error[0] ? st.last_error : "none",
-             err_esc, sizeof(err_esc));
+  // 3. Telemetry (scoped stack buffers: 640 B, never overlaps console buffers)
+  {
+    char err_esc[192];
+    escapeHtml(st.last_error[0] ? st.last_error : "none",
+               err_esc, sizeof(err_esc));
 
-  char tel_buf[448];
-  int tel_len = snprintf(
-      tel_buf, sizeof(tel_buf),
-      "State:   %s | Autostart: %s\n"
-      "Script:  %u / %u B\n"
-      "PSRAM:   %u B used | %u B peak | %u B arena (largest free: %u B)\n"
-      "Events:  %lu processed | %lu dropped | %lu watchdog trips\n"
-      "Error:   %s",
-      luaStateName(st.state),
-      st.autostart_enabled ? "ON" : "OFF",
-      static_cast<unsigned>(st.script_size),
-      static_cast<unsigned>(Z2S_LuaEngine::MAX_SCRIPT_BYTES),
-      static_cast<unsigned>(st.used_bytes),
-      static_cast<unsigned>(st.peak_bytes),
-      static_cast<unsigned>(st.arena_bytes),
-      static_cast<unsigned>(st.largest_free_block),
-      static_cast<unsigned long>(st.events_processed),
-      static_cast<unsigned long>(st.events_dropped),
-      static_cast<unsigned long>(st.watchdog_trips),
-      err_esc);
+    char tel_buf[448];
+    int tel_len = snprintf(
+        tel_buf, sizeof(tel_buf),
+        "State:   %s | Autostart: %s\n"
+        "Script:  %u / %u B\n"
+        "PSRAM:   %u B used | %u B peak | %u B arena (largest free: %u B)\n"
+        "Events:  %lu processed | %lu dropped | %lu watchdog trips\n"
+        "Error:   %s",
+        luaStateName(st.state),
+        st.autostart_enabled ? "ON" : "OFF",
+        static_cast<unsigned>(st.script_size),
+        static_cast<unsigned>(Z2S_LuaEngine::MAX_SCRIPT_BYTES),
+        static_cast<unsigned>(st.used_bytes),
+        static_cast<unsigned>(st.peak_bytes),
+        static_cast<unsigned>(st.arena_bytes),
+        static_cast<unsigned>(st.largest_free_block),
+        static_cast<unsigned long>(st.events_processed),
+        static_cast<unsigned long>(st.events_dropped),
+        static_cast<unsigned long>(st.watchdog_trips),
+        err_esc);
 
-  if (tel_len > 0) {
-    size_t n = (static_cast<size_t>(tel_len) < sizeof(tel_buf))
-                   ? static_cast<size_t>(tel_len)
-                   : (sizeof(tel_buf) - 1);
-    uint32_t h = fnv1a32(tel_buf, n);
-    if (force || h != s_last_status_hash) {
-      s_last_status_hash = h;
-      const char* style = STYLE_TEL_INFO;
-      if (st.state == Z2S_LuaState::RUNNING) {
-        style = STYLE_TEL_OK;
-      } else if (st.state == Z2S_LuaState::ERROR ||
-                 st.state == Z2S_LuaState::SAFE_MODE) {
-        style = STYLE_TEL_ERR;
+    if (tel_len > 0) {
+      size_t n = (static_cast<size_t>(tel_len) < sizeof(tel_buf))
+                     ? static_cast<size_t>(tel_len)
+                     : (sizeof(tel_buf) - 1);
+      uint32_t h = fnv1a32(tel_buf, n);
+      if (force || h != s_last_status_hash) {
+        s_last_status_hash = h;
+        const char* style = STYLE_TEL_INFO;
+        if (st.state == Z2S_LuaState::RUNNING) {
+          style = STYLE_TEL_OK;
+        } else if (st.state == Z2S_LuaState::ERROR ||
+                   st.state == Z2S_LuaState::SAFE_MODE) {
+          style = STYLE_TEL_ERR;
+        }
+        ESPUI.setElementStyle(s_lbl_telemetry, style);
+        ESPUI.updateControlValue(s_lbl_telemetry, tel_buf);
       }
-      ESPUI.setElementStyle(s_lbl_telemetry, style);
-      ESPUI.updateControlValue(s_lbl_telemetry, tel_buf);
     }
   }
 
-  // 4. Console output (newest tail capped to <= 960 JSON bytes, clean top line)
-  char raw_log[Z2S_LuaEngine::CONSOLE_BUF_SIZE];
-  bool console_wrapped = false;
-  size_t raw_len = Z2S_LuaEngine::instance().copyConsoleLog(
-      raw_log, sizeof(raw_log), &console_wrapped);
-  uint32_t chash = fnv1a32(raw_log, raw_len);
-
-  if (force || chash != s_last_console_hash) {
-    s_last_console_hash = chash;
+  // 4. Console output (2 KB scratch buffers live in PSRAM on S3 -> 0 B loopTask stack)
+  {
+#if Z2S_USE_PSRAM
+    EXT_RAM_BSS_ATTR static char raw_log[Z2S_LuaEngine::CONSOLE_BUF_SIZE];
+    EXT_RAM_BSS_ATTR static char esc_log[1024];
+#else
+    char raw_log[Z2S_LuaEngine::CONSOLE_BUF_SIZE];
     char esc_log[1024];
-    formatConsoleTailForBatch(
-        raw_log, raw_len, esc_log, sizeof(esc_log),
-        CONSOLE_JSON_CAP, console_wrapped);
-    ESPUI.updateControlValue(s_lbl_console, esc_log);
+#endif
+    bool console_wrapped = false;
+    size_t raw_len = Z2S_LuaEngine::instance().copyConsoleLog(
+        raw_log, sizeof(raw_log), &console_wrapped);
+    uint32_t chash = fnv1a32(raw_log, raw_len);
+
+    if (force || chash != s_last_console_hash) {
+      s_last_console_hash = chash;
+      formatConsoleTailForBatch(
+          raw_log, raw_len, esc_log, sizeof(esc_log),
+          CONSOLE_JSON_CAP, console_wrapped);
+      ESPUI.updateControlValue(s_lbl_console, esc_log);
+    }
   }
 }
 

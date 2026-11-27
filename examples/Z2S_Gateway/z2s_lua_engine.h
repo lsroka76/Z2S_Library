@@ -9,6 +9,7 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/queue.h>
 #include <freertos/task.h>
+#include <freertos/semphr.h>
 #include <multi_heap.h>
 
 #include <Z2S_Lua_API.h>
@@ -112,6 +113,7 @@ class Z2S_LuaEngine {
     RELOAD_FS,
     STOP_VM,
     SET_AUTOSTART,
+    VALIDATE_SYNTAX,
     CLEAR_SCRIPT,
     STOP
   };
@@ -156,6 +158,10 @@ class Z2S_LuaEngine {
   void        handleReloadFromFS(bool is_boot);
   void        handleStopVM();
   void        handleSetAutostart(bool enabled);
+  void        handleValidateSyntax();
+  bool        runValidateSyntax(
+    const char* src, size_t len, char* err_out, size_t err_cap,
+    bool log_to_console);
   void        handleClearScript();
   void        handleEvent(const Z2S_LuaEvent& ev);
   void        flushStaleEvents();
@@ -209,6 +215,21 @@ class Z2S_LuaEngine {
   TaskHandle_t  _task               = nullptr;
   StaticTask_t  _task_tcb           = {};
   StackType_t   _task_stack[TASK_STACK_DEPTH] = {};
+
+  struct SyntaxReq {
+    char*  src_copy       = nullptr;  // PSRAM copy owned & freed by worker task
+    size_t len            = 0;
+    bool   log_to_console = true;
+  };
+
+  StaticSemaphore_t _syntax_mtx_buf  = {};
+  StaticSemaphore_t _syntax_done_buf = {};
+  SemaphoreHandle_t _syntax_mtx      = nullptr;
+  SemaphoreHandle_t _syntax_done_sem = nullptr;
+  SyntaxReq         _syntax_req      = {};
+  bool              _syntax_busy     = false;
+  bool              _syntax_ok       = false;
+  char              _syntax_err[192] = {};
 };
 
 #endif  // Z2S_ENABLE_LUA
