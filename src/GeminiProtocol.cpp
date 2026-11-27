@@ -205,8 +205,8 @@ bool GeminiBridge::initUart() {
   xTaskCreate(fastWorkerTask, "gemini_fast", 4096, nullptr, 14, nullptr);
 #endif
 
-  xTaskCreate(cmdWorkerTask, "gemini_wrk", 8192, nullptr, 12, nullptr);
-  xTaskCreate(rxTask,        "gemini_rx",  6144, nullptr, 18, nullptr);
+  xTaskCreate(cmdWorkerTask, "gemini_wrk", 6144, nullptr, 12, nullptr);
+  xTaskCreate(rxTask,        "gemini_rx",  3072, nullptr, 18, nullptr);
 
   return true;
 }

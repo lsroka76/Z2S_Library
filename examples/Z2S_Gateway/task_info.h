@@ -4,6 +4,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/timers.h"
+#include "freertos/semphr.h"
 
 /*****************************************************************************/
 
@@ -24,15 +25,18 @@ struct TaskHistory {
 
 class TaskInfo {
   private:
-
     TaskStatus_t taskStatusArray[MAX_MONITORED_TASKS];
     TaskHistory prevTaskHistory[MAX_MONITORED_TASKS];
     UBaseType_t prevTaskCount = 0;
     uint32_t prevTotalRunTime = 0;
 
-    float cpuUsage = 0.0f;
+    SemaphoreHandle_t _mutex = nullptr;
+    StaticSemaphore_t _mutex_buf = {};
+
+    volatile float cpuUsage = 0.0f;
 
   public:
+    TaskInfo();
     void get(char *task_info_buffer, size_t buffer_size);
     float getCpuUsage() const { return cpuUsage; }
 };

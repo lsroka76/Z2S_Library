@@ -336,19 +336,26 @@ void Supla::Control::Z2S_TRVInterface::sendTRVTemperatureCalibration(
             ts0601_cmd_set_id == _trv_commands_set) {
         
         if (ts0601_command_sets_table[_trv_commands_set].
-          ts0601_cmd_set_temperature_calibration_dp_type == TUYA_DP_TYPE_VALUE) {
+            ts0601_cmd_set_temperature_calibration_dp_type == 
+            TUYA_DP_TYPE_VALUE) {
 
-          temperature_calibration *= ts0601_command_sets_table[_trv_commands_set].
+          int32_t factor = ts0601_command_sets_table[_trv_commands_set].
             ts0601_cmd_set_temperature_calibration_factor;
 
-          temperature_calibration /= 100;
+          int32_t scaled = temperature_calibration * factor;
+          int32_t dp_value = (scaled >= 0) ? ((scaled + 50) / 100)
+            : ((scaled - 50) / 100);
+
+          int32_t max_dp_abs = 10 * factor; // ±10.0 °C
+          dp_value = constrain(dp_value, -max_dp_abs, max_dp_abs);
 
           sendTuyaRequestCmdValue32(
-            _short_addr, _endpoint, ts0601_command_sets_table[
-              _trv_commands_set].ts0601_cmd_set_temperature_calibration_dp_id,
-            temperature_calibration);
+            _short_addr, _endpoint,
+            ts0601_command_sets_table[_trv_commands_set].
+              ts0601_cmd_set_temperature_calibration_dp_id, dp_value);
         }
-      } else
+      } 
+      else
         log_e("ts0601_command_sets_table internal mismatch! %02x <> %02x", 
               ts0601_command_sets_table[_trv_commands_set].ts0601_cmd_set_id,
               _trv_commands_set);
@@ -1794,77 +1801,79 @@ void Supla::Control::Z2S_TRVInterface::iterateAlways() {
       switch (_trv_external_sensor_mode) {
 
       
-        case EXTERNAL_TEMPERATURE_SENSOR_USE_CALIBRATE: {  //standard calibration
+        case EXTERNAL_TEMPERATURE_SENSOR_USE_CALIBRATE: {
 
-       //_trv_hvac->getLastTemperature();
-        //if ((_trv_local_temperature != INT32_MIN) && (hvacLastTemperature != INT16_MIN) && 
-        //    (hvacLastTemperature != _trv_local_temperature)) {
+          if ((_trv_local_temperature == INT32_MIN) ||
+              (hvacLastTemperature == INT16_MIN) ||
+              isForcedTemperatureSet()) {
+            break;
+          }
+
+          int32_t cal_step = 10; 
+          if ((_trv_commands_set >= saswell_cmd_set) &&
+              (_trv_commands_set < ts0601_cmd_sets_number)) {
+            cal_step = 100 / ts0601_command_sets_table[_trv_commands_set].
+              ts0601_cmd_set_temperature_calibration_factor;
+          }
+
+          
+          int32_t effective_trigger = (cal_step >= 100) ? 60
+            : _trv_temperature_calibration_trigger;
 
           if (_trv_last_temperature_calibration == INT32_MIN) {
 
-            log_i("EXTERNAL_TEMPERATURE_SENSOR_USE_CALIBRATE present - reseting calibration to 0");
+            log_i(
+              "EXTERNAL_TEMPERATURE_SENSOR_USE_CALIBRATE init - syncing "
+              "calibration");
             
+            _trv_last_temperature_calibration = _trv_temperature_calibration;
             sendTRVTemperatureCalibration(0);
+            break;
           }
 
-          if (abs(hvacLastTemperature - _trv_local_temperature) >= 
-              _trv_temperature_calibration_trigger)
-              _temperature_calibration_update_attempt++;
-            else
-              _temperature_calibration_update_attempt = 0;
+          int32_t raw_offset = hvacLastTemperature - (_trv_local_temperature -
+            _trv_temperature_calibration);
 
-          if (_temperature_calibration_update_attempt >= 60) { //300 seconds
+          int32_t quantized_offset =
+            ((raw_offset >= 0) ? (raw_offset + cal_step / 2)
+                              : (raw_offset - cal_step / 2)) / cal_step * cal_step;
 
-            log_i("Possible calibration deadlock detected - "
-                  "resetting calibration value");
+          quantized_offset = constrain(quantized_offset, -1000, 1000);
 
-            sendTRVTemperatureCalibration(0);
+          if ((abs(hvacLastTemperature - _trv_local_temperature) >= effective_trigger) &&
+              (quantized_offset != _trv_temperature_calibration)) {
+            _temperature_calibration_update_attempt++;
+          } else {
+            _temperature_calibration_update_attempt = 0;
           }
 
-          if ((_trv_local_temperature_updated) && 
-              ((_trv_temperature_calibration_updated) || 
+          
+          if (_temperature_calibration_update_attempt >= 60) { // 300 seconds
+            
+            log_i("Possible calibration deadlock detected - resending offset %ld",
+                  quantized_offset);
+
+            _temperature_calibration_update_attempt = 0;
+            _trv_local_temperature_updated = false;
+            _trv_temperature_calibration_updated = false;
+
+            sendTRVTemperatureCalibration(quantized_offset);
+            break;
+          }
+
+          if ((_trv_local_temperature_updated) &&
+              ((_trv_temperature_calibration_updated) ||
               (_trv_temperature_calibration == 0)) &&
-              (hvacLastTemperature != INT16_MIN) && 
-              (hvacLastTemperature != _trv_local_temperature) &&
-              (!isForcedTemperatureSet())) {
+              (quantized_offset != _trv_temperature_calibration) &&
+              (abs(hvacLastTemperature - _trv_local_temperature) >= effective_trigger)) {
 
             _last_temperature_calibration_offset = _temperature_calibration_offset;
+            _temperature_calibration_offset = quantized_offset;
 
-            _temperature_calibration_offset = 
-              hvacLastTemperature - (_trv_local_temperature - _trv_temperature_calibration);
+            _trv_local_temperature_updated = false;
+            _trv_temperature_calibration_updated = false;
 
-            log_i("trv temperature difference detected:\n\r"
-                  "hvac_temperature = %d,\n\rtrv_temperature = %d,\n\r"
-                  "trv_last_temperature = %d,\n\rtrv_calibration = %d,"
-                  "\n\rtrv_last_calibration = %d,\n\r"
-                  "calculated offset = %d,\n\rlast calculated offset %d\n\r"
-                  "_trv_temperature_calibration_trigger = %u"
-                  "_temperature_calibration_update_attempt = %u", 
-                  hvacLastTemperature, 
-                  _trv_local_temperature,
-                  _trv_last_local_temperature,
-                  _trv_temperature_calibration,
-                  _trv_last_temperature_calibration,
-                  _temperature_calibration_offset, 
-                  _last_temperature_calibration_offset,
-                  _trv_temperature_calibration_trigger,
-                  _temperature_calibration_update_attempt);
-      
-            if ((_trv_temperature_calibration_updated) && 
-                (abs(_temperature_calibration_offset - _trv_temperature_calibration) >= 
-                  _trv_temperature_calibration_trigger)) { 
-
-              _trv_local_temperature_updated = false;
-              _trv_temperature_calibration_updated = false;
-
-              sendTRVTemperatureCalibration(_temperature_calibration_offset);
-            }
-            /*if ((millis_ms - _trv_temperature_calibration_last_update_ms > _trv_temperature_calibration_update_ms) ||
-                  (abs(_trv_last_temperature_calibration_offset) > _trv_temperature_calibration_offset_trigger)) {
-                log_i("Supla::Control::Z2S_TRVInterface::iterateAlways() - _trv_temperature_calibration_last_update_ms %d", _trv_temperature_calibration_last_update_ms);
-                  _trv_temperature_calibration_last_update_ms = millis_ms;
-                sendTRVTemperatureCalibration(_trv_temperature_calibration_offset);
-            }*/        
+            sendTRVTemperatureCalibration(quantized_offset);
           }
         } break;
 

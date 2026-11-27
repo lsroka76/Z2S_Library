@@ -701,6 +701,8 @@ void setup() {
 
   log_i("Z2S GATEWAY setup has just started!");
 
+  heap_caps_print_heap_info(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+
   setupCpuMonitoring();
 
   saveMutex = xSemaphoreCreateMutex();

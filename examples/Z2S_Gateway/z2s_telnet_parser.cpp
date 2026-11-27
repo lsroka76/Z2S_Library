@@ -528,7 +528,7 @@ void Z2S_onTelnetCmd(char *cmd, uint8_t params_number, char **param) {
   } else
   if (strcmp(cmd, "TASKS") == 0) {
 
-    if ((params_number > 0) && (strcmp(*(param), "RESET"))) {
+    if ((params_number > 0) && (strcmp(*(param), "RESET") == 0)) {
 
       telnet.printf("\n\r>RESETTING TASKS STATS - not yet implemented\n\r");
       //vTaskResetState();
