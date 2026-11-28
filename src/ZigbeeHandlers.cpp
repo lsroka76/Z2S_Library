@@ -214,11 +214,13 @@ static esp_err_t zb_attribute_reporting_handler(const esp_zb_zcl_report_attr_mes
   for (std::list<ZigbeeEP *>::iterator it = Zigbee.ep_objects.begin(); it != Zigbee.ep_objects.end(); ++it) {
     if (message->cluster == ESP_ZB_ZCL_CLUSTER_ID_BASIC) {
       (*it)->zbReadBasicCluster(
-        message->src_address, message->src_endpoint, message->cluster, 
-        (esp_zb_zcl_attribute_t *)&message->attribute);
-    } else {
+        message->src_address, message->src_endpoint, message->cluster,
+        (esp_zb_zcl_attribute_t *)&message->attribute,
+        0, ESP_ZB_ZCL_STATUS_SUCCESS, false);
+    } 
+    else {
       (*it)->zbAttributeReporting(
-        message->src_address, message->src_endpoint, message->cluster, 
+        message->src_address, message->src_endpoint, message->cluster,
         &message->attribute);
     }  
   }
@@ -234,13 +236,14 @@ static esp_err_t zb_cmd_read_attr_resp_handler(const esp_zb_zcl_cmd_read_attr_re
     while (variable) {
       if (message->info.cluster == ESP_ZB_ZCL_CLUSTER_ID_BASIC) {
         (*it)->zbReadBasicCluster(
-          message->info.src_address, message->info.src_endpoint, 
-          message->info.cluster, &variable->attribute);
+          message->info.src_address, message->info.src_endpoint,
+          message->info.cluster, &variable->attribute,
+          message->info.header.tsn, variable->status, true);
       } else {
         (*it)->zbReadAttrResponse(
           message->info.header.tsn, message->info.header.rssi,
-          message->info.src_address, message->info.src_endpoint, 
-          message->info.cluster, variable->status, &variable->attribute); 
+          message->info.src_address, message->info.src_endpoint,
+          message->info.cluster, variable->status, &variable->attribute);
       }
       variable = variable->next;
     }

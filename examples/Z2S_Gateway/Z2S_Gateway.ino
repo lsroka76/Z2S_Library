@@ -1482,7 +1482,7 @@ void loop() {
   
   if (zbGateway.isNewDeviceJoined()) {
 
-  while ((joined_device = zbGateway.popJoinedDevice()) != nullptr) {
+    while ((joined_device = zbGateway.popJoinedDevice()) != nullptr) {
 
       Z2S_rgbLedOverride(0, 0, 255);
 
@@ -1490,22 +1490,16 @@ void loop() {
         zpm->notifySrpcAboutParingEnd(
           SUPLA_CALCFG_PAIRINGRESULT_ONGOING, nullptr);
 
+      zbGateway.clearQueryBasicClusterData();
+
       bool _basic_cluster_query_success = false;
 
-      if ((strlen(
-            zbGateway.getQueryBasicClusterData()->zcl_model_name) == 0) ||
-          (strlen(
-            zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name) == 0)) {
+      for (uint8_t query_idx = 0; query_idx < 5; query_idx++) {
 
-        for (uint8_t query_idx = 0; query_idx < 5; query_idx++) {
-
-          _basic_cluster_query_success =
-            zbGateway.zbQueryDeviceBasicCluster(joined_device);
-          if (_basic_cluster_query_success)
-            break;
-        }
-      } else {
-        _basic_cluster_query_success = true;
+        _basic_cluster_query_success =
+          zbGateway.zbQueryDeviceBasicCluster(joined_device);
+        if (_basic_cluster_query_success)
+          break;
       }
 
       if (!_basic_cluster_query_success) {
@@ -1525,14 +1519,16 @@ void loop() {
         continue;
       }
 
+      query_basic_cluster_data_t basic_data = *zbGateway.getQueryBasicClusterData();
+
       log_i("sizeof(Z2S_DEVICES_LIST) = %u", sizeof(Z2S_DEVICES_LIST));
 
       bool device_recognized = false;
       bool restart_required  = true;
 
       int32_t devices_list_idx = Z2S_findDeviceListIdxByManufacturerAndModel(
-        zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name,
-        zbGateway.getQueryBasicClusterData()->zcl_model_name);
+        basic_data.zcl_manufacturer_name,
+        basic_data.zcl_model_name);
 
       if (devices_list_idx >= 0) {
         const auto &z2s_device_list = Z2S_DEVICES_LIST[devices_list_idx];
@@ -1601,11 +1597,11 @@ void loop() {
 
               Z2S_Device *z2s_device = Z2S_addZbDeviceTableSlot(
                 joined_device->ieee_addr, joined_device->short_addr,
-                zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name,
-                zbGateway.getQueryBasicClusterData()->zcl_model_name,
+                basic_data.zcl_manufacturer_name,
+                basic_data.zcl_model_name,
                 z2s_device_list.z2s_device_endpoints_count,
                 z2s_device_list.z2s_device_desc_id,
-                zbGateway.getQueryBasicClusterData()->zcl_power_source_id);
+                basic_data.zcl_power_source_id);
 
               if (z2s_device) {
                 joined_device->zb_device_id = z2s_device->getDeviceIndex();
@@ -1637,8 +1633,8 @@ void loop() {
             char found_device_name[128];
             snprintf(
               found_device_name, sizeof(found_device_name), "%s::%s",
-              zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name,
-              zbGateway.getQueryBasicClusterData()->zcl_model_name);
+              basic_data.zcl_manufacturer_name,
+              basic_data.zcl_model_name);
 
             zpm->notifySrpcAboutParingEnd(
               SUPLA_CALCFG_PAIRINGRESULT_SUCCESS, found_device_name);
@@ -1678,8 +1674,8 @@ void loop() {
 
         log_d(
           "Unknown model %s::%s, no binding is possible",
-          zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name,
-          zbGateway.getQueryBasicClusterData()->zcl_model_name);
+          basic_data.zcl_manufacturer_name,
+          basic_data.zcl_model_name);
 
         Z2S_printZbDevicesTableSlots();
 
@@ -1720,8 +1716,8 @@ void loop() {
 
           snprintf(
             unknown_device_name, sizeof(unknown_device_name), "%s::%s",
-            zbGateway.getQueryBasicClusterData()->zcl_manufacturer_name,
-            zbGateway.getQueryBasicClusterData()->zcl_model_name);
+            basic_data.zcl_manufacturer_name,
+            basic_data.zcl_model_name);
 
           zpm->notifySrpcAboutParingEnd(
             SUPLA_CALCFG_PAIRINGRESULT_DEVICE_NOT_SUPPORTED,
@@ -1735,7 +1731,7 @@ void loop() {
         }
       }
     }
-    
-    zbGateway.clearNewDeviceJoinedIfEmpty();  
-  }//
+
+    zbGateway.clearNewDeviceJoinedIfEmpty();
+  }//if (zbGateway.isNewDeviceJoined())
 }

@@ -482,8 +482,10 @@ public:
     uint16_t attribute_id = 0x00);
 
   void zbReadBasicCluster(
-    esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, 
-    esp_zb_zcl_attribute_t *attribute) override;
+    esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id,
+    esp_zb_zcl_attribute_t *attribute, uint8_t tsn = 0,
+    esp_zb_zcl_status_t status = ESP_ZB_ZCL_STATUS_SUCCESS,
+    bool is_read_resp = false) override;
 
   bool setClusterReporting(
     zbg_device_params_t * device, uint16_t cluster_id, uint16_t attribute_id,
@@ -932,6 +934,11 @@ private:
   static volatile uint8_t _read_config_last_tsn_flag;
   static volatile uint8_t _write_attr_last_tsn;
   static volatile uint8_t _write_attr_last_tsn_flag;
+  static volatile bool     _basic_query_active;
+  static volatile uint8_t  _basic_query_tsn;
+  static volatile uint16_t _basic_query_short_addr;
+  static volatile uint16_t _basic_query_attr_id;
+  static volatile bool     _basic_query_attr_ok;
 
   static volatile uint8_t _write_ext_current_tsn;
   

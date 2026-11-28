@@ -150,8 +150,12 @@ public:
 
   virtual void zbReadBasicCluster(const esp_zb_zcl_attribute_t *attribute);  //already implemented
 
-  virtual void zbReadBasicCluster(esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, 
-                                  uint16_t cluster_id, esp_zb_zcl_attribute_t *attribute) {};
+ virtual void zbReadBasicCluster(
+    esp_zb_zcl_addr_t src_address, uint16_t src_endpoint,
+    uint16_t cluster_id, esp_zb_zcl_attribute_t *attribute,
+    uint8_t tsn = 0,
+    esp_zb_zcl_status_t status = ESP_ZB_ZCL_STATUS_SUCCESS,
+    bool is_read_resp = false) {};
 
   virtual void zbIdentify(const esp_zb_zcl_set_attr_value_message_t *message);
 

@@ -34,6 +34,11 @@ volatile uint8_t ZigbeeGateway::_read_config_last_tsn_flag = 0xFF;
 volatile uint8_t ZigbeeGateway::_write_attr_last_tsn = 0;
 volatile uint8_t ZigbeeGateway::_write_attr_last_tsn_flag = 0xFF;  
 volatile uint8_t ZigbeeGateway::_write_ext_current_tsn = 0;
+volatile bool     ZigbeeGateway::_basic_query_active     = false;
+volatile uint8_t  ZigbeeGateway::_basic_query_tsn        = 0;
+volatile uint16_t ZigbeeGateway::_basic_query_short_addr = 0xFFFF;
+volatile uint16_t ZigbeeGateway::_basic_query_attr_id    = 0xFFFF;
+volatile bool     ZigbeeGateway::_basic_query_attr_ok    = false;
 
 esp_zb_zcl_attribute_t ZigbeeGateway::_read_attr_last_result = {};
 uint8_t ZigbeeGateway::_read_attr_last_result_value_buffer[256] = {};
@@ -435,6 +440,7 @@ void ZigbeeGateway::clearNewDeviceJoinedIfEmpty() {
 void ZigbeeGateway::find_Cb(
   esp_zb_zdp_status_t zdo_status, uint16_t addr, uint8_t endpoint, 
   void *user_ctx) {
+
 #if !defined(USE_GEMINI_PROTOCOL_HOST)
   if (zdo_status == ESP_ZB_ZDP_STATUS_SUCCESS) {
     zbg_device_params_t sensor = {};
@@ -446,7 +452,18 @@ void ZigbeeGateway::find_Cb(
       sensor.endpoint   = endpoint;
       sensor.short_addr = addr;
     }
-    esp_zb_ieee_address_by_short(sensor.short_addr, sensor.ieee_addr);
+
+    static constexpr esp_zb_ieee_addr_t zero_ieee = {};
+    esp_err_t ieee_err = esp_zb_ieee_address_by_short(
+      sensor.short_addr, sensor.ieee_addr);
+
+    if ((ieee_err != ESP_OK) ||
+        (memcmp(sensor.ieee_addr, zero_ieee, sizeof(esp_zb_ieee_addr_t)) == 0)) {
+      log_e(
+        "find_Cb: failed to resolve IEEE for short_addr 0x%04X (err=%d) - ignoring",
+        sensor.short_addr, (int)ieee_err);
+      return;
+    }
 
     #if defined(USE_GEMINI_PROTOCOL_NCP)
       GeminiBridge::sendFrame(
@@ -535,7 +552,12 @@ void ZigbeeGateway::zbPrintDeviceDiscovery(zbg_device_params_t *device) {
 
 bool ZigbeeGateway::zbQueryDeviceBasicCluster(
   zbg_device_params_t *device, bool single_attribute, uint16_t attribute_id) {
+  
+  if (!device) return false;
+
 #if defined(USE_GEMINI_PROTOCOL_HOST)
+  clearQueryBasicClusterData();
+
   G_PktQueryBasicReq req = {};
   req.device           = *device;
   req.single_attribute = single_attribute ? 1 : 0;
@@ -543,7 +565,7 @@ bool ZigbeeGateway::zbQueryDeviceBasicCluster(
 
   G_PktQueryBasicRsp rsp = {};
   if (!GeminiBridge::sendCommandWaitReply(
-        G_CMD_QUERY_BASIC, &req, sizeof(req), G_RSP_QUERY_BASIC, &rsp, 
+        G_CMD_QUERY_BASIC, &req, sizeof(req), G_RSP_QUERY_BASIC, &rsp,
         sizeof(rsp), 15000)) {
     return false;
   }
@@ -552,10 +574,18 @@ bool ZigbeeGateway::zbQueryDeviceBasicCluster(
 #else
   ZbGtSyncLock sync_lock(gt_sync_mutex, true);
 
+  esp_zb_lock_acquire(portMAX_DELAY);
+  memset(&_last_device_query, 0, sizeof(query_basic_cluster_data_t));
+  uint16_t expected_short = esp_zb_address_short_by_ieee(device->ieee_addr);
+  if (expected_short == 0xFFFF && device->short_addr != 0) {
+    expected_short = device->short_addr;
+  }
+  esp_zb_lock_release();
+
   esp_zb_zcl_read_attr_cmd_t read_req = {};
   read_req.address_mode = ESP_ZB_APS_ADDR_MODE_64_ENDP_PRESENT;
   memcpy(
-    read_req.zcl_basic_cmd.dst_addr_u.addr_long, device->ieee_addr, 
+    read_req.zcl_basic_cmd.dst_addr_u.addr_long, device->ieee_addr,
     sizeof(esp_zb_ieee_addr_t));
 
   read_req.zcl_basic_cmd.src_endpoint = _endpoint;
@@ -563,7 +593,7 @@ bool ZigbeeGateway::zbQueryDeviceBasicCluster(
   read_req.clusterID = ESP_ZB_ZCL_CLUSTER_ID_BASIC;
 
   uint16_t attributes[2] = {
-    ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID, 
+    ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID,
     ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID
   };
   if (single_attribute) attributes[0] = attribute_id;
@@ -575,18 +605,35 @@ bool ZigbeeGateway::zbQueryDeviceBasicCluster(
 
     esp_zb_lock_acquire(portMAX_DELAY);
     xSemaphoreTake(gt_lock, 0);
-    esp_zb_zcl_read_attr_cmd_req(&read_req);
+    _basic_query_short_addr = expected_short;
+    _basic_query_attr_id    = attributes[attribute_number];
+    _basic_query_attr_ok    = false;
+    _basic_query_tsn        = esp_zb_zcl_read_attr_cmd_req(&read_req);
+    _basic_query_active     = true;
     esp_zb_lock_release();
 
-    uint32_t wait_ms = ((attributes[attribute_number] == ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID) || 
-                        (attributes[attribute_number] == ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID))
-                       ? 6000 : 2000;
+    uint32_t wait_ms =
+      ((attributes[attribute_number] == ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID) ||
+       (attributes[attribute_number] == ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID))
+      ? 6000 : 2000;
 
-    if (xSemaphoreTake(gt_lock, pdMS_TO_TICKS(wait_ms)) != pdTRUE) {
+    bool got_sem = (xSemaphoreTake(gt_lock, pdMS_TO_TICKS(wait_ms)) == pdTRUE);
+
+    esp_zb_lock_acquire(portMAX_DELAY);
+    bool attr_ok        = _basic_query_attr_ok;
+    _basic_query_active = false;
+    if (!got_sem) {
+      xSemaphoreTake(gt_lock, 0); // Consume token if callback raced at timeout boundary
+    }
+    esp_zb_lock_release();
+
+    if (!attr_ok) {
       if (attributes[attribute_number] == ESP_ZB_ZCL_ATTR_BASIC_SW_BUILD_ID) {
-        snprintf(_last_device_query.software_build_ID, sizeof(_last_device_query.software_build_ID), "!ERROR!");
+        snprintf(
+          _last_device_query.software_build_ID,
+          sizeof(_last_device_query.software_build_ID), "!ERROR!");
       }
-      if ((attributes[attribute_number] == ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID) || 
+      if ((attributes[attribute_number] == ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID) ||
           (attributes[attribute_number] == ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID)) {
         return false;
       }
@@ -598,60 +645,113 @@ bool ZigbeeGateway::zbQueryDeviceBasicCluster(
 
 /*****************************************************************************/
 
-void ZigbeeGateway::zbReadBasicCluster(
-  esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id, 
-  esp_zb_zcl_attribute_t *attribute) {
+static void copyZclCharString(
+  char *dst, size_t dst_size, const esp_zb_zcl_attribute_t *attribute) {
+  zbstring_t *zbstr = (zbstring_t *)attribute->data.value;
+  if (!zbstr || zbstr->len == 0xFF) {
+    dst[0] = '\0';
+    return;
+  }
+  size_t copy_len = (zbstr->len < dst_size - 1) ? zbstr->len : (dst_size - 1);
+  if (copy_len > 0) {
+    memcpy(dst, zbstr->data, copy_len);
+  }
+  dst[copy_len] = '\0';
+}
 
-  if ((attribute->id == ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID) &&
-      (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING) && 
-      attribute->data.value) {
-    zbstring_t *zbstr = (zbstring_t *)attribute->data.value;
-    size_t copy_len = (zbstr->len < sizeof(_last_device_query.zcl_manufacturer_name) - 1)
-                      ? zbstr->len : (sizeof(_last_device_query.zcl_manufacturer_name) - 1);
-    memcpy(_last_device_query.zcl_manufacturer_name, zbstr->data, copy_len);
-    _last_device_query.zcl_manufacturer_name[copy_len] = '\0';
+/*****************************************************************************/
+
+void ZigbeeGateway::zbReadBasicCluster(
+  esp_zb_zcl_addr_t src_address, uint16_t src_endpoint, uint16_t cluster_id,
+  esp_zb_zcl_attribute_t *attribute, uint8_t tsn,
+  esp_zb_zcl_status_t status, bool is_read_resp) {
+
+  if (!attribute) return;
+
+  // 1. Only populate _last_device_query and wake gt_lock for the exact active Basic query
+  if (is_read_resp && _basic_query_active &&
+      (tsn == _basic_query_tsn) &&
+      (attribute->id == _basic_query_attr_id) &&
+      ((_basic_query_short_addr == 0xFFFF) ||
+       (src_address.addr_type != ESP_ZB_ZCL_ADDR_TYPE_SHORT) ||
+       (src_address.u.short_addr == _basic_query_short_addr))) {
+
+    if (status == ESP_ZB_ZCL_STATUS_SUCCESS) {
+      if ((attribute->id == ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID) &&
+          (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING) &&
+          attribute->data.value) {
+        copyZclCharString(
+          _last_device_query.zcl_manufacturer_name,
+          sizeof(_last_device_query.zcl_manufacturer_name), attribute);
+        _basic_query_attr_ok = true;
+      } else if ((attribute->id == ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID) &&
+                 (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING) &&
+                 attribute->data.value) {
+        copyZclCharString(
+          _last_device_query.zcl_model_name,
+          sizeof(_last_device_query.zcl_model_name), attribute);
+        _basic_query_attr_ok = true;
+      } else if ((attribute->id == ESP_ZB_ZCL_ATTR_BASIC_SW_BUILD_ID) &&
+                 (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING) &&
+                 attribute->data.value) {
+        copyZclCharString(
+          _last_device_query.software_build_ID,
+          sizeof(_last_device_query.software_build_ID), attribute);
+        _basic_query_attr_ok = true;
+      } else if ((attribute->id == ESP_ZB_ZCL_ATTR_BASIC_ZCL_VERSION_ID) &&
+                 (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U8) &&
+                 attribute->data.value) {
+        _last_device_query.zcl_version_id = *((uint8_t *)attribute->data.value);
+        _basic_query_attr_ok = true;
+      } else if ((attribute->id == ESP_ZB_ZCL_ATTR_BASIC_APPLICATION_VERSION_ID) &&
+                 (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U8) &&
+                 attribute->data.value) {
+        _last_device_query.zcl_application_version_id = *((uint8_t *)attribute->data.value);
+        _basic_query_attr_ok = true;
+      } else if ((attribute->id == ESP_ZB_ZCL_ATTR_BASIC_POWER_SOURCE_ID) &&
+                 (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM) &&
+                 attribute->data.value) {
+        _last_device_query.zcl_power_source_id = *((uint8_t *)attribute->data.value);
+        _basic_query_attr_ok = true;
+      } else if (attribute->id == 0xFFFE) {
+        _basic_query_attr_ok = true;
+      }
+    }
+
+    _basic_query_active = false;
     xSemaphoreGive(gt_lock);
-  } else if ((attribute->id == ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID) &&
-             (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING) && 
-             attribute->data.value) {
-    zbstring_t *zbstr = (zbstring_t *)attribute->data.value;
-    size_t copy_len = (zbstr->len < sizeof(_last_device_query.zcl_model_name) - 1)
-                      ? zbstr->len : (sizeof(_last_device_query.zcl_model_name) - 1);
-    memcpy(_last_device_query.zcl_model_name, zbstr->data, copy_len);
-    _last_device_query.zcl_model_name[copy_len] = '\0';
-    xSemaphoreGive(gt_lock);
-  } else if ((attribute->id == ESP_ZB_ZCL_ATTR_BASIC_SW_BUILD_ID) && 
-             (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING) && 
-             attribute->data.value) {
-    zbstring_t *zbstr = (zbstring_t *)attribute->data.value;
-    size_t copy_len = (zbstr->len < sizeof(_last_device_query.software_build_ID) - 1)
-                      ? zbstr->len : (sizeof(_last_device_query.software_build_ID) - 1);
-    memcpy(_last_device_query.software_build_ID, zbstr->data, copy_len);
-    _last_device_query.software_build_ID[copy_len] = '\0';
-    xSemaphoreGive(gt_lock);
-  } else if ((attribute->id == ESP_ZB_ZCL_ATTR_BASIC_ZCL_VERSION_ID) && 
-             (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U8) && 
-             attribute->data.value) {
-    _last_device_query.zcl_version_id = *((uint8_t *)attribute->data.value);
-    xSemaphoreGive(gt_lock);
-  } else if ((attribute->id == ESP_ZB_ZCL_ATTR_BASIC_APPLICATION_VERSION_ID) &&
-             (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_U8) && 
-             attribute->data.value) {
-    _last_device_query.zcl_application_version_id = *((uint8_t *)attribute->data.value);
-    xSemaphoreGive(gt_lock);
-  } else if ((attribute->id == ESP_ZB_ZCL_ATTR_BASIC_POWER_SOURCE_ID) && 
-             (attribute->data.type == ESP_ZB_ZCL_ATTR_TYPE_8BIT_ENUM) && 
-             attribute->data.value) {
-    _last_device_query.zcl_power_source_id = *((uint8_t *)attribute->data.value);
-    xSemaphoreGive(gt_lock);
-  } else if (attribute->id == 0xFFFE) {
-    xSemaphoreGive(gt_lock);
-  } else {
+    return;
+  }
+
+  // 2. Allow synchronous sendAttributeRead(..., BASIC, ..., ack=true) to still work
+  if (is_read_resp &&
+      (_read_attr_last_tsn_flag == ZCL_CMD_TSN_SYNC) &&
+      (tsn == _read_attr_last_tsn)) {
+    zbReadAttrResponse(tsn, 0, src_address, src_endpoint, cluster_id, status, attribute);
+    return;
+  }
+
+  // 3. Ignore unsolicited/late standard Basic identity/version attributes (e.g. Tuya magic / heartbeats)
+  switch (attribute->id) {
+    case ESP_ZB_ZCL_ATTR_BASIC_ZCL_VERSION_ID:
+    case ESP_ZB_ZCL_ATTR_BASIC_APPLICATION_VERSION_ID:
+    case ESP_ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID:
+    case ESP_ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID:
+    case ESP_ZB_ZCL_ATTR_BASIC_POWER_SOURCE_ID:
+    case ESP_ZB_ZCL_ATTR_BASIC_SW_BUILD_ID:
+    case 0xFFFE:
+      return;
+    default:
+      break;
+  }
+
+  // 4. Forward vendor Basic attributes (e.g. Lumi 0xFF01 / 0x0404)
+  if (!is_read_resp || status == ESP_ZB_ZCL_STATUS_SUCCESS) {
     #if defined(USE_GEMINI_PROTOCOL_NCP)
-    int8_t rssi = consumeRawReportRssi(src_address.u.short_addr);
-    GeminiBridge::forwardAttrReport(
-      src_address.u.short_addr, src_endpoint, cluster_id, attribute, true, true, rssi);
-  #else
+      int8_t rssi = consumeRawReportRssi(src_address.u.short_addr);
+      GeminiBridge::forwardAttrReport(
+        src_address.u.short_addr, src_endpoint, cluster_id, attribute, !is_read_resp, true, rssi);
+    #else
       if (_on_basic_receive)
         _on_basic_receive(src_address.u.short_addr, src_endpoint, cluster_id, attribute);
     #endif
