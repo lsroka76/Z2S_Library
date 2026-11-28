@@ -8598,6 +8598,12 @@ inline constexpr z2s_device_entity_t Z2S_DEVICES_LIST[] PROGMEM = {
     .z2s_device_desc_id = Z2S_DEVICE_DESC_SALUS_SQ610RFNH,
     .z2s_device_endpoints_count = 1,
     .z2s_device_endpoints = {{ SALUS_IT600_THERMOSTAT_ENDPOINT, 0, 0, Z2S_DEVICE_DESC_SALUS_SQ610RFNH }}},
+
+  { .manufacturer_name = "@Vajera", .model_name = "ZBFairyLight1",
+    .z2s_device_uid = 39000,
+    .z2s_device_desc_id = Z2S_DEVICE_DESC_RELAY_1,
+    .z2s_device_endpoints_count = 1},
+
 //DEVICES_END
 };
 
